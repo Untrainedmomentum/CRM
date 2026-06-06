@@ -144,7 +144,7 @@
           <div class="launch-card" onclick="startCalling()">
             <div class="launch-title">Start Tier 1s</div>
             <div class="launch-sub">Jump into your hottest prospects — no warm-up needed</div>
-            <div style="margin-top:16px"><span class="badge badge-tier1">Tier 1</span> <span id="t1-count" class="text-sm text-mid"></span></div>
+            <div style="margin-top:16px"><span class="badge badge-tier1 tier-call-today">Call Today</span> <span id="t1-count" class="text-sm text-mid"></span></div>
           </div>
           <div class="launch-card" onclick="showList()">
             <div class="launch-title">Review List First</div>
@@ -159,7 +159,7 @@
             <div class="table-title">All Prospects</div>
             <div class="filter-bar">
               <select class="filter-select" id="tier-filter" onchange="renderList()">
-                <option value="">All Tiers</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option>
+                <option value="">All Priority</option><option value="1">Call Today</option><option value="2">This Week</option><option value="3">This Month</option>
               </select>
               <select class="filter-select" id="cat-filter" onchange="renderList()">
                 <option value="">All Categories</option>
@@ -324,7 +324,7 @@
       <div class="form-group"><label class="form-label">Business Hours</label><input class="form-control" id="p-hours" placeholder="Mon-Fri 8am-5pm"></div>
     </div>
     <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Tier</label><select class="form-control" id="p-tier"><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select></div>
+      <div class="form-group"><label class="form-label">Tier</label><select class="form-control" id="p-tier"><option value="1">Call Today</option><option value="2">This Week</option><option value="3">This Month</option></select></div>
       <div class="form-group"><label class="form-label">Score (1-10)</label><input class="form-control" id="p-score" type="number" min="1" max="10"></div>
     </div>
     <div class="form-group"><label class="form-label">Pitch Angle</label><input class="form-control" id="p-pitch"></div>
@@ -583,24 +583,36 @@ function skipProspect(){
   queueIndex++;if(queueIndex>=callQueue.length){showSummary();return;}loadCard(callQueue[queueIndex]);updateBars();
 }
 
-async function leftVoicemail(){if(!currentProspect)return;await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:'call',outcome:'left_voicemail',notes:'Left voicemail',completed:true,completed_date:new Date().toISOString()});await sb.from('clients').update({status:'pitched'}).eq('id',currentProspect.id);toast('Voicemail logged');nextProspect();}
-async function wrongNumber(){if(!currentProspect)return;await sb.from('clients').update({johns_notes:(currentProspect.johns_notes||'')+'\nWRONG/DISCONNECTED NUMBER'}).eq('id',currentProspect.id);toast('Flagged');nextProspect();}
-async function notInterested(){if(!currentProspect)return;await sb.from('clients').update({status:'objection'}).eq('id',currentProspect.id);toast('Marked not interested');nextProspect();}
-async function doNotCall(){if(!currentProspect)return;await sb.from('clients').update({status:'churned',johns_notes:(currentProspect.johns_notes||'')+'\nDO NOT CALL'}).eq('id',currentProspect.id);toast('Do Not Call');nextProspect();}
+async function leftVoicemail(){if(!currentProspect)return;await claimProspect(currentProspect.id);await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:'call',outcome:'left_voicemail',notes:'Left voicemail',completed:true,completed_date:new Date().toISOString()});await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Voicemail logged');nextProspect();}
+async function wrongNumber(){if(!currentProspect)return;await claimProspect(currentProspect.id);await sb.from('clients').update({johns_notes:(currentProspect.johns_notes||'')+'\nWRONG/DISCONNECTED NUMBER',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Flagged');nextProspect();}
+async function notInterested(){if(!currentProspect)return;await claimProspect(currentProspect.id);await sb.from('clients').update({status:'objection',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Marked not interested');nextProspect();}
+async function doNotCall(){if(!currentProspect)return;await sb.from('clients').update({status:'churned',johns_notes:(currentProspect.johns_notes||'')+'\nDO NOT CALL',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Do Not Call');nextProspect();}
+
+// Auto-assign prospect to whoever takes first action
+async function claimProspect(clientId){
+  if(!clientId)return;
+  await sb.from('clients').update({
+    assigned_to: profile.id,
+    updated_by: profile.id,
+    updated_by_name: profile.full_name||profile.email
+  }).eq('id',clientId).is('assigned_to',null);
+}
 
 async function saveFollowUp(){
   if(!currentProspect)return;
   const date=document.getElementById('fu-date').value;
   if(!date){toast('Please select a date','error');return;}
+  await claimProspect(currentProspect.id);
   await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:document.getElementById('fu-type').value,scheduled_date:date,next_action:document.getElementById('fu-notes').value||null,completed:false});
-  await sb.from('clients').update({status:'pitched'}).eq('id',currentProspect.id);
+  await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);
   session.followups++;toast('Follow-up scheduled!');closeModal('schedule-modal');nextProspect();
 }
 
 function openConvert(id,name){convertId=id;document.getElementById('convert-name').textContent=name||'';openModal('convert-modal');}
 async function doConvert(){
   if(!convertId)return;
-  await sb.from('clients').update({status:'deposited',deal_type:document.getElementById('cv-deal').value||null,deposit_collected:document.getElementById('cv-deposit').value||null,deposit_method:document.getElementById('cv-method').value||null}).eq('id',convertId);
+  await claimProspect(convertId);
+  await sb.from('clients').update({status:'deposited',deal_type:document.getElementById('cv-deal').value||null,deposit_collected:document.getElementById('cv-deposit').value||null,deposit_method:document.getElementById('cv-method').value||null,assigned_to:profile.id,updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',convertId);
   const notes=document.getElementById('cv-notes').value;
   if(notes)await sb.from('followups').insert({client_id:convertId,user_id:profile.id,type:'other',outcome:'closed',notes:`CONVERTED: ${notes}`,completed:true,completed_date:new Date().toISOString()});
   session.closed++;toast('Converted!');closeModal('convert-modal');convertId=null;nextProspect();

@@ -3,30 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Import Prospects &mdash; Untrained Momentum</title>
+  <title>Import Prospects — Untrained Momentum</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .drop-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--r2);
-      padding: 48px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .15s;
-      background: var(--white);
-    }
-    .drop-zone:hover, .drop-zone.drag { border-color: var(--red); background: var(--red-l); }
-    .drop-zone-title { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
-    .drop-zone-sub { font-size: 13px; color: var(--mid); }
-    .map-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-    .map-row:last-child { border-bottom: none; }
-    .col-name { font-weight: 600; color: var(--dark); }
-    .preview-row { display: grid; gap: 8px; font-size: 12px; font-family: var(--font-m); padding: 8px; border-radius: var(--r); }
-    .dup-row { background: var(--red-l); border: 1px solid var(--red-m); }
-    .new-row { background: var(--green-l); border: 1px solid #b0dfc0; }
-    .skip-row { background: var(--light); border: 1px solid var(--border); opacity: .6; }
-    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--red); border-radius: 3px; transition: width .3s; }
+    .drop-zone{border:2px dashed var(--border);border-radius:var(--r2);padding:48px;text-align:center;cursor:pointer;transition:all .15s;background:var(--white)}
+    .drop-zone:hover,.drop-zone.drag{border-color:var(--red);background:var(--red-l)}
+    .drop-zone-title{font-size:15px;font-weight:600;margin-bottom:6px}
+    .drop-zone-sub{font-size:13px;color:var(--mid)}
+    .preview-row{padding:8px 12px;border-radius:var(--r);font-size:12px;margin-bottom:4px;font-family:var(--font-m)}
+    .new-row{background:var(--green-l);border:1px solid #b0dfc0}
+    .dup-row{background:var(--red-l);border:1px solid var(--red-m)}
+    .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--red);border-radius:3px;transition:width .3s}
   </style>
 </head>
 <body>
@@ -51,77 +39,58 @@
 
   <div class="main-content">
     <div class="page-header">
-      <div>
-        <div class="page-title">Import Prospects</div>
-        <div class="page-subtitle">Upload a CSV from your prospect spreadsheet</div>
-      </div>
+      <div><div class="page-title">Import Prospects</div><div class="page-subtitle">Upload a CSV — duplicates are detected automatically</div></div>
       <a href="clients.html" class="btn btn-secondary">Back to Clients</a>
     </div>
 
-    <!-- STEP 1: UPLOAD -->
     <div id="step1">
       <div class="card mb-16">
-        <div class="card-title">Step 1 &mdash; Upload Your CSV</div>
-        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+        <div class="card-title">Upload Your CSV</div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="drop(event)">
           <div class="drop-zone-title">Drop your CSV here or click to browse</div>
           <div class="drop-zone-sub">Export the prospect spreadsheet as CSV from Excel or Google Sheets</div>
         </div>
         <input type="file" id="file-input" accept=".csv" style="display:none" onchange="handleFile(this.files[0])">
       </div>
-
       <div class="card">
-        <div class="card-title">Expected Column Names</div>
-        <p class="text-sm text-mid mb-16">Your CSV should have these columns (in any order). Extra columns are ignored.</p>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;font-family:var(--font-m)">
-          ${['TIER','BUSINESS NAME','CONTACT NAME','PHONE','EMAIL','CATEGORY','LOCATION','YR EST.','RATING','REVIEWS','HAS WEBSITE','WEBSITE / PLATFORM','GBP STATUS','REVIEW INSIGHTS','EST. ANNUAL REV','RECOMMENDED OFFER','EST. SALE VALUE','CALL PRIORITY','BEST PITCH ANGLE','FOLLOW-UP STATUS','BUSINESS HOURS'].map(c=>`<div style="padding:4px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">${c}</div>`).join('')}
+        <div class="card-title">Expected Columns</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px;font-family:var(--font-m)">
+          ${['TIER','SCORE','BUSINESS CATEGORY','BUSINESS NAME','CONTACT NAME','PHONE','EMAIL','CITY','COUNTY','LOCATION/SERVICE AREA','YR EST.','RATING','REVIEWS','HAS WEBSITE','WEBSITE URL','WEBSITE PLATFORM','WEBSITE REVIEW','GBP STATUS','REVIEW INSIGHTS','EST. ANNUAL REV','RECOMMENDED OFFER','EST. SALE VALUE','CALL PRIORITY','BEST PITCH ANGLE','FOLLOW-UP STATUS'].map(c=>`<div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">${c}</div>`).join('')}
         </div>
       </div>
     </div>
 
-    <!-- STEP 2: PREVIEW & CONFIRM -->
     <div id="step2" style="display:none">
       <div class="card mb-16">
-        <div class="card-title">Step 2 &mdash; Review &amp; Confirm</div>
+        <div class="card-title">Review &amp; Confirm</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
           <div style="text-align:center;padding:16px;background:var(--green-l);border-radius:var(--r);border:1px solid #b0dfc0">
             <div style="font-size:28px;font-weight:700;color:var(--green)" id="count-new">0</div>
-            <div class="text-sm text-mid">New prospects to import</div>
+            <div class="text-sm text-mid">New prospects</div>
           </div>
           <div style="text-align:center;padding:16px;background:var(--red-l);border-radius:var(--r);border:1px solid var(--red-m)">
             <div style="font-size:28px;font-weight:700;color:var(--red)" id="count-dup">0</div>
-            <div class="text-sm text-mid">Duplicates found (will skip)</div>
+            <div class="text-sm text-mid">Duplicates — will skip</div>
           </div>
           <div style="text-align:center;padding:16px;background:var(--light);border-radius:var(--r);border:1px solid var(--border)">
             <div style="font-size:28px;font-weight:700" id="count-total">0</div>
-            <div class="text-sm text-mid">Total rows in file</div>
+            <div class="text-sm text-mid">Total rows</div>
           </div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Assign to</label>
-          <select class="form-control" id="assign-to" style="max-width:300px">
-            <option value="">Loading users&hellip;</option>
-          </select>
-        </div>
-
         <div style="display:flex;gap:10px;margin-bottom:20px">
           <button class="btn btn-primary" onclick="doImport()">Import New Prospects</button>
           <button class="btn btn-ghost" onclick="resetImport()">Start Over</button>
         </div>
-
         <div id="progress-wrap" style="display:none;margin-bottom:16px">
-          <div class="text-sm text-mid mb-8" id="progress-label">Importing&hellip;</div>
+          <div class="text-sm text-mid mb-8" id="progress-label">Importing...</div>
           <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
         </div>
-
-        <div id="preview-list" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+        <div id="preview-list" style="max-height:400px;overflow-y:auto"></div>
       </div>
     </div>
 
-    <!-- STEP 3: DONE -->
     <div id="step3" style="display:none">
       <div class="card" style="text-align:center;padding:48px">
-        <div style="font-size:40px;margin-bottom:16px">&#10003;</div>
         <div style="font-family:var(--font-d);font-size:22px;font-weight:700;margin-bottom:8px">Import Complete</div>
         <div class="text-sm text-mid mb-24" id="done-msg"></div>
         <div style="display:flex;gap:10px;justify-content:center">
@@ -131,7 +100,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -139,210 +107,150 @@
 <script src="assets/js/config.js"></script>
 <script src="shared.js"></script>
 <script>
-let parsed = [], newRows = [], dupRows = [], allExisting = [];
+let parsed=[], newRows=[], dupRows=[], existing=[];
 
-// Column name aliases — maps variations to canonical field
-const COL_MAP = {
-  'tier':              'tier',
-  'business name':     'business_name',
-  'business':          'business_name',
-  'contact name':      'owner_name',
-  'contact':           'owner_name',
-  'owner':             'owner_name',
-  'phone':             'phone',
-  'email':             'email',
-  'category':          'category',
-  'location':          'location',
-  'city':              'location',
-  'yr est.':           'year_established',
-  'year established':  'year_established',
-  'year est':          'year_established',
-  'rating':            'google_rating',
-  'google rating':     'google_rating',
-  'reviews':           'review_count',
-  'review count':      'review_count',
-  'has website':       'has_website',
-  'website':           'has_website',
-  'website / platform':'website_platform',
-  'host / platform':   'website_platform',
-  'website platform':  'website_platform',
-  'gbp status':        'gbp_status',
-  'review insights':   'review_insights',
-  'est. annual rev':   'est_annual_revenue',
-  'est annual revenue':'est_annual_revenue',
-  'est. annual revenue':'est_annual_revenue',
-  'recommended offer': 'pitch_angle',
-  'est. sale value':   'deal_amount',
-  'est sale value':    'deal_amount',
-  'call priority':     'call_priority',
-  'best pitch angle':  'pitch_angle',
-  'pitch angle':       'pitch_angle',
-  'follow-up status':  'status',
-  'followup status':   'status',
-  'business hours':    'business_hours',
-  'hours':             'business_hours',
+const COL_MAP={
+  'tier':'tier','business name':'business_name','business':'business_name',
+  'contact name':'owner_name','contact':'owner_name','owner':'owner_name',
+  'phone':'phone','email':'email','category':'category','business category':'category',
+  'city':'location','location':'location','location/service area':'location',
+  'county':'county','yr est.':'year_established','year established':'year_established',
+  'rating':'google_rating','google rating':'google_rating','reviews':'review_count',
+  'review count':'review_count','has website':'has_website','website':'has_website',
+  'website url':'website_url','website / platform':'website_platform',
+  'website platform':'website_platform','host / platform':'website_platform',
+  'website review':'website_review','gbp status':'gbp_status',
+  'review insights':'review_insights','est. annual rev':'est_annual_revenue',
+  'est annual revenue':'est_annual_revenue','est. annual revenue':'est_annual_revenue',
+  'recommended offer':'pitch_angle','est. sale value':'deal_amount',
+  'est sale value':'deal_amount','call priority':'call_priority',
+  'best pitch angle':'pitch_angle','pitch angle':'pitch_angle',
+  'follow-up status':'status','followup status':'status',
+  'business hours':'business_hours','hours':'business_hours',
+  'score':'score',
 };
 
-(async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.replace('index.html'); return; }
-  let p = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' };
-  try { const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single(); if (data) p = data; } catch(e) {}
-  if (p.role !== 'admin') { window.location.replace('dashboard.html'); return; }
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.replace('index.html');return;}
+  let p={id:session.user.id,email:session.user.email,role:'admin',full_name:'Jen'};
+  try{const{data}=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(data)p=data;}catch(e){}
+  if(p.role!=='admin'){window.location.replace('dashboard.html');return;}
   renderNav(p);
-
-  // Load users for assignment
-  const { data: users } = await sb.from('profiles').select('id,full_name,email,role');
-  const sel = document.getElementById('assign-to');
-  sel.innerHTML = (users||[]).map(u => `<option value="${u.id}">${u.full_name||u.email} (${u.role})</option>`).join('');
-
-  // Load existing for dupe check
-  const { data: ex } = await sb.from('clients').select('business_name,phone');
-  allExisting = ex || [];
+  const{data:ex}=await sb.from('clients').select('business_name,phone');
+  existing=ex||[];
 })();
 
-// ── CSV PARSING ───────────────────────────────────────────────
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return [];
-
-  const headers = parseRow(lines[0]).map(h => h.toLowerCase().trim());
-  const rows = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const vals = parseRow(lines[i]);
-    if (vals.every(v => !v.trim())) continue;
-    const obj = {};
-    headers.forEach((h, idx) => {
-      const key = COL_MAP[h];
-      if (key) obj[key] = vals[idx]?.trim() || null;
-    });
-    if (obj.business_name) rows.push(obj);
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return[];
+  const headers=parseRow(lines[0]).map(h=>h.toLowerCase().trim());
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=parseRow(lines[i]);
+    if(vals.every(v=>!v.trim()))continue;
+    const obj={};
+    headers.forEach((h,idx)=>{const key=COL_MAP[h];if(key)obj[key]=vals[idx]?.trim()||null;});
+    if(obj.business_name)rows.push(obj);
   }
   return rows;
 }
 
-function parseRow(line) {
-  const result = [];
-  let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-    else { cur += c; }
+function parseRow(line){
+  const result=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else{cur+=c;}
   }
-  result.push(cur);
-  return result;
+  result.push(cur);return result;
 }
 
-function isDupe(row) {
-  const biz = (row.business_name||'').toLowerCase().trim();
-  const ph  = (row.phone||'').replace(/\D/g,'');
-  return allExisting.some(e => {
-    const eb = (e.business_name||'').toLowerCase().trim();
-    const ep = (e.phone||'').replace(/\D/g,'');
-    return eb === biz || (ph && ep && ph === ep);
-  });
-}
-
-function normalizeRow(row) {
-  // Tier: extract number
-  if (row.tier) row.tier = parseInt(row.tier) || null;
-  // Revenue: strip $ and commas
-  if (row.est_annual_revenue) row.est_annual_revenue = parseFloat(String(row.est_annual_revenue).replace(/[$,]/g,'')) || null;
-  if (row.deal_amount) row.deal_amount = parseFloat(String(row.deal_amount).replace(/[$,]/g,'')) || null;
-  // Rating
-  if (row.google_rating) row.google_rating = parseFloat(row.google_rating) || null;
-  // Review count
-  if (row.review_count) row.review_count = parseInt(row.review_count) || null;
-  // Status: default prospect unless follow-up status says otherwise
-  if (!row.status || row.status === '—' || row.status.includes('CALL') || row.status.includes('MONTH') || row.status.includes('WEEK')) {
-    row.status = 'prospect';
-  }
+function normalize(row){
+  if(row.tier)row.tier=parseInt(row.tier)||null;
+  if(row.score)row.score=parseInt(row.score)||null;
+  if(row.est_annual_revenue)row.est_annual_revenue=parseFloat(String(row.est_annual_revenue).replace(/[$,]/g,''))||null;
+  if(row.deal_amount)row.deal_amount=parseFloat(String(row.deal_amount).replace(/[$,]/g,''))||null;
+  if(row.google_rating)row.google_rating=parseFloat(row.google_rating)||null;
+  if(row.review_count)row.review_count=parseInt(row.review_count)||null;
+  if(!row.status||row.status==='—'||/CALL|MONTH|WEEK|TODAY/i.test(row.status||''))row.status='prospect';
   return row;
 }
 
-// ── FILE HANDLING ─────────────────────────────────────────────
-function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag'); }
-function dragLeave()  { document.getElementById('drop-zone').classList.remove('drag'); }
-function drop(e)      { e.preventDefault(); dragLeave(); handleFile(e.dataTransfer.files[0]); }
+function isDupe(row){
+  const biz=(row.business_name||'').toLowerCase().trim();
+  const ph=(row.phone||'').replace(/\D/g,'');
+  return existing.some(e=>{
+    const eb=(e.business_name||'').toLowerCase().trim();
+    const ep=(e.phone||'').replace(/\D/g,'');
+    return eb===biz||(ph&&ep&&ph===ep);
+  });
+}
 
-function handleFile(file) {
-  if (!file || !file.name.endsWith('.csv')) { toast('Please upload a .csv file', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => processCSV(e.target.result);
+function dragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag');}
+function dragLeave(){document.getElementById('drop-zone').classList.remove('drag');}
+function drop(e){e.preventDefault();dragLeave();handleFile(e.dataTransfer.files[0]);}
+
+function handleFile(file){
+  if(!file||!file.name.endsWith('.csv')){toast('Please upload a .csv file','error');return;}
+  const reader=new FileReader();
+  reader.onload=e=>processCSV(e.target.result);
   reader.readAsText(file);
 }
 
-function processCSV(text) {
-  parsed = parseCSV(text).map(normalizeRow);
-  newRows = parsed.filter(r => !isDupe(r));
-  dupRows = parsed.filter(r =>  isDupe(r));
-
-  document.getElementById('count-new').textContent   = newRows.length;
-  document.getElementById('count-dup').textContent   = dupRows.length;
-  document.getElementById('count-total').textContent = parsed.length;
-
-  const list = document.getElementById('preview-list');
-  list.innerHTML = [
-    ...newRows.map(r => `<div class="preview-row new-row"><strong>${r.business_name}</strong> &mdash; ${r.phone||'no phone'} &mdash; Tier ${r.tier||'?'} &mdash; NEW</div>`),
-    ...dupRows.map(r => `<div class="preview-row dup-row"><strong>${r.business_name}</strong> &mdash; DUPLICATE &mdash; will skip</div>`),
+function processCSV(text){
+  parsed=parseCSV(text).map(normalize);
+  newRows=parsed.filter(r=>!isDupe(r));
+  dupRows=parsed.filter(r=>isDupe(r));
+  document.getElementById('count-new').textContent=newRows.length;
+  document.getElementById('count-dup').textContent=dupRows.length;
+  document.getElementById('count-total').textContent=parsed.length;
+  const list=document.getElementById('preview-list');
+  list.innerHTML=[
+    ...newRows.map(r=>`<div class="preview-row new-row"><strong>${r.business_name}</strong> — ${r.phone||'no phone'} — ${r.category||''} — ${r.location||''} — NEW</div>`),
+    ...dupRows.map(r=>`<div class="preview-row dup-row"><strong>${r.business_name}</strong> — DUPLICATE — will skip</div>`),
   ].join('');
-
-  document.getElementById('step1').style.display = 'none';
-  document.getElementById('step2').style.display = 'block';
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
 }
 
-// ── IMPORT ────────────────────────────────────────────────────
-async function doImport() {
-  if (!newRows.length) { toast('No new rows to import', 'info'); return; }
-  const assignTo = document.getElementById('assign-to').value || null;
-
-  document.getElementById('progress-wrap').style.display = 'block';
-  const fill = document.getElementById('progress-fill');
-  const label = document.getElementById('progress-label');
-
-  let done = 0, errors = 0;
-  const BATCH = 20;
-
-  for (let i = 0; i < newRows.length; i += BATCH) {
-    const batch = newRows.slice(i, i + BATCH).map(r => ({
+async function doImport(){
+  if(!newRows.length){toast('No new rows to import','info');return;}
+  document.getElementById('progress-wrap').style.display='block';
+  const fill=document.getElementById('progress-fill');
+  const label=document.getElementById('progress-label');
+  let done=0,errors=0;
+  const BATCH=20;
+  for(let i=0;i<newRows.length;i+=BATCH){
+    const batch=newRows.slice(i,i+BATCH).map(r=>({
       ...r,
-      assigned_to: assignTo,
-      status: r.status || 'prospect',
+      assigned_to:null,  // no assignment on import — captured on first action
+      status:r.status||'prospect',
     }));
-
-    const { data: inserted, error } = await sb.from('clients').insert(batch).select('id');
-    if (error) { errors += batch.length; }
-    else {
-      // Create build_tracker for each
-      if (inserted?.length) {
-        await sb.from('build_tracker').insert(inserted.map(c => ({ client_id: c.id })));
-      }
-      done += batch.length;
+    const{data:inserted,error}=await sb.from('clients').insert(batch).select('id');
+    if(error){errors+=batch.length;}
+    else if(inserted?.length){
+      await sb.from('build_tracker').insert(inserted.map(c=>({client_id:c.id})));
+      done+=batch.length;
     }
-
-    const pct = Math.round(((i + BATCH) / newRows.length) * 100);
-    fill.style.width = Math.min(pct, 100) + '%';
-    label.textContent = `Importing&hellip; ${Math.min(done, newRows.length)} of ${newRows.length}`;
-    await new Promise(r => setTimeout(r, 50)); // let UI breathe
+    fill.style.width=Math.min(Math.round(((i+BATCH)/newRows.length)*100),100)+'%';
+    label.textContent=`Importing... ${Math.min(done,newRows.length)} of ${newRows.length}`;
+    await new Promise(r=>setTimeout(r,50));
   }
-
-  document.getElementById('done-msg').textContent =
-    `${done} prospects imported successfully.${errors ? ` ${errors} rows had errors.` : ''} ${dupRows.length} duplicates skipped.`;
-
-  document.getElementById('step2').style.display = 'none';
-  document.getElementById('step3').style.display = 'block';
+  document.getElementById('done-msg').textContent=`${done} prospects imported.${errors?` ${errors} had errors.`:''} ${dupRows.length} duplicates skipped.`;
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step3').style.display='block';
 }
 
-function resetImport() {
-  parsed = []; newRows = []; dupRows = [];
-  document.getElementById('step1').style.display = 'block';
-  document.getElementById('step2').style.display = 'none';
-  document.getElementById('step3').style.display = 'none';
-  document.getElementById('progress-wrap').style.display = 'none';
-  document.getElementById('progress-fill').style.width = '0%';
-  document.getElementById('file-input').value = '';
+function resetImport(){
+  parsed=[];newRows=[];dupRows=[];
+  document.getElementById('step1').style.display='block';
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step3').style.display='none';
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('progress-fill').style.width='0%';
+  document.getElementById('file-input').value='';
 }
 </script>
 </body>
