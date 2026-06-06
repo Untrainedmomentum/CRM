@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -91,16 +91,16 @@ let clientData = null;
 
 function renderPortal(client, build) {
   const services = [
-    { key: 'website', icon: '🌐', name: 'Website' },
-    { key: 'gbp', icon: '📍', name: 'Google Listing' },
-    { key: 'voice_ai', icon: '📞', name: 'Voice AI' },
-    { key: 'email', icon: '✉️', name: 'Business Email' },
-    { key: 'booking', icon: '📅', name: 'Booking System' },
-    { key: 'invoicing', icon: '💳', name: 'Invoicing' },
-    { key: 'payments', icon: '💰', name: 'Online Payments' },
-    { key: 'social', icon: '📱', name: 'Social Media' },
-    { key: 'automation', icon: '⚙️', name: 'Automation' },
-    { key: 'managed_it', icon: '🖥️', name: 'Managed IT' },
+    { key: 'website', icon: '', name: 'Website' },
+    { key: 'gbp', icon: '', name: 'Google Listing' },
+    { key: 'voice_ai', icon: '', name: 'Voice AI' },
+    { key: 'email', icon: '', name: 'Business Email' },
+    { key: 'booking', icon: '', name: 'Booking System' },
+    { key: 'invoicing', icon: '', name: 'Invoicing' },
+    { key: 'payments', icon: '', name: 'Online Payments' },
+    { key: 'social', icon: '', name: 'Social Media' },
+    { key: 'automation', icon: '', name: 'Automation' },
+    { key: 'managed_it', icon: '', name: 'Managed IT' },
   ];
 
   const statusLabel = { not_started: 'Not Started', in_progress: 'In Progress', complete: '✓ Complete', blocked: 'Needs Info', na: 'Not Included' };
@@ -111,11 +111,11 @@ function renderPortal(client, build) {
 
   document.getElementById('content').innerHTML = `
     <div class="welcome">
-      <div class="welcome-title">Hi, ${client.owner_name?.split(' ')[0] || 'there'} 👋</div>
+      <div class="welcome-title">Hi, ${client.owner_name?.split(' ')[0] || 'there'} </div>
       <div class="welcome-sub">
         Here's a live look at what we're building for <strong>${client.business_name}</strong>.<br>
         ${included.length > 0 ? `${completed} of ${included.length} services complete.` : 'Your build is getting started soon.'}
-        ${build?.waiting_on_client ? `<br><br><strong style="color:var(--red)">⚠️ We need something from you:</strong> ${build.waiting_on_client}` : ''}
+        ${build?.waiting_on_client ? `<br><br><strong style="color:var(--red)">We need something from you:</strong> ${build.waiting_on_client}` : ''}
       </div>
     </div>
 
@@ -125,7 +125,7 @@ function renderPortal(client, build) {
       ${included.map(s => {
         const status = build[`${s.key}_status`] || 'not_started';
         return `<div class="build-item ${status}">
-          <div class="build-icon">${s.icon}</div>
+          
           <div class="build-name">${s.name}</div>
           <div class="build-status">${statusLabel[status] || status}</div>
         </div>`;
@@ -198,7 +198,7 @@ async function submitTicket() {
 function showNotFound() {
   document.getElementById('content').innerHTML = `
     <div class="not-found">
-      <div style="font-size:40px;margin-bottom:16px">🔍</div>
+      <div style="font-size:40px;margin-bottom:16px"></div>
       <div style="font-size:18px;font-weight:600;margin-bottom:8px">Portal not found</div>
       <div style="font-size:14px">This link may have expired or is invalid. Contact us at info@untrainedmomentum.com</div>
     </div>`;
@@ -206,3 +206,4 @@ function showNotFound() {
 </script>
 </body>
 </html>
+

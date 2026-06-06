@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -18,11 +18,11 @@
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Main</div>
-      <a class="nav-link sidebar-link" href="dashboard.html"><span class="icon">⊞</span> Dashboard</a>
-      <a class="nav-link sidebar-link admin-only" href="clients.html"><span class="icon">◎</span> Clients</a>
-      <a class="nav-link sidebar-link active admin-only" href="tickets.html"><span class="icon">◈</span> Tickets</a>
+      <a class="nav-link sidebar-link" href="dashboard.html">Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html">Clients</a>
+      <a class="nav-link sidebar-link active admin-only" href="tickets.html">Tickets</a>
     </div>
-    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html"><span class="icon">◷</span> John's View</a></div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html">John's View</a></div>
   </div>
   <div class="main-content">
     <div class="page-header">
@@ -112,7 +112,7 @@ async function loadTickets() {
 
   const body = document.getElementById('tickets-body');
   if (tickets.length === 0) {
-    body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">◈</div><div class="empty-state-text">No tickets</div></div></td></tr>';
+    body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No tickets</div></div></td></tr>';
     return;
   }
   body.innerHTML = tickets.map(t => `
@@ -158,3 +158,4 @@ async function updateTicket() {
 </script>
 </body>
 </html>
+

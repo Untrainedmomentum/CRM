@@ -58,11 +58,11 @@
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Main</div>
-      <a class="nav-link sidebar-link" href="dashboard.html"><span class="icon">⊞</span> Dashboard</a>
-      <a class="nav-link sidebar-link admin-only" href="clients.html"><span class="icon">◎</span> Clients</a>
-      <a class="nav-link sidebar-link admin-only" href="tickets.html"><span class="icon">◈</span> Tickets</a>
+      <a class="nav-link sidebar-link" href="dashboard.html">Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html">Clients</a>
+      <a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets</a>
     </div>
-    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html"><span class="icon">◷</span> John's View</a></div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html">John's View</a></div>
   </div>
   <div class="main-content">
     <div id="loading" class="loading">Loading client...</div>
@@ -317,18 +317,18 @@ let buildData = {};
 let intakeData = {};
 
 const BUILD_SERVICES = [
-  { key: "website", icon: "🌐", name: "Website" },
-  { key: "gbp", icon: "📍", name: "Google Listing" },
-  { key: "voice_ai", icon: "📞", name: "Voice AI" },
-  { key: "email", icon: "✉️", name: "Email" },
-  { key: "booking", icon: "📅", name: "Booking" },
-  { key: "crm", icon: "👥", name: "CRM" },
-  { key: "invoicing", icon: "🧾", name: "Invoicing" },
-  { key: "payments", icon: "💳", name: "Payments" },
-  { key: "social", icon: "📱", name: "Social" },
-  { key: "automation", icon: "⚙️", name: "Automation" },
-  { key: "managed_it", icon: "🖥️", name: "Managed IT" },
-  { key: "domain", icon: "🔗", name: "Domain" },
+  { key: "website", icon: "", name: "Website" },
+  { key: "gbp", icon: "", name: "Google Listing" },
+  { key: "voice_ai", icon: "", name: "Voice AI" },
+  { key: "email", icon: "", name: "Email" },
+  { key: "booking", icon: "", name: "Booking" },
+  { key: "crm", icon: "", name: "CRM" },
+  { key: "invoicing", icon: "", name: "Invoicing" },
+  { key: "payments", icon: "", name: "Payments" },
+  { key: "social", icon: "", name: "Social" },
+  { key: "automation", icon: "", name: "Automation" },
+  { key: "managed_it", icon: "", name: "Managed IT" },
+  { key: "domain", icon: "", name: "Domain" },
 ];
 
 const STATUS_CYCLE = ["not_started", "in_progress", "complete", "blocked", "na"];
@@ -417,7 +417,7 @@ function populateBuildTracker() {
   grid.innerHTML = BUILD_SERVICES.map(s => {
     const status = buildData[`${s.key}_status`] || "not_started";
     return `<div class="build-item ${status}" id="bi-${s.key}" onclick="cycleBuildStatus('${s.key}')">
-      <div class="build-item-icon">${s.icon}</div>
+      
       <div class="build-item-name">${s.name}</div>
       <div class="build-item-status">${statusLabel[status]}</div>
     </div>`;
@@ -588,3 +588,4 @@ function closeIntake() {
 </script>
 </body>
 </html>
+
