@@ -1,1 +1,590 @@
-<!-- client.html -->
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client — Untrained Momentum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+    .tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+    .tab.active { color: var(--red); border-bottom-color: var(--red); }
+    .tab-panel { display: none; } .tab-panel.active { display: block; }
+    .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 16px; }
+    .info-label { color: var(--mid); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; width: 140px; flex-shrink: 0; padding-top: 2px; }
+    .info-value { color: var(--dark); flex: 1; }
+    .info-value input, .info-value select, .info-value textarea { width: 100%; padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; font-size: 13px; font-family: "DM Sans", sans-serif; background: transparent; color: var(--dark); }
+    .info-value input:hover, .info-value select:hover, .info-value textarea:hover { border-color: var(--border); background: var(--light); }
+    .info-value input:focus, .info-value select:focus, .info-value textarea:focus { outline: none; border-color: var(--red); background: #fff; }
+
+    /* SIDE PANEL */
+    .side-panel { position: fixed; top: 0; right: -520px; width: 520px; height: 100vh; background: #fff; box-shadow: -4px 0 32px rgba(0,0,0,.15); z-index: 500; transition: right .3s ease; display: flex; flex-direction: column; }
+    .side-panel.open { right: 0; }
+    .side-panel-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .side-panel-title { font-family: "Playfair Display", serif; font-size: 18px; font-weight: 700; }
+    .side-panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 499; display: none; }
+    .panel-overlay.show { display: block; }
+
+    .section-heading { font-size: 11px; font-weight: 700; color: var(--mid); text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .section-heading:first-child { margin-top: 0; }
+
+    .build-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .build-item { background: var(--light); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: all .15s; }
+    .build-item:hover { border-color: var(--red); }
+    .build-item.complete { background: #f0fff4; border-color: #c0e8cc; }
+    .build-item.in_progress { background: #fffdf0; border-color: #f0e0a0; }
+    .build-item.blocked { background: #fff0f0; border-color: #f8d0d5; }
+    .build-item.na { opacity: .4; }
+    .build-item-icon { font-size: 20px; margin-bottom: 4px; }
+    .build-item-name { font-size: 11px; font-weight: 600; }
+    .build-item-status { font-size: 9px; color: var(--mid); margin-top: 2px; text-transform: uppercase; }
+
+    .cred-block { background: var(--light); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 12px; font-family: "DM Mono", monospace; }
+    .cred-label { font-size: 10px; font-weight: 600; color: var(--mid); text-transform: uppercase; margin-bottom: 4px; font-family: "DM Sans", sans-serif; }
+    .portal-link { font-size: 12px; color: var(--red); word-break: break-all; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-logo">Untrained <span>Momentum</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a class="nav-link sidebar-link" href="dashboard.html"><span class="icon">⊞</span> Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html"><span class="icon">◎</span> Clients</a>
+      <a class="nav-link sidebar-link admin-only" href="tickets.html"><span class="icon">◈</span> Tickets</a>
+    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html"><span class="icon">◷</span> John's View</a></div>
+  </div>
+  <div class="main-content">
+    <div id="loading" class="loading">Loading client...</div>
+    <div id="client-content" style="display:none">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div>
+          <div style="font-size:12px;color:var(--mid);margin-bottom:4px"><a href="clients.html" style="color:var(--mid)">Clients</a> &rsaquo; <span id="h-biz"></span></div>
+          <div class="page-title" id="h-title"></div>
+          <div style="display:flex;gap:8px;margin-top:8px" id="h-badges"></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="openIntake()">&#9776; Intake Form</button>
+          <button class="btn btn-primary" onclick="saveClient()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('overview')">Overview</div>
+        <div class="tab" onclick="switchTab('build')">Build Tracker</div>
+        <div class="tab admin-only" onclick="switchTab('credentials')">Credentials</div>
+        <div class="tab" onclick="switchTab('tickets')">Tickets</div>
+        <div class="tab" onclick="switchTab('portal')">Client Portal</div>
+      </div>
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="detail-grid">
+          <div>
+            <div class="card mb-16">
+              <div class="card-title">Business Info</div>
+              <div class="info-row"><div class="info-label">Business Name</div><div class="info-value"><input id="f-biz" type="text"></div></div>
+              <div class="info-row"><div class="info-label">Owner Name</div><div class="info-value"><input id="f-owner" type="text"></div></div>
+              <div class="info-row"><div class="info-label">Phone</div><div class="info-value"><input id="f-phone" type="tel"></div></div>
+              <div class="info-row"><div class="info-label">Email</div><div class="info-value"><input id="f-email" type="email"></div></div>
+              <div class="info-row"><div class="info-label">Location</div><div class="info-value"><input id="f-location" type="text"></div></div>
+              <div class="info-row"><div class="info-label">Year Est.</div><div class="info-value"><input id="f-year" type="text"></div></div>
+              <div class="info-row"><div class="info-label">Legal Name</div><div class="info-value"><input id="f-legal" type="text"></div></div>
+              <div class="info-row"><div class="info-label">EIN</div><div class="info-value"><input id="f-ein" type="text"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Notes</div>
+              <textarea id="f-notes" class="form-control" rows="5" placeholder="Internal notes about this client..."></textarea>
+            </div>
+          </div>
+          <div>
+            <div class="card mb-16">
+              <div class="card-title">Deal</div>
+              <div class="info-row"><div class="info-label">Status</div><div class="info-value">
+                <select id="f-status">
+                  <option value="prospect">Prospect</option><option value="pitched">Pitched</option>
+                  <option value="presented">Presented</option><option value="objection">Objection</option>
+                  <option value="closed">Closed</option><option value="deposited">Deposited</option>
+                  <option value="building">Building</option><option value="delivered">Delivered</option>
+                  <option value="ongoing">Ongoing</option><option value="upsell">Upsell</option><option value="churned">Churned</option>
+                </select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Deal Type</div><div class="info-value">
+                <select id="f-deal">
+                  <option value="">—</option><option value="upfront">Upfront</option>
+                  <option value="revshare">Revenue Share</option><option value="equity">Equity</option>
+                </select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Tier</div><div class="info-value">
+                <select id="f-tier"><option value="">—</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Deal Amount</div><div class="info-value"><input id="f-amount" type="number" placeholder="0.00"></div></div>
+              <div class="info-row"><div class="info-label">Deposit</div><div class="info-value"><input id="f-deposit" type="number" placeholder="0.00"></div></div>
+              <div class="info-row"><div class="info-label">Deposit Method</div><div class="info-value">
+                <select id="f-deposit-method"><option value="">—</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Rev Share %</div><div class="info-value"><input id="f-revpct" type="number" placeholder="e.g. 12"></div></div>
+              <div class="info-row"><div class="info-label">Equity %</div><div class="info-value"><input id="f-eqpct" type="number" placeholder="e.g. 7"></div></div>
+              <div class="info-row"><div class="info-label">Baseline Rev</div><div class="info-value"><input id="f-baseline" type="number" placeholder="Monthly $"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Assignment</div>
+              <div class="info-row"><div class="info-label">Deadline</div><div class="info-value"><input id="f-deadline" type="date"></div></div>
+              <div class="info-row"><div class="info-label">Deadline Reason</div><div class="info-value"><input id="f-deadline-reason" type="text" placeholder="e.g. Grand opening"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUILD TRACKER TAB -->
+      <div class="tab-panel" id="tab-build">
+        <div class="card mb-16">
+          <div class="card-title">Build Progress</div>
+          <div class="build-grid" id="build-grid"></div>
+        </div>
+        <div class="card mb-16">
+          <div class="card-title">Blockers & Timeline</div>
+          <div class="info-row"><div class="info-label">Overall Blocker</div><div class="info-value"><input id="b-blocker" type="text" placeholder="What's blocking progress?"></div></div>
+          <div class="info-row"><div class="info-label">Waiting On Client</div><div class="info-value"><input id="b-waiting" type="text" placeholder="What do we need from them?"></div></div>
+          <div class="info-row"><div class="info-label">Est. Completion</div><div class="info-value"><input id="b-est" type="date"></div></div>
+          <div class="info-row"><div class="info-label">Build Notes</div><div class="info-value"><textarea id="b-notes" rows="3" placeholder="Internal build notes..."></textarea></div></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn btn-primary" onclick="saveBuild()">Save Build Tracker</button>
+        </div>
+      </div>
+
+      <!-- CREDENTIALS TAB -->
+      <div class="tab-panel" id="tab-credentials">
+        <div class="card">
+          <div class="card-title">Stored Credentials</div>
+          <p class="text-sm text-mid mb-16">All credentials are stored encrypted. Never share this page.</p>
+          <div id="creds-content"></div>
+          <button class="btn btn-secondary mt-16" onclick="saveIntakeData()">Save All Credentials</button>
+        </div>
+      </div>
+
+      <!-- TICKETS TAB -->
+      <div class="tab-panel" id="tab-tickets">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Client Tickets</div></div>
+          <table>
+            <thead><tr><th>Subject</th><th>Priority</th><th>Status</th><th>Received</th></tr></thead>
+            <tbody id="client-tickets-body"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PORTAL TAB -->
+      <div class="tab-panel" id="tab-portal">
+        <div class="card">
+          <div class="card-title">Client Portal Link</div>
+          <p class="text-sm text-mid mb-16">Share this link with the client so they can view their build progress and submit tickets.</p>
+          <div id="portal-link-display"></div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-secondary" onclick="copyPortalLink()">Copy Link</button>
+            <a id="portal-open-btn" href="#" target="_blank" class="btn btn-primary">Open Portal</a>
+          </div>
+          <hr class="divider">
+          <div class="card-title">Send Portal Link to Client</div>
+          <button class="btn btn-secondary" onclick="sendPortalEmail()">Email Portal Link to Client</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- INTAKE SIDE PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="closeIntake()"></div>
+<div class="side-panel" id="intake-panel">
+  <div class="side-panel-header">
+    <div class="side-panel-title">Intake Form</div>
+    <button class="modal-close" onclick="closeIntake()">&#10005;</button>
+  </div>
+  <div class="side-panel-body">
+
+    <div class="section-heading">Website</div>
+    <div class="form-group"><label class="form-label">Has Website?</label>
+      <select class="form-control" id="i-has-website"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+    <div class="form-group"><label class="form-label">Website URL</label><input class="form-control" id="i-website-url" type="url" placeholder="https://"></div>
+    <div class="form-group"><label class="form-label">Platform</label><input class="form-control" id="i-website-platform" placeholder="Wix, WordPress, etc."></div>
+    <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="i-website-user"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-control" id="i-website-pass" type="password"></div>
+    <div class="form-group"><label class="form-label">Wants Hosted Site? ($75/mo)</label>
+      <select class="form-control" id="i-wants-hosting"><option value="">Unknown</option><option value="true">Yes</option><option value="false">No</option></select></div>
+
+    <div class="section-heading">Domain</div>
+    <div class="form-group"><label class="form-label">Domain Name</label><input class="form-control" id="i-domain" placeholder="business.com"></div>
+    <div class="form-group"><label class="form-label">Registrar</label><input class="form-control" id="i-registrar" placeholder="GoDaddy, Namecheap, etc."></div>
+    <div class="form-group"><label class="form-label">Registrar Username</label><input class="form-control" id="i-reg-user"></div>
+    <div class="form-group"><label class="form-label">Registrar Password</label><input class="form-control" id="i-reg-pass" type="password"></div>
+
+    <div class="section-heading">Google Business Profile</div>
+    <div class="form-group"><label class="form-label">Has GBP?</label>
+      <select class="form-control" id="i-has-gbp"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+    <div class="form-group"><label class="form-label">GBP Email</label><input class="form-control" id="i-gbp-email" type="email"></div>
+    <div class="form-group"><label class="form-label">GBP Password</label><input class="form-control" id="i-gbp-pass" type="password"></div>
+
+    <div class="section-heading">Business Email</div>
+    <div class="form-group"><label class="form-label">Has Business Email?</label>
+      <select class="form-control" id="i-has-email"><option value="">Unknown</option><option value="true">Yes</option><option value="false">No</option></select></div>
+    <div class="form-group"><label class="form-label">Email Address</label><input class="form-control" id="i-biz-email" type="email"></div>
+    <div class="form-group"><label class="form-label">Platform</label><input class="form-control" id="i-email-platform" placeholder="Google Workspace, etc."></div>
+    <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="i-email-user"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-control" id="i-email-pass" type="password"></div>
+
+    <div class="section-heading">Voice AI</div>
+    <div class="form-group"><label class="form-label">Voice AI Included?</label>
+      <select class="form-control" id="i-voice-ai"><option value="">No</option><option value="true">Yes</option></select></div>
+    <div class="form-group"><label class="form-label">Business Phone</label><input class="form-control" id="i-biz-phone" type="tel"></div>
+    <div class="form-group"><label class="form-label">Carrier</label><input class="form-control" id="i-carrier" placeholder="AT&T, Verizon, etc."></div>
+    <div class="form-group"><label class="form-label">Business Hours</label><input class="form-control" id="i-hours" placeholder="Mon-Fri 8am-5pm"></div>
+    <div class="form-group"><label class="form-label">AI Greeting</label><input class="form-control" id="i-greeting" placeholder="Thank you for calling..."></div>
+    <div class="form-group"><label class="form-label">Customer FAQs</label><textarea class="form-control" id="i-faqs" rows="4" placeholder="Top questions customers ask..."></textarea></div>
+
+    <div class="section-heading">Booking System</div>
+    <div class="form-group"><label class="form-label">Has Booking System?</label>
+      <select class="form-control" id="i-has-booking"><option value="">No</option><option value="true">Yes</option></select></div>
+    <div class="form-group"><label class="form-label">Platform</label><input class="form-control" id="i-booking-platform" placeholder="Calendly, Booksy, etc."></div>
+    <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="i-booking-user"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-control" id="i-booking-pass" type="password"></div>
+
+    <div class="section-heading">Payments</div>
+    <div class="form-group"><label class="form-label">Wants Online Payments?</label>
+      <select class="form-control" id="i-wants-payments"><option value="">Unknown</option><option value="true">Yes</option><option value="false">No</option></select></div>
+    <div class="form-group"><label class="form-label">Processor</label><input class="form-control" id="i-processor" placeholder="Stripe, Square, PayPal"></div>
+    <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="i-processor-user"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-control" id="i-processor-pass" type="password"></div>
+
+    <div class="section-heading">Social Media</div>
+    <div class="form-group"><label class="form-label">Platforms & Credentials</label>
+      <textarea class="form-control" id="i-social-creds" rows="5" placeholder="Facebook: user / pass&#10;Instagram: user / pass&#10;etc."></textarea></div>
+    <div class="form-group"><label class="form-label">Publer / Scheduling Link</label><input class="form-control" id="i-social-link" placeholder="https://publer.io/..."></div>
+
+    <div class="section-heading">Brand</div>
+    <div class="form-group"><label class="form-label">Has Logo?</label>
+      <select class="form-control" id="i-has-logo"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No — we create</option></select></div>
+    <div class="form-group"><label class="form-label">Brand Colors</label><input class="form-control" id="i-colors" placeholder="#C0152A, #1A1A1A"></div>
+    <div class="form-group"><label class="form-label">Brand Vibe</label><input class="form-control" id="i-vibe" placeholder="Professional, Local, Bold..."></div>
+    <div class="form-group"><label class="form-label">Photo Status</label>
+      <select class="form-control" id="i-photos"><option value="">Unknown</option><option value="yes">Has photos</option><option value="no">No photos</option><option value="some">Some photos</option></select></div>
+
+    <div class="section-heading">Managed IT</div>
+    <div class="form-group"><label class="form-label">Managed IT Included?</label>
+      <select class="form-control" id="i-managed-it"><option value="">No</option><option value="true">Yes</option></select></div>
+    <div class="form-group"><label class="form-label">Device Count (PC/Mac/Other)</label><input class="form-control" id="i-devices" placeholder="e.g. 3 PCs, 1 printer"></div>
+    <div class="form-group"><label class="form-label">Key Software</label><textarea class="form-control" id="i-software" rows="2" placeholder="QuickBooks, etc."></textarea></div>
+
+    <div class="section-heading">Build Priorities</div>
+    <div class="form-group"><label class="form-label">Pain Point (Why They Said Yes)</label><textarea class="form-control" id="i-pain" rows="3"></textarea></div>
+    <div class="form-group"><label class="form-label">Must Haves</label><textarea class="form-control" id="i-must-have" rows="2"></textarea></div>
+    <div class="form-group"><label class="form-label">Must NOT Have</label><textarea class="form-control" id="i-must-not" rows="2"></textarea></div>
+    <div class="form-group"><label class="form-label">Manual Tasks to Automate</label><textarea class="form-control" id="i-manual" rows="3" placeholder="What do they do manually that we can automate?"></textarea></div>
+
+    <div class="section-heading">John's Notes</div>
+    <div class="form-group"><label class="form-label">Personality / Sensitivities</label><textarea class="form-control" id="i-johns-notes" rows="3" placeholder="Detail-oriented, prefers texts, spouse involved..."></textarea></div>
+    <div class="form-group"><label class="form-label">Best Time to Reach</label><input class="form-control" id="i-best-time" placeholder="Mornings before 9am"></div>
+    <div class="form-group"><label class="form-label">Preferred Contact Method</label>
+      <select class="form-control" id="i-comm-pref"><option value="">Unknown</option><option value="call">Call</option><option value="text">Text</option><option value="email">Email</option></select></div>
+
+    <div style="padding: 16px 0">
+      <button class="btn btn-primary" style="width:100%" onclick="saveIntakeData()">Save Intake Data</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="shared.js"></script>
+<script>
+const clientId = new URLSearchParams(window.location.search).get("id");
+let clientData = {};
+let buildData = {};
+let intakeData = {};
+
+const BUILD_SERVICES = [
+  { key: "website", icon: "🌐", name: "Website" },
+  { key: "gbp", icon: "📍", name: "Google Listing" },
+  { key: "voice_ai", icon: "📞", name: "Voice AI" },
+  { key: "email", icon: "✉️", name: "Email" },
+  { key: "booking", icon: "📅", name: "Booking" },
+  { key: "crm", icon: "👥", name: "CRM" },
+  { key: "invoicing", icon: "🧾", name: "Invoicing" },
+  { key: "payments", icon: "💳", name: "Payments" },
+  { key: "social", icon: "📱", name: "Social" },
+  { key: "automation", icon: "⚙️", name: "Automation" },
+  { key: "managed_it", icon: "🖥️", name: "Managed IT" },
+  { key: "domain", icon: "🔗", name: "Domain" },
+];
+
+const STATUS_CYCLE = ["not_started", "in_progress", "complete", "blocked", "na"];
+
+(async () => {
+  if (!clientId) { window.location.href = "clients.html"; return; }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.replace("index.html"); return; }
+  let profile = { id: session.user.id, email: session.user.email, role: "admin", full_name: "Jen" };
+  try { const { data } = await sb.from("profiles").select("*").eq("id", session.user.id).single(); if (data) profile = data; } catch(e) {}
+  renderNav(profile);
+
+  // Load data
+  const [clientRes, buildRes, intakeRes] = await Promise.all([
+    sb.from("clients").select("*").eq("id", clientId).single(),
+    sb.from("build_tracker").select("*").eq("client_id", clientId).single(),
+    sb.from("intake_data").select("*").eq("client_id", clientId).single(),
+  ]);
+
+  clientData = clientRes.data || {};
+  buildData = buildRes.data || {};
+  intakeData = intakeRes.data || {};
+
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("client-content").style.display = "block";
+
+  populateClientFields();
+  populateBuildTracker();
+  populateIntakeFields();
+  loadTickets();
+  setupPortal();
+
+  if (!profile.role || profile.role !== "admin") {
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+  }
+})();
+
+function populateClientFields() {
+  document.getElementById("h-biz").textContent = clientData.business_name || "Client";
+  document.getElementById("h-title").textContent = clientData.business_name || "Client";
+  document.getElementById("h-badges").innerHTML = `${statusBadge(clientData.status)} ${tierBadge(clientData.tier)} ${dealBadge(clientData.deal_type)}`;
+
+  const fields = { "f-biz": "business_name", "f-owner": "owner_name", "f-phone": "phone", "f-email": "email", "f-location": "location", "f-year": "year_established", "f-legal": "legal_name", "f-ein": "ein", "f-status": "status", "f-deal": "deal_type", "f-tier": "tier", "f-amount": "deal_amount", "f-deposit": "deposit_collected", "f-deposit-method": "deposit_method", "f-revpct": "revenue_share_pct", "f-eqpct": "equity_pct", "f-baseline": "baseline_revenue", "f-notes": "johns_notes" };
+  for (const [id, key] of Object.entries(fields)) {
+    const el = document.getElementById(id);
+    if (el && clientData[key] != null) el.value = clientData[key];
+  }
+  if (clientData.hard_deadline) document.getElementById("f-deadline").value = clientData.hard_deadline.split("T")[0];
+  if (clientData.deadline_reason) document.getElementById("f-deadline-reason").value = clientData.deadline_reason;
+}
+
+async function saveClient() {
+  const updates = {
+    business_name: document.getElementById("f-biz").value,
+    owner_name: document.getElementById("f-owner").value,
+    phone: document.getElementById("f-phone").value || null,
+    email: document.getElementById("f-email").value || null,
+    location: document.getElementById("f-location").value || null,
+    year_established: document.getElementById("f-year").value || null,
+    legal_name: document.getElementById("f-legal").value || null,
+    ein: document.getElementById("f-ein").value || null,
+    status: document.getElementById("f-status").value,
+    deal_type: document.getElementById("f-deal").value || null,
+    tier: document.getElementById("f-tier").value || null,
+    deal_amount: document.getElementById("f-amount").value || null,
+    deposit_collected: document.getElementById("f-deposit").value || null,
+    deposit_method: document.getElementById("f-deposit-method").value || null,
+    revenue_share_pct: document.getElementById("f-revpct").value || null,
+    equity_pct: document.getElementById("f-eqpct").value || null,
+    baseline_revenue: document.getElementById("f-baseline").value || null,
+    hard_deadline: document.getElementById("f-deadline").value || null,
+    deadline_reason: document.getElementById("f-deadline-reason").value || null,
+  };
+
+  const { error } = await sb.from("clients").update(updates).eq("id", clientId);
+  if (error) { toast("Error saving: " + error.message, "error"); return; }
+  toast("Client saved!", "success");
+  document.getElementById("h-title").textContent = updates.business_name;
+  document.getElementById("h-badges").innerHTML = `${statusBadge(updates.status)} ${tierBadge(updates.tier)} ${dealBadge(updates.deal_type)}`;
+}
+
+function populateBuildTracker() {
+  const grid = document.getElementById("build-grid");
+  const statusLabel = { not_started: "Not Started", in_progress: "In Progress", complete: "Complete", blocked: "Blocked", na: "N/A" };
+  grid.innerHTML = BUILD_SERVICES.map(s => {
+    const status = buildData[`${s.key}_status`] || "not_started";
+    return `<div class="build-item ${status}" id="bi-${s.key}" onclick="cycleBuildStatus('${s.key}')">
+      <div class="build-item-icon">${s.icon}</div>
+      <div class="build-item-name">${s.name}</div>
+      <div class="build-item-status">${statusLabel[status]}</div>
+    </div>`;
+  }).join("");
+
+  if (buildData.overall_blocker) document.getElementById("b-blocker").value = buildData.overall_blocker;
+  if (buildData.waiting_on_client) document.getElementById("b-waiting").value = buildData.waiting_on_client;
+  if (buildData.estimated_completion) document.getElementById("b-est").value = buildData.estimated_completion.split("T")[0];
+  if (buildData.build_notes) document.getElementById("b-notes").value = buildData.build_notes;
+}
+
+function cycleBuildStatus(key) {
+  const current = buildData[`${key}_status`] || "not_started";
+  const idx = STATUS_CYCLE.indexOf(current);
+  const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+  buildData[`${key}_status`] = next;
+  if (next === "complete") buildData[`${key}_completed_at`] = new Date().toISOString();
+  populateBuildTracker();
+  document.getElementById("b-blocker").value = buildData.overall_blocker || "";
+  document.getElementById("b-waiting").value = buildData.waiting_on_client || "";
+}
+
+async function saveBuild() {
+  const updates = {
+    ...BUILD_SERVICES.reduce((acc, s) => { acc[`${s.key}_status`] = buildData[`${s.key}_status`] || "not_started"; if (buildData[`${s.key}_completed_at`]) acc[`${s.key}_completed_at`] = buildData[`${s.key}_completed_at`]; return acc; }, {}),
+    overall_blocker: document.getElementById("b-blocker").value || null,
+    waiting_on_client: document.getElementById("b-waiting").value || null,
+    estimated_completion: document.getElementById("b-est").value || null,
+    build_notes: document.getElementById("b-notes").value || null,
+  };
+
+  const { error } = await sb.from("build_tracker").upsert({ client_id: clientId, ...updates });
+  if (error) { toast("Error saving build tracker: " + error.message, "error"); return; }
+  toast("Build tracker saved!", "success");
+}
+
+function populateIntakeFields() {
+  const map = {
+    "i-has-website": "has_website", "i-website-url": "website_url", "i-website-platform": "website_platform",
+    "i-website-user": "website_username", "i-website-pass": "website_password",
+    "i-wants-hosting": "wants_hosted_website", "i-domain": "domain_name", "i-registrar": "domain_registrar",
+    "i-reg-user": "domain_username", "i-reg-pass": "domain_password",
+    "i-has-gbp": "has_gbp", "i-gbp-email": "gbp_email", "i-gbp-pass": "gbp_password",
+    "i-has-email": "has_biz_email", "i-biz-email": "biz_email_address", "i-email-platform": "email_platform",
+    "i-email-user": "email_username", "i-email-pass": "email_password",
+    "i-voice-ai": "voice_ai_included", "i-biz-phone": "biz_phone_number", "i-carrier": "phone_carrier",
+    "i-hours": "business_hours", "i-greeting": "ai_greeting", "i-faqs": "customer_faqs",
+    "i-has-booking": "has_booking_system", "i-booking-platform": "booking_platform",
+    "i-booking-user": "booking_username", "i-booking-pass": "booking_password",
+    "i-wants-payments": "wants_online_payments", "i-processor": "payment_processor",
+    "i-processor-user": "processor_username", "i-processor-pass": "processor_password",
+    "i-social-creds": "social_credentials", "i-social-link": "social_management",
+    "i-has-logo": "has_logo", "i-colors": "brand_colors", "i-vibe": "brand_vibe",
+    "i-photos": "photos_available", "i-managed-it": "managed_it_included", "i-devices": "other_devices",
+    "i-software": "key_software", "i-pain": "pain_point", "i-must-have": "must_haves",
+    "i-must-not": "must_not_haves", "i-manual": "manual_tasks",
+    "i-johns-notes": "johns_notes", "i-best-time": "best_time", "i-comm-pref": "comm_preference"
+  };
+  for (const [id, key] of Object.entries(map)) {
+    const el = document.getElementById(id);
+    if (el && intakeData[key] != null) el.value = intakeData[key];
+  }
+}
+
+async function saveIntakeData() {
+  const data = {
+    client_id: clientId,
+    has_website: document.getElementById("i-has-website").value || null,
+    website_url: document.getElementById("i-website-url").value || null,
+    website_platform: document.getElementById("i-website-platform").value || null,
+    website_username: document.getElementById("i-website-user").value || null,
+    website_password: document.getElementById("i-website-pass").value || null,
+    wants_hosted_website: document.getElementById("i-wants-hosting").value === "true" ? true : document.getElementById("i-wants-hosting").value === "false" ? false : null,
+    domain_name: document.getElementById("i-domain").value || null,
+    domain_registrar: document.getElementById("i-registrar").value || null,
+    domain_username: document.getElementById("i-reg-user").value || null,
+    domain_password: document.getElementById("i-reg-pass").value || null,
+    has_gbp: document.getElementById("i-has-gbp").value || null,
+    gbp_email: document.getElementById("i-gbp-email").value || null,
+    gbp_password: document.getElementById("i-gbp-pass").value || null,
+    has_biz_email: document.getElementById("i-has-email").value === "true",
+    biz_email_address: document.getElementById("i-biz-email").value || null,
+    email_platform: document.getElementById("i-email-platform").value || null,
+    email_username: document.getElementById("i-email-user").value || null,
+    email_password: document.getElementById("i-email-pass").value || null,
+    voice_ai_included: document.getElementById("i-voice-ai").value === "true",
+    biz_phone_number: document.getElementById("i-biz-phone").value || null,
+    phone_carrier: document.getElementById("i-carrier").value || null,
+    business_hours: document.getElementById("i-hours").value || null,
+    ai_greeting: document.getElementById("i-greeting").value || null,
+    customer_faqs: document.getElementById("i-faqs").value || null,
+    has_booking_system: document.getElementById("i-has-booking").value === "true",
+    booking_platform: document.getElementById("i-booking-platform").value || null,
+    booking_username: document.getElementById("i-booking-user").value || null,
+    booking_password: document.getElementById("i-booking-pass").value || null,
+    wants_online_payments: document.getElementById("i-wants-payments").value === "true" ? true : null,
+    payment_processor: document.getElementById("i-processor").value || null,
+    processor_username: document.getElementById("i-processor-user").value || null,
+    processor_password: document.getElementById("i-processor-pass").value || null,
+    social_credentials: document.getElementById("i-social-creds").value || null,
+    social_management: document.getElementById("i-social-link").value || null,
+    has_logo: document.getElementById("i-has-logo").value || null,
+    brand_colors: document.getElementById("i-colors").value || null,
+    brand_vibe: document.getElementById("i-vibe").value || null,
+    photos_available: document.getElementById("i-photos").value || null,
+    managed_it_included: document.getElementById("i-managed-it").value === "true",
+    other_devices: document.getElementById("i-devices").value || null,
+    key_software: document.getElementById("i-software").value || null,
+    pain_point: document.getElementById("i-pain").value || null,
+    must_haves: document.getElementById("i-must-have").value || null,
+    must_not_haves: document.getElementById("i-must-not").value || null,
+    manual_tasks: document.getElementById("i-manual").value || null,
+    johns_notes: document.getElementById("i-johns-notes").value || null,
+    best_time: document.getElementById("i-best-time").value || null,
+    comm_preference: document.getElementById("i-comm-pref").value || null,
+  };
+
+  const { error } = await sb.from("intake_data").upsert(data);
+  if (error) { toast("Error saving intake: " + error.message, "error"); return; }
+  toast("Intake data saved!", "success");
+  closeIntake();
+}
+
+async function loadTickets() {
+  const { data } = await sb.from("tickets").select("*").eq("client_id", clientId).order("created_at", { ascending: false });
+  const body = document.getElementById("client-tickets-body");
+  const tickets = data || [];
+  if (tickets.length === 0) { body.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="empty-state-text">No tickets from this client</div></div></td></tr>'; return; }
+  body.innerHTML = tickets.map(t => `<tr><td>${t.subject}</td><td><span class="badge badge-${t.priority}">${t.priority}</span></td><td><span class="badge badge-${t.status}">${t.status.replace("_"," ")}</span></td><td class="text-sm text-mid">${fmtDate(t.created_at)}</td></tr>`).join("");
+}
+
+function setupPortal() {
+  const portalUrl = `${CONFIG.APP_URL}/portal.html?token=${clientData.portal_token}`;
+  document.getElementById("portal-link-display").innerHTML = `<div class="portal-link">${portalUrl}</div>`;
+  document.getElementById("portal-open-btn").href = portalUrl;
+}
+
+function copyPortalLink() {
+  const url = `${CONFIG.APP_URL}/portal.html?token=${clientData.portal_token}`;
+  navigator.clipboard.writeText(url);
+  toast("Portal link copied!", "success");
+}
+
+function sendPortalEmail() {
+  const url = `${CONFIG.APP_URL}/portal.html?token=${clientData.portal_token}`;
+  const subject = encodeURIComponent(`Your progress portal — ${clientData.business_name}`);
+  const body = encodeURIComponent(`Hi ${clientData.owner_name?.split(" ")[0] || "there"},\n\nHere's your live progress link:\n${url}\n\nYou can view your build status and submit any questions directly from that page.\n\n— Jen\nUntrained Momentum`);
+  window.open(`mailto:${clientData.email || ""}?subject=${subject}&body=${body}`);
+}
+
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    const names = ["overview","build","credentials","tickets","portal"];
+    t.classList.toggle("active", names[i] === name);
+  });
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById(`tab-${name}`).classList.add("active");
+}
+
+function openIntake() {
+  document.getElementById("intake-panel").classList.add("open");
+  document.getElementById("panel-overlay").classList.add("show");
+}
+function closeIntake() {
+  document.getElementById("intake-panel").classList.remove("open");
+  document.getElementById("panel-overlay").classList.remove("show");
+}
+</script>
+</body>
+</html>
