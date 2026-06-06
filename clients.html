@@ -23,8 +23,14 @@
       <a class="nav-link sidebar-link active admin-only" href="clients.html">Clients</a>
       <a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets</a>
     </div>
-    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html">John's View</a></div>
-    <div class="sidebar-section admin-only"><div class="sidebar-label">Finance</div><a class="nav-link sidebar-link" href="subscriptions.html">Subscriptions</a></div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div>
+      <a class="nav-link sidebar-link" href="john.html">John's View</a>
+    </div>
+    <div class="sidebar-section admin-only">
+      <div class="sidebar-label">Admin</div>
+      <a class="nav-link sidebar-link" href="import.html">Import Prospects</a>
+      <a class="nav-link sidebar-link" href="subscriptions.html">Subscriptions</a>
+    </div>
   </div>
 
   <div class="main-content">
@@ -33,7 +39,11 @@
         <div class="page-title">Clients</div>
         <div class="page-subtitle" id="count-label">Loading&hellip;</div>
       </div>
-      <button class="btn btn-primary" onclick="document.getElementById('new-modal').style.display='flex'">+ New Client</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary admin-only" onclick="exportCSV()">Export CSV</button>
+        <a href="import.html" class="btn btn-secondary admin-only">Import</a>
+        <button class="btn btn-primary" onclick="document.getElementById('new-modal').style.display='flex'">+ New Client</button>
+      </div>
     </div>
 
     <div class="filter-bar mb-16">
@@ -59,9 +69,9 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Business</th><th>Owner</th><th>Location</th><th>Tier</th><th>Deal</th><th>Status</th><th>Deposit</th><th>Added</th></tr>
+          <tr><th>Business</th><th>Owner</th><th>Location</th><th>Category</th><th>Tier</th><th>Deal</th><th>Status</th><th>Deposit</th><th>Added</th></tr>
         </thead>
-        <tbody id="clients-body"><tr><td colspan="8" class="loading">Loading&hellip;</td></tr></tbody>
+        <tbody id="clients-body"><tr><td colspan="9" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -77,28 +87,26 @@
         <div class="form-group"><label class="form-label">Owner Name</label><input class="form-control" id="n-owner" placeholder="Pete Johnson"></div>
       </div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="n-phone" type="tel" placeholder="(231) 555-0100"></div>
-        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="n-email" type="email" placeholder="pete@business.com"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="n-phone" type="tel"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="n-email" type="email"></div>
       </div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Location</label><input class="form-control" id="n-loc" placeholder="Big Rapids, MI"></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-control" id="n-loc"></div>
+        <div class="form-group"><label class="form-label">Category</label><input class="form-control" id="n-cat" placeholder="Plumber, HVAC&hellip;"></div>
+      </div>
+      <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Tier</label>
           <select class="form-control" id="n-tier"><option value="">--</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
-        </div>
-      </div>
-      <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Deal Type</label>
-          <select class="form-control" id="n-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select>
         </div>
         <div class="form-group"><label class="form-label">Status</label>
           <select class="form-control" id="n-status"><option value="prospect">Prospect</option><option value="pitched">Pitched</option><option value="deposited">Deposited</option></select>
         </div>
       </div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Deposit ($)</label><input class="form-control" id="n-deposit" type="number" placeholder="0.00"></div>
-        <div class="form-group"><label class="form-label">Deposit Method</label>
-          <select class="form-control" id="n-deposit-method"><option value="">--</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
+        <div class="form-group"><label class="form-label">Deal Type</label>
+          <select class="form-control" id="n-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select>
         </div>
+        <div class="form-group"><label class="form-label">Deposit ($)</label><input class="form-control" id="n-deposit" type="number"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -122,6 +130,8 @@ let all = [], currentProfile;
   currentProfile = p;
   renderNav(p);
 
+  if (p.role !== 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+
   const q = p.role === 'admin'
     ? sb.from('clients').select('*').order('created_at', { ascending: false })
     : sb.from('clients').select('*').eq('assigned_to', p.id).order('created_at', { ascending: false });
@@ -132,15 +142,15 @@ let all = [], currentProfile;
   if (new URLSearchParams(window.location.search).get('new') === '1') {
     document.getElementById('new-modal').style.display = 'flex';
   }
-  const statusFilter = new URLSearchParams(window.location.search).get('status');
-  if (statusFilter) { document.getElementById('f-status').value = statusFilter; filter(); }
+  const sf = new URLSearchParams(window.location.search).get('status');
+  if (sf) { document.getElementById('f-status').value = sf; filter(); }
 })();
 
 function render(clients) {
   document.getElementById('count-label').textContent = `${clients.length} client${clients.length !== 1 ? 's' : ''}`;
   const b = document.getElementById('clients-body');
   if (!clients.length) {
-    b.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-text">No clients found</div></div></td></tr>';
+    b.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No clients found</div></div></td></tr>';
     return;
   }
   b.innerHTML = clients.map(c => `
@@ -148,6 +158,7 @@ function render(clients) {
       <td><strong>${c.business_name}</strong></td>
       <td class="text-sm">${c.owner_name||'&mdash;'}</td>
       <td class="text-sm text-mid">${c.location||'&mdash;'}</td>
+      <td class="text-sm text-mid">${c.category||'&mdash;'}</td>
       <td>${tierBadge(c.tier)}</td>
       <td>${dealBadge(c.deal_type)}</td>
       <td>${statusBadge(c.status)}</td>
@@ -162,7 +173,7 @@ function filter() {
   const fd = document.getElementById('f-deal').value;
   const ft = document.getElementById('f-tier').value;
   render(all.filter(c =>
-    (!q  || [c.business_name,c.owner_name,c.location].some(v => v?.toLowerCase().includes(q))) &&
+    (!q  || [c.business_name,c.owner_name,c.location,c.category].some(v=>v?.toLowerCase().includes(q))) &&
     (!fs || c.status === fs) &&
     (!fd || c.deal_type === fd) &&
     (!ft || String(c.tier) === ft)
@@ -172,23 +183,51 @@ function filter() {
 async function saveNew() {
   const g = id => document.getElementById(id)?.value.trim() || null;
   const { data, error } = await sb.from('clients').insert({
-    business_name:    g('n-biz') || 'New Client',
-    owner_name:       g('n-owner'),
-    phone:            g('n-phone'),
-    email:            g('n-email'),
-    location:         g('n-loc'),
-    tier:             g('n-tier'),
-    deal_type:        g('n-deal'),
-    status:           document.getElementById('n-status').value || 'prospect',
-    deposit_collected:g('n-deposit'),
-    deposit_method:   g('n-deposit-method'),
-    assigned_to:      currentProfile.id,
+    business_name: g('n-biz') || 'New Client',
+    owner_name:    g('n-owner'),
+    phone:         g('n-phone'),
+    email:         g('n-email'),
+    location:      g('n-loc'),
+    category:      g('n-cat'),
+    tier:          g('n-tier'),
+    deal_type:     g('n-deal'),
+    status:        document.getElementById('n-status').value || 'prospect',
+    deposit_collected: g('n-deposit'),
+    assigned_to:   currentProfile.id,
   }).select().single();
 
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   await sb.from('build_tracker').insert({ client_id: data.id });
   toast('Client created!');
   window.location.href = 'client.html?id=' + data.id;
+}
+
+function exportCSV() {
+  const cols = [
+    'business_name','owner_name','phone','email','location','category',
+    'tier','status','deal_type','deal_amount','deposit_collected',
+    'google_rating','review_count','review_insights','has_website',
+    'website_platform','gbp_status','est_annual_revenue','pitch_angle',
+    'call_priority','business_hours','year_established','created_at'
+  ];
+  const headers = cols.map(c => c.replace(/_/g,' ').toUpperCase());
+  const rows = all.map(c => cols.map(col => {
+    const v = c[col];
+    if (v == null) return '';
+    const s = String(v).replace(/"/g,'""');
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+  }));
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), {
+    href: url,
+    download: `untrained-momentum-clients-${new Date().toISOString().split('T')[0]}.csv`
+  });
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${all.length} clients`);
 }
 </script>
 </body>
