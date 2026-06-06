@@ -1,1 +1,208 @@
-<!-- portal.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Progress — Untrained Momentum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--red:#C0152A;--dark:#0f0f0f;--mid:#666;--border:#e8e8e8;--light:#f7f7f5;--green:#1a7a3a;--gold:#b8860b}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--light);color:var(--dark);-webkit-font-smoothing:antialiased}
+    .header{background:var(--dark);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--red)}
+    .logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff}.logo span{color:var(--red)}
+    .header-sub{font-size:12px;color:#888}
+    .container{max-width:720px;margin:0 auto;padding:32px 20px}
+    .welcome{background:#fff;border-radius:12px;padding:28px;margin-bottom:24px;border:1px solid var(--border)}
+    .welcome-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:8px}
+    .welcome-sub{font-size:14px;color:var(--mid);line-height:1.6}
+    .section-title{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+    .build-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px}
+    .build-item{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;transition:all .15s}
+    .build-item.complete{background:#f0fff4;border-color:#c0e8cc}
+    .build-item.in_progress{background:#fffdf0;border-color:#f0e0a0}
+    .build-item.blocked{background:#fff0f0;border-color:#f8d0d5}
+    .build-icon{font-size:24px;margin-bottom:6px}
+    .build-name{font-size:12px;font-weight:600;color:var(--dark)}
+    .build-status{font-size:10px;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+    .build-item.complete .build-status{color:var(--green)}
+    .build-item.in_progress .build-status{color:var(--gold)}
+    .build-item.blocked .build-status{color:var(--red)}
+    .build-item.not_started .build-status{color:#ccc}
+    .ticket-form{background:#fff;border-radius:12px;padding:28px;border:1px solid var(--border)}
+    .form-group{margin-bottom:16px}
+    .label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+    .input,.textarea,.select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--dark);background:var(--light)}
+    .input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--red)}
+    .textarea{resize:vertical;min-height:100px}
+    .btn{display:inline-block;padding:11px 24px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;width:100%}
+    .btn:hover{background:#960f20}
+    .success-msg{background:#f0fff4;border:1px solid #c0e8cc;color:var(--green);padding:14px;border-radius:6px;font-size:13px;text-align:center;display:none}
+    .success-msg.show{display:block}
+    .not-found{text-align:center;padding:80px 20px;color:var(--mid)}
+    .loading{text-align:center;padding:80px 20px;color:var(--mid)}
+    .footer{text-align:center;padding:24px;font-size:12px;color:var(--mid)}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Untrained <span>Momentum</span></div>
+  <div class="header-sub">Client Portal</div>
+</div>
+
+<div class="container" id="content">
+  <div class="loading">Loading your progress...</div>
+</div>
+
+<div class="footer">Untrained Momentum, LLC · Big Rapids, MI · untrainedmomentum.com</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script>
+const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+const token = new URLSearchParams(window.location.search).get('token');
+let clientData = null;
+
+(async () => {
+  if (!token) { showNotFound(); return; }
+
+  // Look up client by portal token
+  const { data: client, error } = await sb
+    .from('clients')
+    .select('*')
+    .eq('portal_token', token)
+    .eq('portal_active', true)
+    .single();
+
+  if (error || !client) { showNotFound(); return; }
+  clientData = client;
+
+  // Load build tracker
+  const { data: build } = await sb
+    .from('build_tracker')
+    .select('*')
+    .eq('client_id', client.id)
+    .single();
+
+  renderPortal(client, build);
+})();
+
+function renderPortal(client, build) {
+  const services = [
+    { key: 'website', icon: '🌐', name: 'Website' },
+    { key: 'gbp', icon: '📍', name: 'Google Listing' },
+    { key: 'voice_ai', icon: '📞', name: 'Voice AI' },
+    { key: 'email', icon: '✉️', name: 'Business Email' },
+    { key: 'booking', icon: '📅', name: 'Booking System' },
+    { key: 'invoicing', icon: '💳', name: 'Invoicing' },
+    { key: 'payments', icon: '💰', name: 'Online Payments' },
+    { key: 'social', icon: '📱', name: 'Social Media' },
+    { key: 'automation', icon: '⚙️', name: 'Automation' },
+    { key: 'managed_it', icon: '🖥️', name: 'Managed IT' },
+  ];
+
+  const statusLabel = { not_started: 'Not Started', in_progress: 'In Progress', complete: '✓ Complete', blocked: 'Needs Info', na: 'Not Included' };
+
+  // Only show services that are included (not 'na' or null)
+  const included = build ? services.filter(s => build[`${s.key}_status`] && build[`${s.key}_status`] !== 'na') : [];
+  const completed = included.filter(s => build[`${s.key}_status`] === 'complete').length;
+
+  document.getElementById('content').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-title">Hi, ${client.owner_name?.split(' ')[0] || 'there'} 👋</div>
+      <div class="welcome-sub">
+        Here's a live look at what we're building for <strong>${client.business_name}</strong>.<br>
+        ${included.length > 0 ? `${completed} of ${included.length} services complete.` : 'Your build is getting started soon.'}
+        ${build?.waiting_on_client ? `<br><br><strong style="color:var(--red)">⚠️ We need something from you:</strong> ${build.waiting_on_client}` : ''}
+      </div>
+    </div>
+
+    ${included.length > 0 ? `
+    <div class="section-title">Your Build Progress</div>
+    <div class="build-grid">
+      ${included.map(s => {
+        const status = build[`${s.key}_status`] || 'not_started';
+        return `<div class="build-item ${status}">
+          <div class="build-icon">${s.icon}</div>
+          <div class="build-name">${s.name}</div>
+          <div class="build-status">${statusLabel[status] || status}</div>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+
+    <div class="section-title">Have a question or issue?</div>
+    <div class="ticket-form">
+      <div class="success-msg" id="success-msg">✓ Your message has been sent. We'll be in touch soon.</div>
+      <div id="ticket-form-inner">
+        <div class="form-group">
+          <label class="label">Your Name</label>
+          <input class="input" id="t-name" value="${client.owner_name || ''}" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="label">Your Email</label>
+          <input class="input" type="email" id="t-email" value="${client.email || ''}" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="label">Subject</label>
+          <input class="input" id="t-subject" placeholder="What's this about?">
+        </div>
+        <div class="form-group">
+          <label class="label">Priority</label>
+          <select class="select" id="t-priority">
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent</option>
+            <option value="low">Low — no rush</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label">Message</label>
+          <textarea class="textarea" id="t-desc" placeholder="Describe your question or issue..."></textarea>
+        </div>
+        <button class="btn" onclick="submitTicket()">Send Message</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitTicket() {
+  const name = document.getElementById('t-name')?.value.trim();
+  const email = document.getElementById('t-email')?.value.trim();
+  const subject = document.getElementById('t-subject')?.value.trim();
+  const desc = document.getElementById('t-desc')?.value.trim();
+  const priority = document.getElementById('t-priority')?.value;
+
+  if (!name || !subject || !desc) {
+    alert('Please fill in your name, subject, and message.');
+    return;
+  }
+
+  const { error } = await sb.from('tickets').insert({
+    client_id: clientData.id,
+    submitted_by_name: name,
+    submitted_by_email: email || null,
+    subject,
+    description: desc,
+    priority: priority || 'normal',
+    status: 'open'
+  });
+
+  if (error) { alert('Something went wrong. Please try again.'); return; }
+
+  document.getElementById('success-msg').classList.add('show');
+  document.getElementById('ticket-form-inner').style.opacity = '0.4';
+  document.getElementById('ticket-form-inner').style.pointerEvents = 'none';
+}
+
+function showNotFound() {
+  document.getElementById('content').innerHTML = `
+    <div class="not-found">
+      <div style="font-size:40px;margin-bottom:16px">🔍</div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px">Portal not found</div>
+      <div style="font-size:14px">This link may have expired or is invalid. Contact us at info@untrainedmomentum.com</div>
+    </div>`;
+}
+</script>
+</body>
+</html>

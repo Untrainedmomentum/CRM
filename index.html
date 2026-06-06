@@ -3,341 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Untrained Momentum — CRM Login</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <title>Untrained Momentum — Sign In</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --red: #C0152A;
-      --red-dark: #960f20;
-      --dark: #0f0f0f;
-      --dark-2: #1a1a1a;
-      --mid: #666;
-      --border: #e8e8e8;
-      --light: #f7f7f5;
-      --white: #ffffff;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: var(--dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Background pattern */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 60px,
-          rgba(192,21,42,0.04) 60px,
-          rgba(192,21,42,0.04) 61px
-        ),
-        repeating-linear-gradient(
-          90deg,
-          transparent,
-          transparent 60px,
-          rgba(192,21,42,0.04) 60px,
-          rgba(192,21,42,0.04) 61px
-        );
-      pointer-events: none;
-    }
-
-    .login-wrap {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      max-width: 900px;
-      width: 100%;
-      min-height: 560px;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-      position: relative;
-      z-index: 1;
-    }
-
-    /* LEFT PANEL */
-    .login-left {
-      background: var(--red);
-      padding: 48px 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-    }
-    .login-left::before {
-      content: '';
-      position: absolute;
-      bottom: -60px;
-      right: -60px;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.15);
-    }
-    .login-left::after {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: -40px;
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-    }
-    .brand {
-      position: relative;
-      z-index: 1;
-    }
-    .brand-name {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: white;
-      letter-spacing: 0.3px;
-      line-height: 1.2;
-    }
-    .brand-sub {
-      font-size: 11px;
-      color: rgba(255,255,255,0.6);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-    .login-left-bottom {
-      position: relative;
-      z-index: 1;
-    }
-    .login-tagline {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: white;
-      line-height: 1.3;
-      margin-bottom: 16px;
-    }
-    .login-tagline em {
-      font-style: italic;
-      color: rgba(255,255,255,0.7);
-    }
-    .login-desc {
-      font-size: 13px;
-      color: rgba(255,255,255,0.65);
-      line-height: 1.6;
-    }
-
-    /* RIGHT PANEL */
-    .login-right {
-      background: var(--white);
-      padding: 48px 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .login-title {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--dark);
-      margin-bottom: 6px;
-    }
-    .login-subtitle {
-      font-size: 13px;
-      color: var(--mid);
-      margin-bottom: 32px;
-    }
-
-    .form-group { margin-bottom: 18px; }
-    .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--dark);
-      margin-bottom: 6px;
-      letter-spacing: 0.2px;
-    }
-    .form-control {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--dark);
-      background: var(--light);
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .form-control:focus {
-      outline: none;
-      border-color: var(--red);
-      background: white;
-      box-shadow: 0 0 0 3px rgba(192,21,42,0.08);
-    }
-    .form-control::placeholder { color: #bbb; }
-
-    .btn-login {
-      width: 100%;
-      padding: 13px;
-      background: var(--red);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      margin-top: 8px;
-      letter-spacing: 0.3px;
-    }
-    .btn-login:hover { background: var(--red-dark); }
-    .btn-login:active { transform: scale(0.99); }
-    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .alert-error {
-      padding: 10px 14px;
-      background: #fff0f0;
-      border: 1px solid #f8d0d5;
-      border-radius: 6px;
-      font-size: 13px;
-      color: var(--red);
-      margin-bottom: 16px;
-      display: none;
-    }
-    .alert-error.show { display: block; }
-
-    .login-footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: var(--mid);
-      text-align: center;
-    }
-
-    @media (max-width: 640px) {
-      .login-wrap { grid-template-columns: 1fr; min-height: auto; }
-      .login-left { padding: 32px 28px; min-height: 180px; }
-      .login-tagline { font-size: 22px; }
-      .login-right { padding: 32px 28px; }
-    }
+    :root { --red:#C0152A; --red-dark:#960f20; --dark:#0f0f0f; --mid:#666; --border:#e8e8e8; --light:#f7f7f5; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:'DM Sans',sans-serif;background:var(--dark);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;-webkit-font-smoothing:antialiased}
+    body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(192,21,42,.04) 60px,rgba(192,21,42,.04) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(192,21,42,.04) 60px,rgba(192,21,42,.04) 61px);pointer-events:none}
+    .wrap{display:grid;grid-template-columns:1fr 1fr;max-width:900px;width:100%;min-height:560px;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5);position:relative;z-index:1}
+    .left{background:var(--red);padding:48px 40px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+    .left::before{content:'';position:absolute;bottom:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(0,0,0,.15)}
+    .left::after{content:'';position:absolute;top:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+    .brand{position:relative;z-index:1}
+    .brand-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px}
+    .brand-sub{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+    .tagline{position:relative;z-index:1;font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:16px}
+    .tagline em{font-style:italic;color:rgba(255,255,255,.7)}
+    .desc{position:relative;z-index:1;font-size:13px;color:rgba(255,255,255,.65);line-height:1.6}
+    .right{background:#fff;padding:48px 40px;display:flex;flex-direction:column;justify-content:center}
+    .title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);margin-bottom:6px}
+    .subtitle{font-size:13px;color:var(--mid);margin-bottom:32px}
+    .field{margin-bottom:18px}
+    .label{display:block;font-size:12px;font-weight:600;color:var(--dark);margin-bottom:6px}
+    .input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--dark);background:var(--light);transition:border-color .15s,box-shadow .15s}
+    .input:focus{outline:none;border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(192,21,42,.08)}
+    .input::placeholder{color:#bbb}
+    .btn{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;margin-top:8px}
+    .btn:hover{background:var(--red-dark)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .error{padding:10px 14px;background:#fff0f0;border:1px solid #f8d0d5;border-radius:6px;font-size:13px;color:var(--red);margin-bottom:16px;display:none}
+    .error.show{display:block}
+    .footer{margin-top:24px;font-size:12px;color:var(--mid);text-align:center}
+    @media(max-width:640px){.wrap{grid-template-columns:1fr}.left{min-height:180px;padding:32px 28px}.right{padding:32px 28px}}
   </style>
 </head>
 <body>
-
-<div class="login-wrap">
-  <!-- LEFT -->
-  <div class="login-left">
+<div class="wrap">
+  <div class="left">
     <div class="brand">
       <div class="brand-name">Untrained Momentum</div>
       <div class="brand-sub">Client Operations Hub</div>
     </div>
-    <div class="login-left-bottom">
-      <div class="login-tagline">Built to move.<br><em>Built to last.</em></div>
-      <div class="login-desc">Manage clients, track builds, and grow the business — all in one place.</div>
+    <div>
+      <div class="tagline">Built to move.<br><em>Built to last.</em></div>
+      <div class="desc">Manage clients, track builds, and grow the business — all in one place.</div>
     </div>
   </div>
-
-  <!-- RIGHT -->
-  <div class="login-right">
-    <div class="login-title">Welcome back</div>
-    <div class="login-subtitle">Sign in to your account</div>
-
-    <div class="alert-error" id="errorMsg"></div>
-
-    <div class="form-group">
-      <label class="form-label">Email address</label>
-      <input
-        type="email"
-        class="form-control"
-        id="email"
-        placeholder="you@example.com"
-        autocomplete="email"
-        autofocus
-      >
+  <div class="right">
+    <div class="title">Welcome back</div>
+    <div class="subtitle">Sign in to your account</div>
+    <div class="error" id="err"></div>
+    <div class="field">
+      <label class="label">Email address</label>
+      <input class="input" type="email" id="email" placeholder="you@example.com" autocomplete="email" autofocus>
     </div>
-
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input
-        type="password"
-        class="form-control"
-        id="password"
-        placeholder="••••••••"
-        autocomplete="current-password"
-      >
+    <div class="field">
+      <label class="label">Password</label>
+      <input class="input" type="password" id="pw" placeholder="••••••••" autocomplete="current-password">
     </div>
-
-    <button class="btn-login" id="loginBtn" onclick="handleLogin()">
-      Sign In
-    </button>
-
-    <div class="login-footer">
-      Untrained Momentum, LLC &nbsp;·&nbsp; Big Rapids, MI
-    </div>
+    <button class="btn" id="btn" onclick="login()">Sign In</button>
+    <div class="footer">Untrained Momentum, LLC &nbsp;·&nbsp; Big Rapids, MI</div>
   </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script>
- const _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-async function checkSession() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (session) await routeUser(session.user.id);
-}
+// Check if already logged in — but only redirect if we have a valid profile
+// Use history.replaceState so back button doesn't trigger re-login
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return; // not logged in, show login form
+  // Already logged in — go straight to dashboard
+  // Dashboard will handle role checking
+  history.replaceState(null, '', 'index.html');
+  window.location.replace('dashboard.html');
+})();
 
-async function routeUser(userId) {
-  for (let i = 0; i < 3; i++) {
-    const { data: profile, error } = await _supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-    console.log('Profile attempt', i+1, profile, error);
-    if (profile?.role === 'admin') { window.location.href = 'dashboard.html'; return; }
-    if (profile?.role === 'sales') { window.location.href = 'john.html'; return; }
-    await new Promise(r => setTimeout(r, 600));
-  }
-  window.location.href = 'john.html';
-}
-
-async function handleLogin() {
+async function login() {
   const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const btn = document.getElementById('loginBtn');
-  const errEl = document.getElementById('errorMsg');
-  if (!email || !password) { showError('Please enter your email and password.'); return; }
+  const pw = document.getElementById('pw').value;
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+
+  err.classList.remove('show');
+
+  if (!email || !pw) {
+    err.textContent = 'Please enter your email and password.';
+    err.classList.add('show');
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Signing in...';
-  errEl.classList.remove('show');
+
   try {
-    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
-    await routeUser(data.user.id);
-  } catch (err) {
-    showError('Invalid email or password. Please try again.');
+    // Use replaceState so back button goes to login fresh, not stuck on "Signing in"
+    history.replaceState(null, '', 'index.html');
+    window.location.replace('dashboard.html');
+  } catch (e) {
+    err.textContent = 'Invalid email or password.';
+    err.classList.add('show');
     btn.disabled = false;
     btn.textContent = 'Sign In';
   }
 }
 
-function showError(msg) {
-  const el = document.getElementById('errorMsg');
-  el.textContent = msg;
-  el.classList.add('show');
-}
-
-document.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
-checkSession();
+document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>

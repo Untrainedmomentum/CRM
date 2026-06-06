@@ -1,1 +1,160 @@
-<!-- tickets.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tickets — Untrained Momentum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-logo">Untrained <span>Momentum</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a class="nav-link sidebar-link" href="dashboard.html"><span class="icon">⊞</span> Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html"><span class="icon">◎</span> Clients</a>
+      <a class="nav-link sidebar-link active admin-only" href="tickets.html"><span class="icon">◈</span> Tickets</a>
+    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html"><span class="icon">◷</span> John's View</a></div>
+  </div>
+  <div class="main-content">
+    <div class="page-header">
+      <div><div class="page-title">Tickets</div><div class="page-subtitle" id="count-label">Loading...</div></div>
+    </div>
+    <div class="filter-bar mb-16">
+      <select class="filter-select" id="filter-status" onchange="loadTickets()">
+        <option value="open">Open</option>
+        <option value="in_progress">In Progress</option>
+        <option value="resolved">Resolved</option>
+        <option value="">All</option>
+      </select>
+      <select class="filter-select" id="filter-priority" onchange="loadTickets()">
+        <option value="">All Priorities</option>
+        <option value="urgent">Urgent</option>
+        <option value="normal">Normal</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Client</th><th>Submitted By</th><th>Subject</th><th>Priority</th><th>Status</th><th>Received</th><th>Action</th></tr></thead>
+        <tbody id="tickets-body"><tr><td colspan="7" class="loading">Loading tickets...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TICKET DETAIL MODAL -->
+<div class="modal-overlay" id="ticket-modal" style="display:none">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title" id="tm-subject">Ticket</div>
+      <button class="modal-close" onclick="document.getElementById('ticket-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div><div class="text-xs text-mid" style="margin-bottom:4px">CLIENT</div><div id="tm-client" class="text-bold"></div></div>
+        <div><div class="text-xs text-mid" style="margin-bottom:4px">SUBMITTED BY</div><div id="tm-by"></div></div>
+        <div><div class="text-xs text-mid" style="margin-bottom:4px">PRIORITY</div><div id="tm-priority"></div></div>
+        <div><div class="text-xs text-mid" style="margin-bottom:4px">STATUS</div><div id="tm-status"></div></div>
+      </div>
+      <div style="margin-bottom:16px"><div class="text-xs text-mid" style="margin-bottom:6px">DESCRIPTION</div><div id="tm-desc" style="font-size:14px;line-height:1.6;background:var(--light);padding:12px;border-radius:6px"></div></div>
+      <div class="form-group"><label class="form-label">Update Status</label>
+        <select class="form-control" id="tm-new-status">
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Resolution Notes</label><textarea class="form-control" id="tm-resolution" placeholder="What did you do to resolve this?"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('ticket-modal').style.display='none'">Close</button>
+      <button class="btn btn-primary" onclick="updateTicket()">Update Ticket</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="shared.js"></script>
+<script>
+let currentTicketId = null;
+
+(async () => {
+  const profile = await requireAuth('admin');
+  if (!profile) return;
+  renderNav(profile);
+  await loadTickets();
+})();
+
+async function loadTickets() {
+  const status = document.getElementById('filter-status').value;
+  const priority = document.getElementById('filter-priority').value;
+
+  let query = sb.from('tickets').select('*,clients(business_name)').order('created_at', { ascending: false });
+  if (status) query = query.eq('status', status);
+  if (priority) query = query.eq('priority', priority);
+
+  const { data, error } = await query;
+  if (error) { toast('Error loading tickets', 'error'); return; }
+
+  const tickets = data || [];
+  document.getElementById('count-label').textContent = `${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}`;
+
+  const body = document.getElementById('tickets-body');
+  if (tickets.length === 0) {
+    body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">◈</div><div class="empty-state-text">No tickets</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML = tickets.map(t => `
+    <tr>
+      <td>${t.clients?.business_name || '—'}</td>
+      <td class="text-sm">${t.submitted_by_name}</td>
+      <td>${t.subject}</td>
+      <td><span class="badge badge-${t.priority}">${t.priority}</span></td>
+      <td><span class="badge badge-${t.status === 'closed' ? 'closed-t' : t.status}">${t.status.replace('_',' ')}</span></td>
+      <td class="text-sm text-mid">${fmtDate(t.created_at)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="openTicket('${t.id}','${t.subject}','${t.clients?.business_name||''}','${t.submitted_by_name}','${t.priority}','${t.status}',\`${t.description}\`)">View</button></td>
+    </tr>`).join('');
+}
+
+function openTicket(id, subject, client, by, priority, status, desc) {
+  currentTicketId = id;
+  document.getElementById('tm-subject').textContent = subject;
+  document.getElementById('tm-client').textContent = client;
+  document.getElementById('tm-by').textContent = by;
+  document.getElementById('tm-priority').innerHTML = `<span class="badge badge-${priority}">${priority}</span>`;
+  document.getElementById('tm-status').innerHTML = `<span class="badge badge-${status}">${status}</span>`;
+  document.getElementById('tm-desc').textContent = desc;
+  document.getElementById('tm-new-status').value = status;
+  document.getElementById('tm-resolution').value = '';
+  document.getElementById('ticket-modal').style.display = 'flex';
+}
+
+async function updateTicket() {
+  if (!currentTicketId) return;
+  const newStatus = document.getElementById('tm-new-status').value;
+  const resolution = document.getElementById('tm-resolution').value;
+
+  const update = { status: newStatus, updated_at: new Date().toISOString() };
+  if (resolution) { update.resolution_notes = resolution; update.resolved_at = new Date().toISOString(); }
+
+  const { error } = await sb.from('tickets').update(update).eq('id', currentTicketId);
+  if (error) { toast('Error updating ticket', 'error'); return; }
+
+  toast('Ticket updated!', 'success');
+  document.getElementById('ticket-modal').style.display = 'none';
+  await loadTickets();
+}
+</script>
+</body>
+</html>
