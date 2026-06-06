@@ -291,66 +291,53 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script>
-  const _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+ const _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-  // If already logged in, redirect
-  async function checkSession() {
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (session) routeUser(session.user.id);
-  }
+async function checkSession() {
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (session) await routeUser(session.user.id);
+}
 
-  async function routeUser(userId) {
-    const { data: profile } = await _supabase
+async function routeUser(userId) {
+  for (let i = 0; i < 3; i++) {
+    const { data: profile, error } = await _supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
       .single();
-    if (profile?.role === 'admin') {
-      window.location.href = 'dashboard.html';
-    } else {
-      window.location.href = 'john.html';
-    }
+    console.log('Profile attempt', i+1, profile, error);
+    if (profile?.role === 'admin') { window.location.href = 'dashboard.html'; return; }
+    if (profile?.role === 'sales') { window.location.href = 'john.html'; return; }
+    await new Promise(r => setTimeout(r, 600));
   }
+  window.location.href = 'john.html';
+}
 
-  async function handleLogin() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const btn = document.getElementById('loginBtn');
-    const errEl = document.getElementById('errorMsg');
-
-    if (!email || !password) {
-      showError('Please enter your email and password.');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Signing in...';
-    errEl.classList.remove('show');
-
-    try {
-      const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      await routeUser(data.user.id);
-    } catch (err) {
-      showError('Invalid email or password. Please try again.');
-      btn.disabled = false;
-      btn.textContent = 'Sign In';
-    }
+async function handleLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('errorMsg');
+  if (!email || !password) { showError('Please enter your email and password.'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  errEl.classList.remove('show');
+  try {
+    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    await routeUser(data.user.id);
+  } catch (err) {
+    showError('Invalid email or password. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
   }
+}
 
-  function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg;
-    el.classList.add('show');
-  }
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
 
-  // Allow Enter key to submit
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleLogin();
-  });
-
-  checkSession();
-</script>
-
-</body>
-</html>
+document.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
+checkSession();
