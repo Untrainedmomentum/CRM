@@ -1,10 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clients — Untrained Momentum</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>Clients &mdash; Untrained Momentum</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,10 +12,7 @@
   <div class="topbar">
     <div class="topbar-logo">Untrained <span>Momentum</span></div>
     <div class="topbar-spacer"></div>
-    <div class="topbar-user">
-      <span class="nav-user-name" id="nav-name"></span>
-      <span class="nav-user-role" id="nav-role"></span>
-    </div>
+    <div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div>
     <button class="btn-logout" onclick="logout()">Sign Out</button>
   </div>
 
@@ -27,72 +23,45 @@
       <a class="nav-link sidebar-link active admin-only" href="clients.html">Clients</a>
       <a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets</a>
     </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">Sales</div>
-      <a class="nav-link sidebar-link" href="john.html">John's View</a>
-    </div>
-    <div class="sidebar-section admin-only">
-      <div class="sidebar-label">Finance</div>
-      <a class="nav-link sidebar-link" href="subscriptions.html">Subscriptions</a>
-    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html">John's View</a></div>
+    <div class="sidebar-section admin-only"><div class="sidebar-label">Finance</div><a class="nav-link sidebar-link" href="subscriptions.html">Subscriptions</a></div>
   </div>
 
   <div class="main-content">
     <div class="page-header">
       <div>
         <div class="page-title">Clients</div>
-        <div class="page-subtitle" id="count-label">Loading...</div>
+        <div class="page-subtitle" id="count-label">Loading&hellip;</div>
       </div>
-      <button class="btn btn-primary" onclick="openNewClient()">+ New Client</button>
+      <button class="btn btn-primary" onclick="document.getElementById('new-modal').style.display='flex'">+ New Client</button>
     </div>
 
-    <!-- FILTERS -->
     <div class="filter-bar mb-16">
-      <input class="search-input" id="search" type="text" placeholder="Search by name, owner, location..." oninput="filterClients()">
-      <select class="filter-select" id="filter-status" onchange="filterClients()">
+      <input class="search-input" id="search" type="text" placeholder="Search name, owner, location&hellip;" oninput="filter()">
+      <select class="filter-select" id="f-status" onchange="filter()">
         <option value="">All Statuses</option>
-        <option value="prospect">Prospect</option>
-        <option value="pitched">Pitched</option>
-        <option value="presented">Presented</option>
-        <option value="closed">Closed</option>
-        <option value="deposited">Deposited</option>
-        <option value="building">Building</option>
-        <option value="delivered">Delivered</option>
-        <option value="ongoing">Ongoing</option>
-        <option value="upsell">Upsell</option>
-        <option value="churned">Churned</option>
+        <option value="prospect">Prospect</option><option value="pitched">Pitched</option>
+        <option value="presented">Presented</option><option value="closed">Closed</option>
+        <option value="deposited">Deposited</option><option value="building">Building</option>
+        <option value="delivered">Delivered</option><option value="ongoing">Ongoing</option>
+        <option value="upsell">Upsell</option><option value="churned">Churned</option>
       </select>
-      <select class="filter-select" id="filter-deal" onchange="filterClients()">
-        <option value="">All Deal Types</option>
-        <option value="upfront">Upfront</option>
-        <option value="revshare">Revenue Share</option>
-        <option value="equity">Equity</option>
+      <select class="filter-select" id="f-deal" onchange="filter()">
+        <option value="">All Deals</option>
+        <option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option>
       </select>
-      <select class="filter-select" id="filter-tier" onchange="filterClients()">
+      <select class="filter-select" id="f-tier" onchange="filter()">
         <option value="">All Tiers</option>
-        <option value="1">Tier 1</option>
-        <option value="2">Tier 2</option>
-        <option value="3">Tier 3</option>
+        <option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option>
       </select>
     </div>
 
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
-            <th>Business</th>
-            <th>Owner</th>
-            <th>Location</th>
-            <th>Tier</th>
-            <th>Deal</th>
-            <th>Status</th>
-            <th>Deposit</th>
-            <th>Added</th>
-          </tr>
+          <tr><th>Business</th><th>Owner</th><th>Location</th><th>Tier</th><th>Deal</th><th>Status</th><th>Deposit</th><th>Added</th></tr>
         </thead>
-        <tbody id="clients-body">
-          <tr><td colspan="8" class="loading">Loading clients...</td></tr>
-        </tbody>
+        <tbody id="clients-body"><tr><td colspan="8" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -100,67 +69,41 @@
 
 <!-- NEW CLIENT MODAL -->
 <div class="modal-overlay" id="new-modal" style="display:none">
-  <div class="modal" style="max-width:640px">
-    <div class="modal-header">
-      <div class="modal-title">New Client</div>
-      <button class="modal-close" onclick="closeNewClient()">✕</button>
-    </div>
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><div class="modal-title">New Client</div><button class="modal-close" onclick="document.getElementById('new-modal').style.display='none'">&times;</button></div>
     <div class="modal-body">
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Business Name <span class="req">*</span></label><input class="form-control" id="n-biz" placeholder="Pete's Plumbing LLC"></div>
-        <div class="form-group"><label class="form-label">Owner Name <span class="req">*</span></label><input class="form-control" id="n-owner" placeholder="Pete Johnson"></div>
+        <div class="form-group"><label class="form-label">Business Name</label><input class="form-control" id="n-biz" placeholder="Pete's Plumbing LLC"></div>
+        <div class="form-group"><label class="form-label">Owner Name</label><input class="form-control" id="n-owner" placeholder="Pete Johnson"></div>
       </div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="n-phone" placeholder="(231) 555-0100"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="n-phone" type="tel" placeholder="(231) 555-0100"></div>
         <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="n-email" type="email" placeholder="pete@business.com"></div>
       </div>
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Location</label><input class="form-control" id="n-loc" placeholder="Big Rapids, MI"></div>
         <div class="form-group"><label class="form-label">Tier</label>
-          <select class="form-control" id="n-tier">
-            <option value="">Select tier</option>
-            <option value="1">Tier 1 — Call Today</option>
-            <option value="2">Tier 2 — This Week</option>
-            <option value="3">Tier 3 — This Month</option>
-          </select>
+          <select class="form-control" id="n-tier"><option value="">--</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
         </div>
       </div>
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Deal Type</label>
-          <select class="form-control" id="n-deal">
-            <option value="">Select type</option>
-            <option value="upfront">Pay Upfront</option>
-            <option value="revshare">Revenue Share</option>
-            <option value="equity">Equity</option>
-          </select>
+          <select class="form-control" id="n-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select>
         </div>
         <div class="form-group"><label class="form-label">Status</label>
-          <select class="form-control" id="n-status">
-            <option value="prospect">Prospect</option>
-            <option value="pitched">Pitched</option>
-            <option value="presented">Presented</option>
-            <option value="closed">Closed</option>
-            <option value="deposited">Deposited</option>
-          </select>
+          <select class="form-control" id="n-status"><option value="prospect">Prospect</option><option value="pitched">Pitched</option><option value="deposited">Deposited</option></select>
         </div>
       </div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Deposit Collected</label><input class="form-control" id="n-deposit" type="number" placeholder="0.00"></div>
+        <div class="form-group"><label class="form-label">Deposit ($)</label><input class="form-control" id="n-deposit" type="number" placeholder="0.00"></div>
         <div class="form-group"><label class="form-label">Deposit Method</label>
-          <select class="form-control" id="n-deposit-method">
-            <option value="">Select</option>
-            <option value="card">Card</option>
-            <option value="venmo">Venmo</option>
-            <option value="check">Check</option>
-            <option value="cash">Cash</option>
-          </select>
+          <select class="form-control" id="n-deposit-method"><option value="">--</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="n-notes" placeholder="Any initial notes about this client..."></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeNewClient()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNewClient()">Create Client</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('new-modal').style.display='none'">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNew()">Create Client</button>
     </div>
   </div>
 </div>
@@ -169,99 +112,84 @@
 <script src="assets/js/config.js"></script>
 <script src="shared.js"></script>
 <script>
-let allClients = [];
-let currentProfile = null;
+let all = [], currentProfile;
 
 (async () => {
-  const profile = await requireAuth('admin');
-  if (!profile) return;
-  currentProfile = profile;
-  renderNav(profile);
-  await loadClients();
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.replace('index.html'); return; }
+  let p = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' };
+  try { const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single(); if (data) p = data; } catch(e) {}
+  currentProfile = p;
+  renderNav(p);
 
-  // Check if ?new=1 in URL
-  if (new URLSearchParams(window.location.search).get('new') === '1') openNewClient();
+  const q = p.role === 'admin'
+    ? sb.from('clients').select('*').order('created_at', { ascending: false })
+    : sb.from('clients').select('*').eq('assigned_to', p.id).order('created_at', { ascending: false });
+  const { data } = await q;
+  all = data || [];
+  render(all);
+
+  if (new URLSearchParams(window.location.search).get('new') === '1') {
+    document.getElementById('new-modal').style.display = 'flex';
+  }
+  const statusFilter = new URLSearchParams(window.location.search).get('status');
+  if (statusFilter) { document.getElementById('f-status').value = statusFilter; filter(); }
 })();
 
-async function loadClients() {
-  const query = currentProfile.role === 'admin'
-    ? sb.from('clients').select('*').order('created_at', { ascending: false })
-    : sb.from('clients').select('*').eq('assigned_to', currentProfile.id).order('created_at', { ascending: false });
-
-  const { data, error } = await query;
-  if (error) { toast('Error loading clients', 'error'); return; }
-  allClients = data || [];
-  renderClients(allClients);
-}
-
-function renderClients(clients) {
+function render(clients) {
   document.getElementById('count-label').textContent = `${clients.length} client${clients.length !== 1 ? 's' : ''}`;
-  const body = document.getElementById('clients-body');
-  if (clients.length === 0) {
-    body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-text">No clients yet</div></div></td></tr>';
+  const b = document.getElementById('clients-body');
+  if (!clients.length) {
+    b.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-text">No clients found</div></div></td></tr>';
     return;
   }
-  body.innerHTML = clients.map(c => `
+  b.innerHTML = clients.map(c => `
     <tr onclick="window.location='client.html?id=${c.id}'">
       <td><strong>${c.business_name}</strong></td>
-      <td>${c.owner_name}</td>
-      <td class="text-sm text-mid">${c.location || '—'}</td>
+      <td class="text-sm">${c.owner_name||'&mdash;'}</td>
+      <td class="text-sm text-mid">${c.location||'&mdash;'}</td>
       <td>${tierBadge(c.tier)}</td>
       <td>${dealBadge(c.deal_type)}</td>
       <td>${statusBadge(c.status)}</td>
-      <td class="text-mono text-sm">${c.deposit_collected ? fmt$(c.deposit_collected) : '—'}</td>
+      <td class="text-mono text-sm">${c.deposit_collected ? fmt$(c.deposit_collected) : '&mdash;'}</td>
       <td class="text-sm text-mid">${fmtDate(c.created_at)}</td>
     </tr>`).join('');
 }
 
-function filterClients() {
-  const q = document.getElementById('search').value.toLowerCase();
-  const status = document.getElementById('filter-status').value;
-  const deal = document.getElementById('filter-deal').value;
-  const tier = document.getElementById('filter-tier').value;
-
-  const filtered = allClients.filter(c => {
-    const matchQ = !q || c.business_name?.toLowerCase().includes(q) || c.owner_name?.toLowerCase().includes(q) || c.location?.toLowerCase().includes(q);
-    const matchStatus = !status || c.status === status;
-    const matchDeal = !deal || c.deal_type === deal;
-    const matchTier = !tier || String(c.tier) === tier;
-    return matchQ && matchStatus && matchDeal && matchTier;
-  });
-  renderClients(filtered);
+function filter() {
+  const q  = document.getElementById('search').value.toLowerCase();
+  const fs = document.getElementById('f-status').value;
+  const fd = document.getElementById('f-deal').value;
+  const ft = document.getElementById('f-tier').value;
+  render(all.filter(c =>
+    (!q  || [c.business_name,c.owner_name,c.location].some(v => v?.toLowerCase().includes(q))) &&
+    (!fs || c.status === fs) &&
+    (!fd || c.deal_type === fd) &&
+    (!ft || String(c.tier) === ft)
+  ));
 }
 
-function openNewClient() { document.getElementById('new-modal').style.display = 'flex'; }
-function closeNewClient() { document.getElementById('new-modal').style.display = 'none'; }
-
-async function saveNewClient() {
-  const biz = document.getElementById('n-biz').value.trim();
-  const owner = document.getElementById('n-owner').value.trim();
-  if (!biz || !owner) { toast('Business name and owner are required', 'error'); return; }
-
+async function saveNew() {
+  const g = id => document.getElementById(id)?.value.trim() || null;
   const { data, error } = await sb.from('clients').insert({
-    business_name: biz,
-    owner_name: owner,
-    phone: document.getElementById('n-phone').value.trim() || null,
-    email: document.getElementById('n-email').value.trim() || null,
-    location: document.getElementById('n-loc').value.trim() || null,
-    tier: document.getElementById('n-tier').value || null,
-    deal_type: document.getElementById('n-deal').value || null,
-    status: document.getElementById('n-status').value || 'prospect',
-    deposit_collected: document.getElementById('n-deposit').value || null,
-    deposit_method: document.getElementById('n-deposit-method').value || null,
-    assigned_to: currentProfile.id
+    business_name:    g('n-biz') || 'New Client',
+    owner_name:       g('n-owner'),
+    phone:            g('n-phone'),
+    email:            g('n-email'),
+    location:         g('n-loc'),
+    tier:             g('n-tier'),
+    deal_type:        g('n-deal'),
+    status:           document.getElementById('n-status').value || 'prospect',
+    deposit_collected:g('n-deposit'),
+    deposit_method:   g('n-deposit-method'),
+    assigned_to:      currentProfile.id,
   }).select().single();
 
-  if (error) { toast('Error creating client: ' + error.message, 'error'); return; }
-
-  // Create build tracker record
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
   await sb.from('build_tracker').insert({ client_id: data.id });
-
-  toast('Client created!', 'success');
-  closeNewClient();
+  toast('Client created!');
   window.location.href = 'client.html?id=' + data.id;
 }
 </script>
 </body>
 </html>
-

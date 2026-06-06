@@ -1,93 +1,91 @@
-﻿const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+// shared.js — Untrained Momentum CRM
+// Single source of truth for auth, nav, utilities
 
+const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+// ── AUTH ──────────────────────────────────────────────────────
 async function requireAuth(requiredRole) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.replace('index.html'); return null; }
+
+  // Try profile fetch — fall back to session data if RLS blocks
+  let profile;
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.replace("index.html"); return null; }
+    const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    profile = data;
+  } catch(e) {}
 
-    const { data: profile, error } = await sb
-      .from("profiles").select("*").eq("id", session.user.id).single();
-
-    if (error || !profile) {
-      // Profile fetch failed — use session data as fallback so dashboard still loads
-      return { id: session.user.id, email: session.user.email, role: "admin", full_name: session.user.email };
-    }
-
-    if (requiredRole && profile.role !== requiredRole && profile.role !== "admin") {
-      window.location.replace("index.html"); return null;
-    }
-
-    return profile;
-  } catch(e) {
-    // Any error — redirect to login
-    window.location.replace("index.html"); return null;
+  if (!profile) {
+    profile = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' };
   }
+
+  if (requiredRole && profile.role !== requiredRole && profile.role !== 'admin') {
+    window.location.replace('index.html'); return null;
+  }
+
+  return profile;
 }
 
 async function logout() {
   await sb.auth.signOut();
-  window.location.replace("index.html");
+  window.location.replace('index.html');
 }
 
+// ── NAV ───────────────────────────────────────────────────────
 function renderNav(profile) {
-  const isAdmin = profile.role === "admin";
-  const nameEl = document.getElementById("nav-name");
-  const roleEl = document.getElementById("nav-role");
-  if (nameEl) nameEl.textContent = profile.full_name || profile.email;
-  if (roleEl) roleEl.textContent = profile.role;
-  if (!isAdmin) {
-    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+  const el = document.getElementById('nav-name');
+  const re = document.getElementById('nav-role');
+  if (el) el.textContent = profile.full_name || profile.email;
+  if (re) re.textContent = profile.role === 'admin' ? 'Admin' : 'Sales';
+
+  if (profile.role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
   }
-  const path = window.location.pathname.split("/").pop();
-  document.querySelectorAll(".nav-link").forEach(link => {
-    if (link.getAttribute("href") === path) link.classList.add("active");
+
+  const page = window.location.pathname.split('/').pop() || 'dashboard.html';
+  document.querySelectorAll('.nav-link').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === page);
   });
 }
 
-function toast(msg, type = "success") {
-  let container = document.getElementById("toast-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "toast-container";
-    container.style.cssText = "position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px";
-    document.body.appendChild(container);
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  let wrap = document.getElementById('_toasts');
+  if (!wrap) {
+    wrap = Object.assign(document.createElement('div'), { id: '_toasts' });
+    wrap.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none';
+    document.body.appendChild(wrap);
   }
-  const t = document.createElement("div");
-  const colors = { success: "#1a7a3a", error: "#C0152A", info: "#0f0f0f" };
-  t.style.cssText = `padding:12px 18px;border-radius:6px;font-size:13px;font-weight:500;font-family:"DM Sans",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.2);background:${colors[type]||colors.info};color:#fff;max-width:320px;animation:slideIn .2s ease`;
-  t.textContent = msg;
-  container.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
+  const bg = { success: '#1a7a3a', error: '#C0152A', info: '#1a1a1a' }[type] || '#1a1a1a';
+  const t = Object.assign(document.createElement('div'), { textContent: msg });
+  t.style.cssText = `background:${bg};color:#fff;padding:11px 18px;border-radius:6px;font-size:13px;font-weight:500;font-family:"DM Sans",sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.25);opacity:0;transform:translateX(20px);transition:all .2s ease`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(0)'; });
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; setTimeout(() => t.remove(), 200); }, 3200);
 }
 
-function fmt$(n) {
-  if (!n) return "—";
-  return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
+// ── FORMATTERS ────────────────────────────────────────────────
+const fmt$ = n => n ? '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—';
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+const fmtPct = n => n ? n + '%' : '—';
 
-function fmtDate(d) {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
+const STATUS_LABELS = {
+  prospect:'Prospect', pitched:'Pitched', presented:'Presented', objection:'Objection',
+  closed:'Closed', deposited:'Deposited', building:'Building', delivered:'Delivered',
+  ongoing:'Ongoing', upsell:'Upsell', churned:'Churned'
+};
+const DEAL_LABELS = { upfront:'Upfront', revshare:'Rev Share', equity:'Equity' };
 
-function fmtStatus(s) {
-  const map = { prospect:"Prospect", pitched:"Pitched", presented:"Presented", objection:"Objection", closed:"Closed", deposited:"Deposited", building:"Building", delivered:"Delivered", ongoing:"Ongoing", upsell:"Upsell", churned:"Churned" };
-  return map[s] || s;
-}
+const statusBadge = s => `<span class="badge badge-${s||'prospect'}">${STATUS_LABELS[s]||s||'—'}</span>`;
+const tierBadge   = t => t ? `<span class="badge badge-tier${t}">Tier ${t}</span>` : '—';
+const dealBadge   = d => d ? `<span class="badge badge-${d}">${DEAL_LABELS[d]||d}</span>` : '—';
 
-function statusBadge(s) { return `<span class="badge badge-${s}">${fmtStatus(s)}</span>`; }
-function tierBadge(t) { return t ? `<span class="badge badge-tier${t}">Tier ${t}</span>` : "—"; }
-function dealBadge(d) {
-  const map = { upfront: "Upfront", revshare: "Rev Share", equity: "Equity" };
-  return d ? `<span class="badge badge-${d}">${map[d]||d}</span>` : "—";
-}
 function buildDot(status) {
-  const colors = { not_started:"#ccc", in_progress:"#b8860b", complete:"#1a7a3a", blocked:"#C0152A", na:"#eee" };
-  const c = colors[status] || "#ccc";
-  return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:5px"></span>`;
+  const c = { not_started:'#d0d0d0', in_progress:'#b8860b', complete:'#1a7a3a', blocked:'#C0152A', na:'#eeeeee' }[status] || '#d0d0d0';
+  return `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};margin-right:6px;flex-shrink:0"></span>`;
 }
 
-const style = document.createElement("style");
-style.textContent = "@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}";
-document.head.appendChild(style);
-
+// Inject animation keyframes once
+const _s = document.createElement('style');
+_s.textContent = '@keyframes _fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
+document.head.appendChild(_s);

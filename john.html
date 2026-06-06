@@ -1,20 +1,21 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales View — Untrained Momentum</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>Sales View &mdash; Untrained Momentum</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app-shell">
+
   <div class="topbar">
     <div class="topbar-logo">Untrained <span>Momentum</span></div>
     <div class="topbar-spacer"></div>
     <div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div>
     <button class="btn-logout" onclick="logout()">Sign Out</button>
   </div>
+
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Main</div>
@@ -23,63 +24,72 @@
       <a class="nav-link sidebar-link active" href="john.html">Sales View</a>
     </div>
   </div>
+
   <div class="main-content">
     <div class="page-header">
       <div>
         <div class="page-title">Sales View</div>
         <div class="page-subtitle">Prospects, follow-ups, and commission</div>
       </div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-secondary" onclick="openAddProspect()">+ Add Prospect</button>
-        <button class="btn btn-primary" onclick="openLogCall()">+ Log Activity</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="openModal('prospect-modal')">+ Add Prospect</button>
+        <button class="btn btn-primary" onclick="openLog(null)">+ Log Activity</button>
       </div>
     </div>
 
-    <div class="stats-grid mb-24">
-      <div class="stat-card"><div class="stat-label">Prospects</div><div class="stat-value" id="s-prospects">—</div></div>
-      <div class="stat-card green"><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">—</div></div>
-      <div class="stat-card gold"><div class="stat-label">My Commission</div><div class="stat-value" id="s-commission">—</div><div class="stat-sub">20% of deposits</div></div>
-      <div class="stat-card blue"><div class="stat-label">Follow-Ups Due</div><div class="stat-value" id="s-followups">—</div></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Prospects</div><div class="stat-value" id="s-prospects">&mdash;</div><div class="stat-sub">Active in pipeline</div></div>
+      <div class="stat-card green"><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">&mdash;</div><div class="stat-sub">Deposits collected</div></div>
+      <div class="stat-card gold"><div class="stat-label">Commission Earned</div><div class="stat-value" id="s-commission">&mdash;</div><div class="stat-sub">20% of all deposits</div></div>
+      <div class="stat-card blue"><div class="stat-label">Follow-Ups Due</div><div class="stat-value" id="s-due">&mdash;</div><div class="stat-sub">Today &amp; overdue</div></div>
     </div>
 
-    <div class="table-wrap mb-24">
-      <div class="table-header"><div class="table-title">Tier 1 — Call Today</div></div>
+    <div class="table-wrap mb-16">
+      <div class="table-header">
+        <div class="table-title">Tier 1 &mdash; Call Today</div>
+      </div>
       <table>
-        <thead><tr><th>Business</th><th>Phone</th><th>Pitch Angle</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="tier1-body"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+        <thead><tr><th>Business</th><th>Owner</th><th>Phone</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tier1-body"><tr><td colspan="6" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
 
-    <div class="table-wrap mb-24">
-      <div class="table-header"><div class="table-title">Tier 2 — This Week</div></div>
+    <div class="table-wrap mb-16">
+      <div class="table-header">
+        <div class="table-title">Tier 2 &mdash; This Week</div>
+      </div>
       <table>
-        <thead><tr><th>Business</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="tier2-body"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+        <thead><tr><th>Business</th><th>Owner</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tier2-body"><tr><td colspan="5" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
 
-    <div class="table-wrap mb-24">
-      <div class="table-header"><div class="table-title">Follow-Ups Due</div></div>
+    <div class="table-wrap mb-16">
+      <div class="table-header">
+        <div class="table-title">Follow-Ups Due</div>
+      </div>
       <table>
         <thead><tr><th>Business</th><th>Type</th><th>Due</th><th>Next Action</th><th></th></tr></thead>
-        <tbody id="followups-body"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+        <tbody id="followup-body"><tr><td colspan="5" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
 
     <div class="table-wrap">
-      <div class="table-header"><div class="table-title">Closed Clients</div></div>
+      <div class="table-header">
+        <div class="table-title">Closed Clients</div>
+      </div>
       <table>
-        <thead><tr><th>Business</th><th>Deal</th><th>Deposit</th><th>My Cut (20%)</th><th>Status</th></tr></thead>
-        <tbody id="closed-body"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+        <thead><tr><th>Business</th><th>Deal</th><th>Deposit</th><th>My Commission (20%)</th><th>Status</th></tr></thead>
+        <tbody id="closed-body"><tr><td colspan="5" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- ADD PROSPECT MODAL -->
+<!-- ADD PROSPECT -->
 <div class="modal-overlay" id="prospect-modal" style="display:none">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title">Add Prospect</div><button class="modal-close" onclick="closeProspect()">✕</button></div>
+    <div class="modal-header"><div class="modal-title">Add Prospect</div><button class="modal-close" onclick="closeModal('prospect-modal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Business Name</label><input class="form-control" id="p-biz" placeholder="Pete's Plumbing"></div>
@@ -91,31 +101,31 @@
       </div>
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Location</label><input class="form-control" id="p-loc" placeholder="Big Rapids, MI"></div>
-        <div class="form-group"><label class="form-label">Category</label><input class="form-control" id="p-cat" placeholder="Plumber, HVAC, etc."></div>
+        <div class="form-group"><label class="form-label">Category</label><input class="form-control" id="p-cat" placeholder="Plumber, HVAC&hellip;"></div>
       </div>
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Tier</label>
-          <select class="form-control" id="p-tier"><option value="1">Tier 1 — Call Today</option><option value="2">Tier 2 — This Week</option><option value="3">Tier 3 — This Month</option></select>
+          <select class="form-control" id="p-tier"><option value="1">Tier 1 &mdash; Call Today</option><option value="2">Tier 2 &mdash; This Week</option><option value="3">Tier 3 &mdash; This Month</option></select>
         </div>
-        <div class="form-group"><label class="form-label">Est. Sale Value</label><input class="form-control" id="p-value" type="number" placeholder="0.00"></div>
+        <div class="form-group"><label class="form-label">Est. Sale Value</label><input class="form-control" id="p-value" type="number" placeholder="0"></div>
       </div>
-      <div class="form-group"><label class="form-label">Best Pitch Angle</label><input class="form-control" id="p-pitch" placeholder="Why they need us specifically..."></div>
+      <div class="form-group"><label class="form-label">Pitch Angle</label><input class="form-control" id="p-pitch" placeholder="Why they need us specifically&hellip;"></div>
       <div class="form-group"><label class="form-label">Has Website?</label>
         <select class="form-control" id="p-website"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Review Insights</label><textarea class="form-control" id="p-reviews" rows="2" placeholder="What their reviews reveal..."></textarea></div>
+      <div class="form-group"><label class="form-label">Review Insights</label><textarea class="form-control" id="p-reviews" rows="2" placeholder="What their reviews reveal&hellip;"></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeProspect()">Cancel</button>
+      <button class="btn btn-ghost" onclick="closeModal('prospect-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveProspect()">Add Prospect</button>
     </div>
   </div>
 </div>
 
-<!-- LOG ACTIVITY MODAL -->
+<!-- LOG ACTIVITY -->
 <div class="modal-overlay" id="log-modal" style="display:none">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title">Log Activity</div><button class="modal-close" onclick="document.getElementById('log-modal').style.display='none'">✕</button></div>
+    <div class="modal-header"><div class="modal-title">Log Activity</div><button class="modal-close" onclick="closeModal('log-modal')">&times;</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Client</label><select class="form-control" id="log-client"></select></div>
       <div class="form-grid-2">
@@ -124,44 +134,48 @@
         </div>
         <div class="form-group"><label class="form-label">Outcome</label>
           <select class="form-control" id="log-outcome">
-            <option value="interested">Interested</option><option value="not_interested">Not Interested</option>
-            <option value="callback">Wants Callback</option><option value="left_voicemail">Left Voicemail</option>
-            <option value="no_answer">No Answer</option><option value="objection_handled">Objection Handled</option>
-            <option value="closed">Closed — Deposit Collected</option><option value="other">Other</option>
+            <option value="interested">Interested</option>
+            <option value="not_interested">Not Interested</option>
+            <option value="callback">Wants Callback</option>
+            <option value="left_voicemail">Left Voicemail</option>
+            <option value="no_answer">No Answer</option>
+            <option value="objection_handled">Objection Handled</option>
+            <option value="closed">Closed &mdash; Deposit Collected</option>
+            <option value="other">Other</option>
           </select>
         </div>
       </div>
       <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="log-notes" rows="3" placeholder="What happened?"></textarea></div>
       <div class="form-grid-2">
-        <div class="form-group"><label class="form-label">Next Action</label><input class="form-control" id="log-next" placeholder="Call back Thursday"></div>
+        <div class="form-group"><label class="form-label">Next Action</label><input class="form-control" id="log-next" placeholder="Call back Thursday&hellip;"></div>
         <div class="form-group"><label class="form-label">Follow-Up Date</label><input class="form-control" type="date" id="log-date"></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="document.getElementById('log-modal').style.display='none'">Cancel</button>
+      <button class="btn btn-ghost" onclick="closeModal('log-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveActivity()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- CONVERT MODAL -->
+<!-- CONVERT TO CLIENT -->
 <div class="modal-overlay" id="convert-modal" style="display:none">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title">Convert to Client</div><button class="modal-close" onclick="document.getElementById('convert-modal').style.display='none'">✕</button></div>
+    <div class="modal-header"><div class="modal-title">Convert to Client</div><button class="modal-close" onclick="closeModal('convert-modal')">&times;</button></div>
     <div class="modal-body">
-      <p class="text-sm text-mid mb-16">Converting <strong id="convert-biz-name"></strong> to a paying client. Fill in what you have.</p>
+      <p class="text-sm text-mid mb-16">Converting <strong id="convert-name"></strong>. Fill in what you have &mdash; nothing is required.</p>
       <div class="form-group"><label class="form-label">Deal Type</label>
-        <select class="form-control" id="cv-deal"><option value="">—</option><option value="upfront">Pay Upfront</option><option value="revshare">Revenue Share</option><option value="equity">Equity</option></select>
+        <select class="form-control" id="cv-deal"><option value="">--</option><option value="upfront">Pay Upfront</option><option value="revshare">Revenue Share</option><option value="equity">Equity</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Deposit Collected</label><input class="form-control" id="cv-deposit" type="number" placeholder="0.00"></div>
+      <div class="form-group"><label class="form-label">Deposit Collected ($)</label><input class="form-control" id="cv-deposit" type="number" placeholder="0.00"></div>
       <div class="form-group"><label class="form-label">Deposit Method</label>
-        <select class="form-control" id="cv-method"><option value="">—</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
+        <select class="form-control" id="cv-method"><option value="">--</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="cv-notes" rows="2" placeholder="Anything Jen should know before starting the build..."></textarea></div>
+      <div class="form-group"><label class="form-label">Notes for Jen</label><textarea class="form-control" id="cv-notes" rows="3" placeholder="Anything she should know before starting the build&hellip;"></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="document.getElementById('convert-modal').style.display='none'">Cancel</button>
-      <button class="btn btn-primary" onclick="convertClient()">Convert & Notify Jen</button>
+      <button class="btn btn-ghost" onclick="closeModal('convert-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="doConvert()">Convert &amp; Notify Jen</button>
     </div>
   </div>
 </div>
@@ -170,187 +184,167 @@
 <script src="assets/js/config.js"></script>
 <script src="shared.js"></script>
 <script>
-let profile;
-let myClients = [];
-let convertClientId = null;
+let profile, myClients = [], convertId = null;
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.replace("index.html"); return; }
-  let p = { id: session.user.id, email: session.user.email, role: "sales", full_name: "John" };
-  try { const { data } = await sb.from("profiles").select("*").eq("id", session.user.id).single(); if (data) p = data; } catch(e) {}
+  if (!session) { window.location.replace('index.html'); return; }
+
+  let p = { id: session.user.id, email: session.user.email, role: 'sales', full_name: 'John' };
+  try { const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single(); if (data) p = data; } catch(e) {}
   profile = p;
   renderNav(profile);
   await loadData();
 })();
 
 async function loadData() {
-  const isAdmin = profile.role === "admin";
-  const [clientsRes, followupsRes] = await Promise.all([
-    isAdmin
-      ? sb.from("clients").select("*").order("tier", { ascending: true })
-      : sb.from("clients").select("*").eq("assigned_to", profile.id).order("tier", { ascending: true }),
-    sb.from("followups").select("*,clients(business_name)").eq("completed", false)
-      .lte("scheduled_date", new Date(Date.now() + 86400000).toISOString()).order("scheduled_date", { ascending: true })
+  const isAdmin = profile.role === 'admin';
+
+  const [cr, fr] = await Promise.all([
+    (isAdmin ? sb.from('clients').select('*') : sb.from('clients').select('*').eq('assigned_to', profile.id))
+      .order('tier', { ascending: true }),
+    sb.from('followups')
+      .select('*,clients(business_name)')
+      .eq('completed', false)
+      .lte('scheduled_date', new Date(Date.now() + 86400000).toISOString())
+      .order('scheduled_date', { ascending: true })
   ]);
 
-  myClients = clientsRes.data || [];
-  const followups = followupsRes.data || [];
+  myClients = cr.data || [];
+  const followups = fr.data || [];
 
-  const prospects = myClients.filter(c => ["prospect","pitched","presented","objection"].includes(c.status));
-  const closed = myClients.filter(c => ["deposited","building","delivered","ongoing","upsell"].includes(c.status));
-  const commission = closed.reduce((sum, c) => sum + (c.deposit_collected || 0) * 0.2, 0);
+  const prospects = myClients.filter(c => ['prospect','pitched','presented','objection'].includes(c.status));
+  const closed    = myClients.filter(c => ['deposited','building','delivered','ongoing','upsell'].includes(c.status));
+  const commission = closed.reduce((s, c) => s + (c.deposit_collected || 0) * 0.2, 0);
 
-  document.getElementById("s-prospects").textContent = prospects.length;
-  document.getElementById("s-closed").textContent = closed.length;
-  document.getElementById("s-commission").textContent = fmt$(commission);
-  document.getElementById("s-followups").textContent = followups.length;
+  document.getElementById('s-prospects').textContent = prospects.length;
+  document.getElementById('s-closed').textContent    = closed.length;
+  document.getElementById('s-commission').textContent = fmt$(commission);
+  document.getElementById('s-due').textContent        = followups.length;
 
-  const actionBtns = (c) => `
-    <button class="btn btn-secondary btn-sm" onclick="openLogForClient('${c.id}','${c.business_name}')">Log</button>
-    <button class="btn btn-primary btn-sm" onclick="openConvert('${c.id}','${c.business_name}')" style="margin-left:4px">Convert</button>`;
+  const actions = c => `
+    <button class="btn btn-ghost btn-sm" onclick="openLog('${c.id}')">Log</button>
+    <button class="btn btn-primary btn-sm" onclick="openConvert('${c.id}','${c.business_name.replace(/'/g,"&#39;")}')">Convert</button>`;
 
-  const tier1 = myClients.filter(c => c.tier == 1 && ["prospect","pitched","presented"].includes(c.status));
-  document.getElementById("tier1-body").innerHTML = tier1.length === 0
-    ? '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No Tier 1 prospects</div></td></tr>'
-    : tier1.map(c => `<tr>
-        <td><strong>${c.business_name}</strong><br><span class="text-sm text-mid">${c.owner_name || ""}</span></td>
-        <td class="text-mono">${c.phone || "—"}</td>
-        <td class="text-sm">${c.location || "—"}</td>
-        <td>${statusBadge(c.status)}</td>
-        <td>${actionBtns(c)}</td></tr>`).join("");
+  const t1 = myClients.filter(c => c.tier == 1 && ['prospect','pitched','presented','objection'].includes(c.status));
+  document.getElementById('tier1-body').innerHTML = t1.length === 0
+    ? '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">No Tier 1 prospects</div></div></td></tr>'
+    : t1.map(c => `<tr><td><strong>${c.business_name}</strong></td><td class="text-sm">${c.owner_name||'&mdash;'}</td><td class="text-mono text-sm">${c.phone||'&mdash;'}</td><td class="text-sm text-mid">${c.location||'&mdash;'}</td><td>${statusBadge(c.status)}</td><td style="display:flex;gap:6px">${actions(c)}</td></tr>`).join('');
 
-  const tier2 = myClients.filter(c => c.tier == 2 && ["prospect","pitched","presented"].includes(c.status));
-  document.getElementById("tier2-body").innerHTML = tier2.length === 0
-    ? '<tr><td colspan="4" class="empty-state"><div class="empty-state-text">No Tier 2 prospects</div></td></tr>'
-    : tier2.map(c => `<tr>
-        <td><strong>${c.business_name}</strong></td>
-        <td class="text-mono">${c.phone || "—"}</td>
-        <td>${statusBadge(c.status)}</td>
-        <td>${actionBtns(c)}</td></tr>`).join("");
+  const t2 = myClients.filter(c => c.tier == 2 && ['prospect','pitched','presented','objection'].includes(c.status));
+  document.getElementById('tier2-body').innerHTML = t2.length === 0
+    ? '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-text">No Tier 2 prospects</div></div></td></tr>'
+    : t2.map(c => `<tr><td><strong>${c.business_name}</strong></td><td class="text-sm">${c.owner_name||'&mdash;'}</td><td class="text-mono text-sm">${c.phone||'&mdash;'}</td><td>${statusBadge(c.status)}</td><td style="display:flex;gap:6px">${actions(c)}</td></tr>`).join('');
 
-  document.getElementById("followups-body").innerHTML = followups.length === 0
-    ? '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No follow-ups due</div></td></tr>'
-    : followups.map(f => `<tr>
-        <td>${f.clients?.business_name || "—"}</td>
-        <td><span class="badge badge-prospect">${f.type}</span></td>
-        <td class="text-sm">${fmtDate(f.scheduled_date)}</td>
-        <td class="text-sm text-mid">${f.next_action || "—"}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="completeFollowup('${f.id}')">Done</button></td></tr>`).join("");
+  document.getElementById('followup-body').innerHTML = followups.length === 0
+    ? '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-text">No follow-ups due today</div></div></td></tr>'
+    : followups.map(f => `<tr><td>${f.clients?.business_name||'&mdash;'}</td><td><span class="badge badge-prospect">${f.type}</span></td><td class="text-sm">${fmtDate(f.scheduled_date)}</td><td class="text-sm text-mid">${f.next_action||'&mdash;'}</td><td><button class="btn btn-ghost btn-sm" onclick="doneFollowup('${f.id}')">Done</button></td></tr>`).join('');
 
-  document.getElementById("closed-body").innerHTML = closed.length === 0
-    ? '<tr><td colspan="5" class="empty-state"><div class="empty-state-text">No closed clients yet — keep calling!</div></td></tr>'
-    : closed.map(c => `<tr onclick="window.location='client.html?id=${c.id}'" style="cursor:pointer">
-        <td><strong>${c.business_name}</strong></td>
-        <td>${dealBadge(c.deal_type)}</td>
-        <td class="text-mono">${fmt$(c.deposit_collected)}</td>
-        <td class="text-mono" style="color:var(--green)"><strong>${fmt$((c.deposit_collected||0)*0.2)}</strong></td>
-        <td>${statusBadge(c.status)}</td></tr>`).join("");
+  document.getElementById('closed-body').innerHTML = closed.length === 0
+    ? '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-text">No closed clients yet &mdash; keep calling</div></div></td></tr>'
+    : closed.map(c => `<tr onclick="window.location='client.html?id=${c.id}'" style="cursor:pointer"><td><strong>${c.business_name}</strong></td><td>${dealBadge(c.deal_type)}</td><td class="text-mono">${fmt$(c.deposit_collected)}</td><td class="text-mono" style="color:var(--green);font-weight:600">${fmt$((c.deposit_collected||0)*.2)}</td><td>${statusBadge(c.status)}</td></tr>`).join('');
 
-  const sel = document.getElementById("log-client");
-  sel.innerHTML = myClients.map(c => `<option value="${c.id}">${c.business_name}</option>`).join("");
+  // Populate log client dropdown
+  document.getElementById('log-client').innerHTML = myClients.map(c => `<option value="${c.id}">${c.business_name}</option>`).join('');
 }
 
-function openAddProspect() { document.getElementById("prospect-modal").style.display = "flex"; }
-function closeProspect() { document.getElementById("prospect-modal").style.display = "none"; }
+// Modals
+const openModal  = id => document.getElementById(id).style.display = 'flex';
+const closeModal = id => document.getElementById(id).style.display = 'none';
 
 async function saveProspect() {
-  const { data, error } = await sb.from("clients").insert({
-    business_name: document.getElementById("p-biz").value || "Unknown",
-    owner_name: document.getElementById("p-owner").value || null,
-    phone: document.getElementById("p-phone").value || null,
-    email: document.getElementById("p-email").value || null,
-    location: document.getElementById("p-loc").value || null,
-    tier: parseInt(document.getElementById("p-tier").value) || 1,
-    status: "prospect",
+  const { data, error } = await sb.from('clients').insert({
+    business_name: document.getElementById('p-biz').value || 'Unknown',
+    owner_name:    document.getElementById('p-owner').value || null,
+    phone:         document.getElementById('p-phone').value || null,
+    email:         document.getElementById('p-email').value || null,
+    location:      document.getElementById('p-loc').value || null,
+    tier:          parseInt(document.getElementById('p-tier').value) || 1,
+    deal_amount:   document.getElementById('p-value').value || null,
+    status: 'prospect',
     assigned_to: profile.id,
-    deal_amount: document.getElementById("p-value").value || null,
   }).select().single();
 
-  if (error) { toast("Error: " + error.message, "error"); return; }
-  await sb.from("build_tracker").insert({ client_id: data.id });
-  toast("Prospect added!", "success");
-  closeProspect();
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await sb.from('build_tracker').insert({ client_id: data.id });
+  toast('Prospect added!');
+  closeModal('prospect-modal');
   await loadData();
 }
 
-function openLogCall() { document.getElementById("log-modal").style.display = "flex"; }
-function openLogForClient(id, name) {
-  document.getElementById("log-client").value = id;
-  document.getElementById("log-modal").style.display = "flex";
+function openLog(clientId) {
+  if (clientId) document.getElementById('log-client').value = clientId;
+  openModal('log-modal');
 }
 
 async function saveActivity() {
-  const clientId = document.getElementById("log-client").value;
-  const outcome = document.getElementById("log-outcome").value;
-  const nextDate = document.getElementById("log-date").value;
+  const clientId = document.getElementById('log-client').value;
+  const outcome  = document.getElementById('log-outcome').value;
+  const nextDate = document.getElementById('log-date').value;
 
-  await sb.from("followups").insert({
+  await sb.from('followups').insert({
     client_id: clientId, user_id: profile.id,
-    type: document.getElementById("log-type").value,
-    outcome, notes: document.getElementById("log-notes").value || null,
-    next_action: document.getElementById("log-next").value || null,
-    next_date: nextDate || null, completed: true,
-    completed_date: new Date().toISOString()
+    type:         document.getElementById('log-type').value,
+    outcome,
+    notes:        document.getElementById('log-notes').value || null,
+    next_action:  document.getElementById('log-next').value || null,
+    next_date:    nextDate || null,
+    completed: true, completed_date: new Date().toISOString()
   });
 
   if (nextDate) {
-    await sb.from("followups").insert({
+    await sb.from('followups').insert({
       client_id: clientId, user_id: profile.id,
-      type: document.getElementById("log-type").value,
+      type:         document.getElementById('log-type').value,
       scheduled_date: nextDate,
-      next_action: document.getElementById("log-next").value || null,
+      next_action:  document.getElementById('log-next').value || null,
       completed: false
     });
   }
 
-  if (outcome === "closed") await sb.from("clients").update({ status: "deposited" }).eq("id", clientId);
+  if (outcome === 'closed') await sb.from('clients').update({ status: 'deposited' }).eq('id', clientId);
 
-  toast("Logged!", "success");
-  document.getElementById("log-modal").style.display = "none";
+  toast('Logged!');
+  closeModal('log-modal');
   await loadData();
 }
 
-async function completeFollowup(id) {
-  await sb.from("followups").update({ completed: true, completed_date: new Date().toISOString() }).eq("id", id);
-  toast("Done!", "success");
+async function doneFollowup(id) {
+  await sb.from('followups').update({ completed: true, completed_date: new Date().toISOString() }).eq('id', id);
+  toast('Done!');
   await loadData();
 }
 
 function openConvert(id, name) {
-  convertClientId = id;
-  document.getElementById("convert-biz-name").textContent = name;
-  document.getElementById("convert-modal").style.display = "flex";
+  convertId = id;
+  document.getElementById('convert-name').textContent = name;
+  openModal('convert-modal');
 }
 
-async function convertClient() {
-  if (!convertClientId) return;
-  const updates = {
-    status: "deposited",
-    deal_type: document.getElementById("cv-deal").value || null,
-    deposit_collected: document.getElementById("cv-deposit").value || null,
-    deposit_method: document.getElementById("cv-method").value || null,
-  };
-  const notes = document.getElementById("cv-notes").value;
+async function doConvert() {
+  if (!convertId) return;
+  await sb.from('clients').update({
+    status:           'deposited',
+    deal_type:        document.getElementById('cv-deal').value || null,
+    deposit_collected:document.getElementById('cv-deposit').value || null,
+    deposit_method:   document.getElementById('cv-method').value || null,
+  }).eq('id', convertId);
 
-  const { error } = await sb.from("clients").update(updates).eq("id", convertClientId);
-  if (error) { toast("Error: " + error.message, "error"); return; }
-
+  const notes = document.getElementById('cv-notes').value;
   if (notes) {
-    await sb.from("followups").insert({
-      client_id: convertClientId, user_id: profile.id,
-      type: "other", outcome: "closed",
+    await sb.from('followups').insert({
+      client_id: convertId, user_id: profile.id,
+      type: 'other', outcome: 'closed',
       notes: `CONVERTED: ${notes}`, completed: true,
       completed_date: new Date().toISOString()
     });
   }
 
-  toast("Converted! Jen has been notified.", "success");
-  document.getElementById("convert-modal").style.display = "none";
-  convertClientId = null;
+  toast('Converted! Jen has been notified.');
+  closeModal('convert-modal');
+  convertId = null;
   await loadData();
 }
 </script>
 </body>
 </html>
-

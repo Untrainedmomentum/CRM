@@ -1,16 +1,14 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard â€” Untrained Momentum</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>Dashboard &mdash; Untrained Momentum</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app-shell">
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-logo">Untrained <span>Momentum</span></div>
     <div class="topbar-spacer"></div>
@@ -21,7 +19,6 @@
     <button class="btn-logout" onclick="logout()">Sign Out</button>
   </div>
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Main</div>
@@ -39,7 +36,6 @@
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main-content">
     <div class="page-header">
       <div>
@@ -49,23 +45,35 @@
       <a href="clients.html?new=1" class="btn btn-primary">+ New Client</a>
     </div>
 
-    <!-- STATS -->
-    <div class="stats-grid" id="stats">
-      <div class="stat-card"><div class="stat-label">Active Clients</div><div class="stat-value" id="stat-active">â€”</div><div class="stat-sub">Currently in build or ongoing</div></div>
-      <div class="stat-card green"><div class="stat-label">Total Clients</div><div class="stat-value" id="stat-total">â€”</div><div class="stat-sub">All time</div></div>
-      <div class="stat-card gold"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stat-tickets">â€”</div><div class="stat-sub">Awaiting response</div></div>
-      <div class="stat-card blue"><div class="stat-label">Pipeline Value</div><div class="stat-value" id="stat-pipeline">â€”</div><div class="stat-sub">Est. total deal value</div></div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Active Builds</div>
+        <div class="stat-value" id="stat-active">&mdash;</div>
+        <div class="stat-sub">In progress or ongoing</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Total Clients</div>
+        <div class="stat-value" id="stat-total">&mdash;</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">Open Tickets</div>
+        <div class="stat-value" id="stat-tickets">&mdash;</div>
+        <div class="stat-sub">Awaiting response</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label">Pipeline Value</div>
+        <div class="stat-value" id="stat-pipeline">&mdash;</div>
+        <div class="stat-sub">Est. total deal value</div>
+      </div>
     </div>
 
-    <!-- PIPELINE -->
     <div class="card mb-24">
       <div class="card-title">Pipeline</div>
       <div class="pipeline-bar" id="pipeline-bar"></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-
-      <!-- RECENT CLIENTS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <div class="table-wrap">
         <div class="table-header">
           <div class="table-title">Recent Clients</div>
@@ -73,46 +81,40 @@
         </div>
         <table>
           <thead><tr><th>Business</th><th>Status</th><th>Deal</th></tr></thead>
-          <tbody id="recent-clients"><tr><td colspan="3" class="loading">Loading...</td></tr></tbody>
+          <tbody id="recent-clients"><tr><td colspan="3" class="loading">Loading&hellip;</td></tr></tbody>
         </table>
       </div>
-
-      <!-- OPEN TICKETS -->
       <div class="table-wrap">
         <div class="table-header">
           <div class="table-title">Open Tickets</div>
           <a href="tickets.html" class="btn btn-secondary btn-sm">View All</a>
         </div>
         <table>
-          <thead><tr><th>Business</th><th>Subject</th><th>Priority</th></tr></thead>
-          <tbody id="open-tickets"><tr><td colspan="3" class="loading">Loading...</td></tr></tbody>
+          <thead><tr><th>Client</th><th>Subject</th><th>Priority</th></tr></thead>
+          <tbody id="open-tickets"><tr><td colspan="3" class="loading">Loading&hellip;</td></tr></tbody>
         </table>
       </div>
-
     </div>
 
-    <!-- EXPIRING TRIALS -->
-    <div class="table-wrap mt-24">
+    <div class="table-wrap mb-16">
       <div class="table-header">
-        <div class="table-title">âš ï¸ Expiring Trials & Subscriptions (Next 30 Days)</div>
-      </div>
-      <table>
-        <thead><tr><th>Client</th><th>Service</th><th>Trial Ends</th><th>Our Cost</th><th>Client Rate</th><th>Status</th></tr></thead>
-        <tbody id="expiring-subs"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
-      </table>
-    </div>
-
-    <!-- BUILDS IN PROGRESS -->
-    <div class="table-wrap mt-24">
-      <div class="table-header">
-        <div class="table-title">ðŸ”¨ Builds In Progress</div>
+        <div class="table-title">Builds In Progress</div>
       </div>
       <table>
         <thead><tr><th>Client</th><th>Website</th><th>GBP</th><th>Voice AI</th><th>Email</th><th>Blocker</th><th></th></tr></thead>
-        <tbody id="builds-table"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+        <tbody id="builds-table"><tr><td colspan="7" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
 
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title">Expiring Trials &amp; Subscriptions &mdash; Next 30 Days</div>
+      </div>
+      <table>
+        <thead><tr><th>Client</th><th>Service</th><th>Expires</th><th>Our Cost</th><th>Client Rate</th><th>Status</th></tr></thead>
+        <tbody id="expiring-subs"><tr><td colspan="6" class="loading">Loading&hellip;</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -121,111 +123,71 @@
 <script src="shared.js"></script>
 <script>
 (async () => {
-  const profile = await requireAuth('admin');
-  if (!profile) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.replace('index.html'); return; }
+
+  let profile = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' };
+  try { const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single(); if (data) profile = data; } catch(e) {}
   renderNav(profile);
 
-  // Greeting
   const h = new Date().getHours();
-  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('greeting').textContent = `${greet}, ${profile.full_name?.split(' ')[0] || 'Jen'}`;
+  document.getElementById('greeting').textContent =
+    (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') +
+    ', ' + (profile.full_name?.split(' ')[0] || 'Jen');
 
-  // Load all data in parallel
   const [clientsRes, ticketsRes, subsRes, buildsRes] = await Promise.all([
     sb.from('clients').select('id,business_name,owner_name,status,deal_type,deal_amount,tier,created_at').order('created_at', { ascending: false }),
-    sb.from('tickets').select('id,subject,priority,status,client_id,clients(business_name)').eq('status', 'open').order('created_at', { ascending: false }),
-    sb.from('subscriptions').select('*,clients(business_name)').in('status', ['trial','expiring_soon']).order('trial_end', { ascending: true }),
-    sb.from('build_tracker').select('*,clients(id,business_name)').or('website_status.eq.in_progress,gbp_status.eq.in_progress,voice_ai_status.eq.in_progress,email_status.eq.in_progress')
+    sb.from('tickets').select('id,subject,priority,status,client_id,clients(business_name)').eq('status','open').order('created_at',{ascending:false}),
+    sb.from('subscriptions').select('*,clients(business_name)').in('status',['trial','expiring_soon']).lte('trial_end', new Date(Date.now()+30*86400000).toISOString()).order('trial_end',{ascending:true}),
+    sb.from('build_tracker').select('*,clients(id,business_name)').or('website_status.eq.in_progress,gbp_status.eq.in_progress,voice_ai_status.eq.in_progress,email_status.eq.in_progress,booking_status.eq.in_progress')
   ]);
 
   const clients = clientsRes.data || [];
   const tickets = ticketsRes.data || [];
-  const subs = subsRes.data || [];
-  const builds = buildsRes.data || [];
+  const subs    = subsRes.data || [];
+  const builds  = buildsRes.data || [];
 
-  // Stats
   const active = clients.filter(c => ['building','delivered','ongoing','upsell'].includes(c.status));
-  const pipeline = clients.reduce((sum, c) => sum + (c.deal_amount || 0), 0);
   document.getElementById('stat-active').textContent = active.length;
   document.getElementById('stat-total').textContent = clients.length;
   document.getElementById('stat-tickets').textContent = tickets.length;
-  document.getElementById('stat-pipeline').textContent = fmt$(pipeline);
+  document.getElementById('stat-pipeline').textContent = fmt$(clients.reduce((s,c)=>s+(c.deal_amount||0),0));
   document.getElementById('badge-tickets').textContent = tickets.length;
 
-  // Pipeline bar
   const stages = ['prospect','pitched','presented','closed','deposited','building','delivered','ongoing','upsell'];
-  const stageLabels = { prospect:'Prospect',pitched:'Pitched',presented:'Presented',closed:'Closed',deposited:'Deposited',building:'Building',delivered:'Delivered',ongoing:'Ongoing',upsell:'Upsell' };
-  const bar = document.getElementById('pipeline-bar');
-  bar.innerHTML = stages.map(s => {
-    const count = clients.filter(c => c.status === s).length;
-    return `<div class="pipeline-stage" onclick="window.location='clients.html?status=${s}'">
-      <div class="ps-count">${count}</div>
-      <div class="ps-label">${stageLabels[s]}</div>
-    </div>`;
+  const labels = {prospect:'Prospect',pitched:'Pitched',presented:'Presented',closed:'Closed',deposited:'Deposited',building:'Building',delivered:'Delivered',ongoing:'Ongoing',upsell:'Upsell'};
+  document.getElementById('pipeline-bar').innerHTML = stages.map(s => {
+    const n = clients.filter(c=>c.status===s).length;
+    return `<div class="pipeline-stage" onclick="window.location='clients.html?status=${s}'"><span class="ps-count">${n}</span><span class="ps-label">${labels[s]}</span></div>`;
   }).join('');
 
-  // Recent clients
-  const rcBody = document.getElementById('recent-clients');
-  if (clients.length === 0) {
-    rcBody.innerHTML = '<tr><td colspan="3" class="empty-state"><div class="empty-state-text">No clients yet â€” <a href="clients.html?new=1">add your first</a></div></td></tr>';
-  } else {
-    rcBody.innerHTML = clients.slice(0, 8).map(c => `
-      <tr onclick="window.location='client.html?id=${c.id}'" style="cursor:pointer">
-        <td><strong>${c.business_name}</strong><br><span class="text-sm text-mid">${c.owner_name}</span></td>
-        <td>${statusBadge(c.status)}</td>
-        <td>${dealBadge(c.deal_type)}</td>
-      </tr>`).join('');
-  }
+  const rcb = document.getElementById('recent-clients');
+  rcb.innerHTML = clients.length === 0
+    ? '<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No clients yet &mdash; <a href="clients.html?new=1">add your first</a></div></div></td></tr>'
+    : clients.slice(0,8).map(c=>`<tr onclick="window.location='client.html?id=${c.id}'"><td><strong>${c.business_name}</strong><br><span class="text-sm text-mid">${c.owner_name}</span></td><td>${statusBadge(c.status)}</td><td>${dealBadge(c.deal_type)}</td></tr>`).join('');
 
-  // Open tickets
-  const otBody = document.getElementById('open-tickets');
-  if (tickets.length === 0) {
-    otBody.innerHTML = '<tr><td colspan="3" class="empty-state"><div class="empty-state-text">No open tickets</div></td></tr>';
-  } else {
-    otBody.innerHTML = tickets.slice(0, 8).map(t => `
-      <tr onclick="window.location='tickets.html'" style="cursor:pointer">
-        <td class="text-sm">${t.clients?.business_name || 'â€”'}</td>
-        <td>${t.subject}</td>
-        <td><span class="badge badge-${t.priority}">${t.priority}</span></td>
-      </tr>`).join('');
-  }
+  const otb = document.getElementById('open-tickets');
+  otb.innerHTML = tickets.length === 0
+    ? '<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No open tickets</div></div></td></tr>'
+    : tickets.slice(0,8).map(t=>`<tr onclick="window.location='tickets.html'"><td class="text-sm">${t.clients?.business_name||'&mdash;'}</td><td>${t.subject}</td><td><span class="badge badge-${t.priority}">${t.priority}</span></td></tr>`).join('');
 
-  // Expiring subs
-  const esBody = document.getElementById('expiring-subs');
-  if (subs.length === 0) {
-    esBody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-state-text">No expiring trials</div></td></tr>';
-  } else {
-    esBody.innerHTML = subs.map(s => `
-      <tr>
-        <td>${s.clients?.business_name || 'â€”'}</td>
-        <td>${s.service_name}</td>
-        <td>${fmtDate(s.trial_end)}</td>
-        <td>${fmt$(s.our_cost)}/mo</td>
-        <td>${fmt$(s.client_rate)}/mo</td>
-        <td><span class="badge badge-${s.status === 'trial' ? 'building' : 'upsell'}">${s.status}</span></td>
-      </tr>`).join('');
-  }
+  const bb = document.getElementById('builds-table');
+  bb.innerHTML = builds.length === 0
+    ? '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No active builds</div></div></td></tr>'
+    : builds.map(b=>`<tr onclick="window.location='client.html?id=${b.clients?.id}'">`+
+        `<td><strong>${b.clients?.business_name||'&mdash;'}</strong></td>`+
+        `<td class="flex-center text-sm">${buildDot(b.website_status)}${b.website_status||'&mdash;'}</td>`+
+        `<td class="flex-center text-sm">${buildDot(b.gbp_status)}${b.gbp_status||'&mdash;'}</td>`+
+        `<td class="flex-center text-sm">${buildDot(b.voice_ai_status)}${b.voice_ai_status||'&mdash;'}</td>`+
+        `<td class="flex-center text-sm">${buildDot(b.email_status)}${b.email_status||'&mdash;'}</td>`+
+        `<td class="text-sm text-mid">${b.waiting_on_client||b.overall_blocker||'&mdash;'}</td>`+
+        `<td><a href="client.html?id=${b.clients?.id}" class="btn btn-secondary btn-sm">View</a></td></tr>`).join('');
 
-  // Builds in progress
-  const bBody = document.getElementById('builds-table');
-  if (builds.length === 0) {
-    bBody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-state-text">No active builds</div></td></tr>';
-  } else {
-    bBody.innerHTML = builds.map(b => `
-      <tr onclick="window.location='client.html?id=${b.clients?.id}'" style="cursor:pointer">
-        <td><strong>${b.clients?.business_name || 'â€”'}</strong></td>
-        <td>${buildDot(b.website_status)}${b.website_status||'â€”'}</td>
-        <td>${buildDot(b.gbp_status)}${b.gbp_status||'â€”'}</td>
-        <td>${buildDot(b.voice_ai_status)}${b.voice_ai_status||'â€”'}</td>
-        <td>${buildDot(b.email_status)}${b.email_status||'â€”'}</td>
-        <td class="text-sm text-mid">${b.waiting_on_client || b.overall_blocker || 'â€”'}</td>
-        <td><a href="client.html?id=${b.clients?.id}" class="btn btn-secondary btn-sm">View</a></td>
-      </tr>`).join('');
-  }
+  const esb = document.getElementById('expiring-subs');
+  esb.innerHTML = subs.length === 0
+    ? '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">No expiring trials</div></div></td></tr>'
+    : subs.map(s=>`<tr><td>${s.clients?.business_name||'&mdash;'}</td><td>${s.service_name}</td><td>${fmtDate(s.trial_end)}</td><td class="text-mono">${fmt$(s.our_cost)}/mo</td><td class="text-mono">${fmt$(s.client_rate)}/mo</td><td><span class="badge badge-${s.status==='trial'?'building':'upsell'}">${s.status}</span></td></tr>`).join('');
 })();
 </script>
 </body>
 </html>
-
-
-
