@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Untrained Momentum</title>
+  <title>Dashboard â€” Untrained Momentum</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -25,13 +25,13 @@
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Main</div>
-      <a class="nav-link sidebar-link active" href="dashboard.html"><span class="icon">⊞</span> Dashboard</a>
-      <a class="nav-link sidebar-link admin-only" href="clients.html"><span class="icon">◎</span> Clients</a>
-      <a class="nav-link sidebar-link admin-only" href="tickets.html"><span class="icon">◈</span> Tickets <span class="sidebar-badge" id="badge-tickets">0</span></a>
+      <a class="nav-link sidebar-link active" href="dashboard.html"><span class="icon">âŠž</span> Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html"><span class="icon">â—Ž</span> Clients</a>
+      <a class="nav-link sidebar-link admin-only" href="tickets.html"><span class="icon">â—ˆ</span> Tickets <span class="sidebar-badge" id="badge-tickets">0</span></a>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Sales</div>
-      <a class="nav-link sidebar-link" href="john.html"><span class="icon">◷</span> John's View</a>
+      <a class="nav-link sidebar-link" href="john.html"><span class="icon">â—·</span> John's View</a>
     </div>
     <div class="sidebar-section admin-only">
       <div class="sidebar-label">Finance</div>
@@ -51,10 +51,10 @@
 
     <!-- STATS -->
     <div class="stats-grid" id="stats">
-      <div class="stat-card"><div class="stat-label">Active Clients</div><div class="stat-value" id="stat-active">—</div><div class="stat-sub">Currently in build or ongoing</div></div>
-      <div class="stat-card green"><div class="stat-label">Total Clients</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">All time</div></div>
-      <div class="stat-card gold"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stat-tickets">—</div><div class="stat-sub">Awaiting response</div></div>
-      <div class="stat-card blue"><div class="stat-label">Pipeline Value</div><div class="stat-value" id="stat-pipeline">—</div><div class="stat-sub">Est. total deal value</div></div>
+      <div class="stat-card"><div class="stat-label">Active Clients</div><div class="stat-value" id="stat-active">â€”</div><div class="stat-sub">Currently in build or ongoing</div></div>
+      <div class="stat-card green"><div class="stat-label">Total Clients</div><div class="stat-value" id="stat-total">â€”</div><div class="stat-sub">All time</div></div>
+      <div class="stat-card gold"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stat-tickets">â€”</div><div class="stat-sub">Awaiting response</div></div>
+      <div class="stat-card blue"><div class="stat-label">Pipeline Value</div><div class="stat-value" id="stat-pipeline">â€”</div><div class="stat-sub">Est. total deal value</div></div>
     </div>
 
     <!-- PIPELINE -->
@@ -94,7 +94,7 @@
     <!-- EXPIRING TRIALS -->
     <div class="table-wrap mt-24">
       <div class="table-header">
-        <div class="table-title">⚠️ Expiring Trials & Subscriptions (Next 30 Days)</div>
+        <div class="table-title">âš ï¸ Expiring Trials & Subscriptions (Next 30 Days)</div>
       </div>
       <table>
         <thead><tr><th>Client</th><th>Service</th><th>Trial Ends</th><th>Our Cost</th><th>Client Rate</th><th>Status</th></tr></thead>
@@ -105,7 +105,7 @@
     <!-- BUILDS IN PROGRESS -->
     <div class="table-wrap mt-24">
       <div class="table-header">
-        <div class="table-title">🔨 Builds In Progress</div>
+        <div class="table-title">ðŸ”¨ Builds In Progress</div>
       </div>
       <table>
         <thead><tr><th>Client</th><th>Website</th><th>GBP</th><th>Voice AI</th><th>Email</th><th>Blocker</th><th></th></tr></thead>
@@ -167,7 +167,7 @@
   // Recent clients
   const rcBody = document.getElementById('recent-clients');
   if (clients.length === 0) {
-    rcBody.innerHTML = '<tr><td colspan="3" class="empty-state"><div class="empty-state-text">No clients yet — <a href="clients.html?new=1">add your first</a></div></td></tr>';
+    rcBody.innerHTML = '<tr><td colspan="3" class="empty-state"><div class="empty-state-text">No clients yet â€” <a href="clients.html?new=1">add your first</a></div></td></tr>';
   } else {
     rcBody.innerHTML = clients.slice(0, 8).map(c => `
       <tr onclick="window.location='client.html?id=${c.id}'" style="cursor:pointer">
@@ -184,7 +184,7 @@
   } else {
     otBody.innerHTML = tickets.slice(0, 8).map(t => `
       <tr onclick="window.location='tickets.html'" style="cursor:pointer">
-        <td class="text-sm">${t.clients?.business_name || '—'}</td>
+        <td class="text-sm">${t.clients?.business_name || 'â€”'}</td>
         <td>${t.subject}</td>
         <td><span class="badge badge-${t.priority}">${t.priority}</span></td>
       </tr>`).join('');
@@ -197,7 +197,7 @@
   } else {
     esBody.innerHTML = subs.map(s => `
       <tr>
-        <td>${s.clients?.business_name || '—'}</td>
+        <td>${s.clients?.business_name || 'â€”'}</td>
         <td>${s.service_name}</td>
         <td>${fmtDate(s.trial_end)}</td>
         <td>${fmt$(s.our_cost)}/mo</td>
@@ -213,12 +213,12 @@
   } else {
     bBody.innerHTML = builds.map(b => `
       <tr onclick="window.location='client.html?id=${b.clients?.id}'" style="cursor:pointer">
-        <td><strong>${b.clients?.business_name || '—'}</strong></td>
-        <td>${buildDot(b.website_status)}${b.website_status||'—'}</td>
-        <td>${buildDot(b.gbp_status)}${b.gbp_status||'—'}</td>
-        <td>${buildDot(b.voice_ai_status)}${b.voice_ai_status||'—'}</td>
-        <td>${buildDot(b.email_status)}${b.email_status||'—'}</td>
-        <td class="text-sm text-mid">${b.waiting_on_client || b.overall_blocker || '—'}</td>
+        <td><strong>${b.clients?.business_name || 'â€”'}</strong></td>
+        <td>${buildDot(b.website_status)}${b.website_status||'â€”'}</td>
+        <td>${buildDot(b.gbp_status)}${b.gbp_status||'â€”'}</td>
+        <td>${buildDot(b.voice_ai_status)}${b.voice_ai_status||'â€”'}</td>
+        <td>${buildDot(b.email_status)}${b.email_status||'â€”'}</td>
+        <td class="text-sm text-mid">${b.waiting_on_client || b.overall_blocker || 'â€”'}</td>
         <td><a href="client.html?id=${b.clients?.id}" class="btn btn-secondary btn-sm">View</a></td>
       </tr>`).join('');
   }
@@ -226,3 +226,4 @@
 </script>
 </body>
 </html>
+
