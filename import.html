@@ -55,7 +55,7 @@
       <div class="card">
         <div class="card-title">Expected Columns</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px;font-family:var(--font-m)">
-          ${['TIER','SCORE','BUSINESS CATEGORY','BUSINESS NAME','CONTACT NAME','PHONE','EMAIL','CITY','COUNTY','LOCATION/SERVICE AREA','YR EST.','RATING','REVIEWS','HAS WEBSITE','WEBSITE URL','WEBSITE PLATFORM','WEBSITE REVIEW','GBP STATUS','REVIEW INSIGHTS','EST. ANNUAL REV','RECOMMENDED OFFER','EST. SALE VALUE','CALL PRIORITY','BEST PITCH ANGLE','FOLLOW-UP STATUS'].map(c=>`<div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">${c}</div>`).join('')}
+          <div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">TIER</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">SCORE</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">BUSINESS CATEGORY</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">BUSINESS NAME</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">CONTACT NAME</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">PHONE</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">EMAIL</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">CITY</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">COUNTY</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">LOCATION/SERVICE AREA</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">YR EST.</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">RATING</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">REVIEWS</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">HAS WEBSITE</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">WEBSITE URL</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">WEBSITE PLATFORM</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">WEBSITE REVIEW</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">GBP STATUS</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">REVIEW INSIGHTS</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">EST. ANNUAL REV</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">RECOMMENDED OFFER</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">EST. SALE VALUE</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">CALL PRIORITY</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">BEST PITCH ANGLE</div><div style="padding:3px 8px;background:var(--light);border-radius:4px;border:1px solid var(--border)">FOLLOW-UP STATUS</div>
         </div>
       </div>
     </div>
@@ -78,13 +78,14 @@
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:20px">
-          <button class="btn btn-primary" onclick="doImport()">Import New Prospects</button>
+          <button class="btn btn-primary" id="import-btn" onclick="doImport()">Import New Prospects</button>
           <button class="btn btn-ghost" onclick="resetImport()">Start Over</button>
         </div>
         <div id="progress-wrap" style="display:none;margin-bottom:16px">
           <div class="text-sm text-mid mb-8" id="progress-label">Importing...</div>
           <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
         </div>
+        <div id="error-list" style="max-height:200px;overflow-y:auto;margin-top:12px;display:none"></div>
         <div id="preview-list" style="max-height:400px;overflow-y:auto"></div>
       </div>
     </div>
@@ -199,18 +200,68 @@ function handleFile(file){
   reader.readAsText(file);
 }
 
+// Known valid DB columns — must match exactly what Supabase accepts
+const DB_COLUMNS = new Set([
+  'business_name','owner_name','phone','email','location','year_established',
+  'legal_name','ein','deal_type','deal_amount','deposit_collected','deposit_method',
+  'deposit_date','baseline_revenue','revenue_share_pct','revenue_share_term',
+  'revenue_verified_by','equity_pct','entity_type','incorporation_state',
+  'equity_agreement_signed','status','tier','assigned_to','hard_deadline',
+  'deadline_reason','portal_token','portal_active','category','google_rating',
+  'review_count','review_insights','has_website','website_platform','gbp_status',
+  'est_annual_revenue','pitch_angle','call_priority','business_hours','score',
+  'website_url','website_review','updated_by','updated_by_name','county'
+]);
+
+function validateRow(row){
+  const issues = [];
+  // Check for unknown columns
+  Object.keys(row).forEach(k => {
+    if(!DB_COLUMNS.has(k)) issues.push(`Unknown column: "${k}"`);
+  });
+  // Check required fields
+  if(!row.business_name) issues.push('Missing business name');
+  return issues;
+}
+
 function processCSV(text){
   parsed=parseCSV(text).map(normalize);
   newRows=parsed.filter(r=>!isDupe(r));
   dupRows=parsed.filter(r=>isDupe(r));
-  document.getElementById('count-new').textContent=newRows.length;
+
+  // Validate all new rows before showing import button
+  let hasErrors = false;
+  const validatedRows = newRows.map(r => {
+    const issues = validateRow(r);
+    return {...r, _issues: issues, _valid: issues.length === 0};
+  });
+  const errorRows = validatedRows.filter(r => !r._valid);
+  const cleanRows = validatedRows.filter(r => r._valid);
+  hasErrors = errorRows.length > 0;
+
+  // Store only clean rows for import
+  newRows = cleanRows;
+
+  document.getElementById('count-new').textContent=cleanRows.length;
   document.getElementById('count-dup').textContent=dupRows.length;
   document.getElementById('count-total').textContent=parsed.length;
+
+  const importBtn = document.getElementById('import-btn');
+  if(cleanRows.length === 0){
+    importBtn.disabled = true;
+    importBtn.textContent = 'No valid rows to import';
+  } else {
+    importBtn.disabled = false;
+    importBtn.textContent = `Import ${cleanRows.length} Prospects`;
+  }
+
   const list=document.getElementById('preview-list');
   list.innerHTML=[
-    ...newRows.map(r=>`<div class="preview-row new-row"><strong>${r.business_name}</strong> — ${r.phone||'no phone'} — ${r.category||''} — ${r.location||''} — NEW</div>`),
+    ...cleanRows.map(r=>`<div class="preview-row new-row"><strong>${r.business_name}</strong> — ${r.phone||'no phone'} — ${r.category||''} — ${r.location||''} — READY</div>`),
     ...dupRows.map(r=>`<div class="preview-row dup-row"><strong>${r.business_name}</strong> — DUPLICATE — will skip</div>`),
+    ...errorRows.map(r=>`<div class="preview-row" style="background:#fff8e6;border:1px solid #f0d080;border-radius:var(--r);padding:8px 12px;font-size:12px;margin-bottom:4px"><strong>${r.business_name||'Unknown'}</strong> — WARNING: ${r._issues.join(', ')}</div>`),
   ].join('');
+
   document.getElementById('step1').style.display='none';
   document.getElementById('step2').style.display='block';
 }
@@ -228,11 +279,21 @@ async function doImport(){
       assigned_to:null,  // no assignment on import — captured on first action
       status:r.status||'prospect',
     }));
-    const{data:inserted,error}=await sb.from('clients').insert(batch).select('id');
-    if(error){errors+=batch.length;}
-    else if(inserted?.length){
-      await sb.from('build_tracker').insert(inserted.map(c=>({client_id:c.id})));
-      done+=batch.length;
+    // Try row by row so one bad record doesn't kill the batch
+    for(const row of batch){
+      const{data:single,error:serr}=await sb.from('clients').insert(row).select('id');
+      if(serr){
+        errors++;
+        const errBox=document.getElementById('error-list');
+        errBox.style.display='block';
+        const e=document.createElement('div');
+        e.style.cssText='padding:6px 10px;background:var(--red-l);border:1px solid var(--red-m);border-radius:4px;font-size:12px;font-family:var(--font-m);margin-bottom:4px;color:var(--dark)';
+        e.textContent=`FAILED: ${row.business_name||'unknown'} — ${serr.message}`;
+        errBox.appendChild(e);
+      } else if(single?.[0]){
+        await sb.from('build_tracker').insert({client_id:single[0].id});
+        done++;
+      }
     }
     fill.style.width=Math.min(Math.round(((i+BATCH)/newRows.length)*100),100)+'%';
     label.textContent=`Importing... ${Math.min(done,newRows.length)} of ${newRows.length}`;

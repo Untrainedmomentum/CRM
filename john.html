@@ -159,7 +159,7 @@
             <div class="table-title">All Prospects</div>
             <div class="filter-bar">
               <select class="filter-select" id="tier-filter" onchange="renderList()">
-                <option value="">All Priority</option><option value="1">Call Today</option><option value="2">This Week</option><option value="3">This Month</option>
+                <option value="">All Priority</option><option value="1">Hot</option><option value="2">Warm</option><option value="3">Cold</option>
               </select>
               <select class="filter-select" id="cat-filter" onchange="renderList()">
                 <option value="">All Categories</option>
@@ -324,7 +324,7 @@
       <div class="form-group"><label class="form-label">Business Hours</label><input class="form-control" id="p-hours" placeholder="Mon-Fri 8am-5pm"></div>
     </div>
     <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Tier</label><select class="form-control" id="p-tier"><option value="1">Call Today</option><option value="2">This Week</option><option value="3">This Month</option></select></div>
+      <div class="form-group"><label class="form-label">Tier</label><select class="form-control" id="p-tier"><option value="1">Hot</option><option value="2">Warm</option><option value="3">Cold</option></select></div>
       <div class="form-group"><label class="form-label">Score (1-10)</label><input class="form-control" id="p-score" type="number" min="1" max="10"></div>
     </div>
     <div class="form-group"><label class="form-label">Pitch Angle</label><input class="form-control" id="p-pitch"></div>
@@ -519,7 +519,10 @@ function renderList(){
     <td>${tierBadge(c.tier)}</td>
     <td class="text-sm" style="font-weight:600;color:var(--red)">${c.score||'&mdash;'}</td>
     <td class="text-sm">${c.google_rating?`<span style="color:var(--gold);font-weight:600">${c.google_rating}</span> (${c.review_count||0})`:''}</td>
-    <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList('${c.id}')">Call</button></td>
+    <td style="display:flex;gap:4px">
+      <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList('${c.id}')">Call</button>
+      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule('${c.id}','${c.business_name.replace(/'/g,\"\\'\")}')">Schedule</button>
+    </td>
   </tr>`).join('')||'<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
 }
 
@@ -692,7 +695,13 @@ function openDetail(id){
   const c=allClients.find(x=>x.id===id);if(!c)return;
   const dash='&mdash;';
   document.getElementById('dm-biz').textContent=c.business_name;
-  document.getElementById('dm-badges').innerHTML=statusBadge(c.status)+' '+tierBadge(c.tier)+(c.score?` <span class="badge badge-prospect">Score: ${c.score}/10</span>`:'');
+  document.getElementById('dm-badges').innerHTML=statusBadge(c.status)
+    +` <select onchange="updatePriority('${c.id}',this.value)" style="font-size:11px;font-weight:600;padding:2px 6px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:var(--light)">
+      <option value="1" ${c.tier==1?'selected':''}>Hot</option>
+      <option value="2" ${c.tier==2?'selected':''}>Warm</option>
+      <option value="3" ${c.tier==3?'selected':''}>Cold</option>
+    </select>`
+    +(c.score?` <span class="badge badge-prospect">Score: ${c.score}/10</span>`:'');
   document.getElementById('dm-pitch').textContent=c.pitch_angle||'No pitch angle recorded.';
   document.getElementById('dm-insights').textContent=c.review_insights||'No review insights recorded.';
   document.getElementById('dm-owner').innerHTML=c.owner_name||dash;
@@ -750,6 +759,33 @@ async function saveProspect(){
   if(error){toast('Error: '+error.message,'error');return;}
   await sb.from('build_tracker').insert({client_id:data.id});
   toast('Prospect added!');closeModal('prospect-modal');await loadClients();
+}
+
+
+// Quick schedule from list without entering dialer
+function quickSchedule(clientId, bizName){
+  document.getElementById('log-client').value = clientId;
+  // Reuse schedule modal but save as standalone followup
+  document.getElementById('fu-notes').value = '';
+  document.getElementById('fu-date').value = '';
+  document.getElementById('fu-type').value = 'call';
+  // Override save to not call nextProspect
+  window._quickScheduleMode = {clientId, bizName};
+  openModal('schedule-modal');
+}
+
+// Update prospect priority (tier) inline
+async function updatePriority(clientId, tier){
+  const{error}=await sb.from('clients').update({
+    tier: parseInt(tier),
+    updated_by: profile.id,
+    updated_by_name: profile.full_name||profile.email
+  }).eq('id', clientId);
+  if(error){toast('Error updating priority','error');return;}
+  const c = allClients.find(x=>x.id===clientId);
+  if(c) c.tier = parseInt(tier);
+  const labels = {1:'Hot',2:'Warm',3:'Cold'};
+  toast(`Moved to ${labels[tier]||tier}`);
 }
 
 const openModal=id=>document.getElementById(id).style.display='flex';

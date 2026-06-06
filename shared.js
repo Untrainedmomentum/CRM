@@ -77,7 +77,7 @@ const STATUS_LABELS = {
 const DEAL_LABELS = { upfront:'Upfront', revshare:'Rev Share', equity:'Equity' };
 
 const statusBadge = s => `<span class="badge badge-${s||'prospect'}">${STATUS_LABELS[s]||s||'—'}</span>`;
-const tierBadge = t => { const labels = {1:'Call Today',2:'This Week',3:'This Month'}; return t ? `<span class="badge badge-tier${t}">${labels[t]||'Tier '+t}</span>` : '—'; };
+const tierBadge = t => { const labels = {1:'Hot',2:'Warm',3:'Cold'}; return t ? `<span class="badge badge-tier${t}">${labels[t]||t}</span>` : '—'; };
 const dealBadge   = d => d ? `<span class="badge badge-${d}">${DEAL_LABELS[d]||d}</span>` : '—';
 
 function buildDot(status) {
