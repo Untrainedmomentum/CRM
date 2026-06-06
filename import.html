@@ -169,13 +169,57 @@ function parseRow(line){
 }
 
 function normalize(row){
-  if(row.tier)row.tier=parseInt(row.tier)||null;
-  if(row.score)row.score=parseInt(row.score)||null;
-  if(row.est_annual_revenue)row.est_annual_revenue=parseFloat(String(row.est_annual_revenue).replace(/[$,]/g,''))||null;
-  if(row.deal_amount)row.deal_amount=parseFloat(String(row.deal_amount).replace(/[$,]/g,''))||null;
-  if(row.google_rating)row.google_rating=parseFloat(row.google_rating)||null;
-  if(row.review_count)row.review_count=parseInt(row.review_count)||null;
-  if(!row.status||row.status==='—'||/CALL|MONTH|WEEK|TODAY/i.test(row.status||''))row.status='prospect';
+  // Numeric fields — parse or null, never send a string
+  const intFields = ['tier','score','review_count'];
+  const floatFields = ['google_rating'];
+  const moneyFields = ['est_annual_revenue','deal_amount'];
+
+  intFields.forEach(f => {
+    if(row[f] !== undefined){
+      const v = parseInt(row[f]);
+      row[f] = isNaN(v) ? null : v;
+    }
+  });
+  floatFields.forEach(f => {
+    if(row[f] !== undefined){
+      const v = parseFloat(row[f]);
+      row[f] = isNaN(v) ? null : v;
+    }
+  });
+  moneyFields.forEach(f => {
+    if(row[f] !== undefined){
+      const v = parseFloat(String(row[f]).replace(/[$,]/g,''));
+      row[f] = isNaN(v) ? null : v;
+    }
+  });
+
+  // Status — normalize call priority labels to prospect
+  if(!row.status || /CALL|MONTH|WEEK|TODAY|HOT|WARM|COLD|—|-/i.test(row.status||''))
+    row.status = 'prospect';
+
+  // year_established — keep as text, just null out junk
+  if(row.year_established === 'Unknown' || row.year_established === 'N/A' || !row.year_established)
+    row.year_established = null;
+
+  // email — null out placeholder values
+  if(row.email === 'Not found' || row.email === 'N/A' || !row.email)
+    row.email = null;
+
+  // phone — null out placeholder values  
+  if(row.phone === 'Not listed' || row.phone === 'No public number' || !row.phone)
+    row.phone = null;
+
+  // Strip out any fields not in DB — prevents 400 errors from unknown columns
+  const VALID = new Set(['business_name','owner_name','phone','email','location','year_established',
+    'legal_name','ein','deal_type','deal_amount','deposit_collected','deposit_method','deposit_date',
+    'baseline_revenue','revenue_share_pct','revenue_share_term','revenue_verified_by','equity_pct',
+    'entity_type','incorporation_state','equity_agreement_signed','status','tier','assigned_to',
+    'hard_deadline','deadline_reason','category','google_rating','review_count','review_insights',
+    'has_website','website_platform','gbp_status','est_annual_revenue','pitch_angle','call_priority',
+    'business_hours','score','website_url','website_review','updated_by','updated_by_name','county']);
+
+  Object.keys(row).forEach(k => { if(!VALID.has(k)) delete row[k]; });
+
   return row;
 }
 
