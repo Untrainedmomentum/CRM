@@ -1,0 +1,8 @@
+const CONFIG = {
+  SUPABASE_URL: 'https://lnxdvxqfmbajsajwymum.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxueGR2eHFmbWJhanNhand5bXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjM1MTMsImV4cCI6MjA5NjMzOTUxM30.47CEA_di0Xhy_S2H7-bDtYNsUh9l5JQb2XWSV_RYO-Q',
+  APP_NAME: 'Untrained Momentum CRM',
+  APP_URL: 'https://hub.untrainedmomentum.com',
+  FROM_EMAIL: 'info@untrainedmomentum.com',
+  JOHN_EMAIL: 'johnnygoblue.79@gmail.com'
+};
