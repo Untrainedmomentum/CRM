@@ -236,7 +236,7 @@
             <button class="btn btn-secondary" onclick="openModal('schedule-modal')">Schedule Follow-Up</button>
             <button class="btn btn-ghost" onclick="skipProspect()">Skip &rarr;</button>
             <div class="call-close">
-              <button class="btn btn-primary btn-lg" onclick="openConvert(currentProspect?.id,currentProspect?.business_name)">Close &mdash; Convert to Client</button>
+              <button class="btn btn-primary btn-lg" onclick="openConvert(currentProspect?.id,currentProspect?.business_name)">Close Sale — Convert to Client</button>
             </div>
           </div>
         </div>
@@ -352,7 +352,7 @@
 </div>
 
 <div class="modal-overlay" id="convert-modal" style="display:none">
-  <div class="modal"><div class="modal-header"><div class="modal-title">Convert to Client</div><button class="modal-close" onclick="closeModal('convert-modal')">&times;</button></div>
+  <div class="modal"><div class="modal-header"><div class="modal-title">Close Sale</div><button class="modal-close" onclick="closeModal('convert-modal')">&times;</button></div>
   <div class="modal-body">
     <p class="text-sm text-mid mb-16">Converting <strong id="convert-name"></strong>.</p>
     <div class="form-group"><label class="form-label">Deal Type</label><select class="form-control" id="cv-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select></div>
@@ -389,7 +389,7 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px" id="dm-links"></div>
     </div>
   </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('detail-modal')">Close</button><button class="btn btn-secondary" id="dm-log-btn">Log Call</button><button class="btn btn-primary" id="dm-convert-btn">Convert</button></div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('detail-modal')">Close Window</button><button class="btn btn-secondary" id="dm-log-btn">Log Call</button><button class="btn btn-primary" id="dm-convert-btn">Close Sale</button></div>
   </div>
 </div>
 
@@ -690,19 +690,28 @@ document.addEventListener('click',e=>{if(!e.target.closest('.global-search-wrap'
 
 function openDetail(id){
   const c=allClients.find(x=>x.id===id);if(!c)return;
+  const dash='&mdash;';
   document.getElementById('dm-biz').textContent=c.business_name;
   document.getElementById('dm-badges').innerHTML=statusBadge(c.status)+' '+tierBadge(c.tier)+(c.score?` <span class="badge badge-prospect">Score: ${c.score}/10</span>`:'');
-  document.getElementById('dm-pitch').textContent=c.pitch_angle||'No pitch angle.';
-  document.getElementById('dm-insights').textContent=c.review_insights||'No insights.';
-  document.getElementById('dm-owner').textContent=c.owner_name||'&mdash;';
-  document.getElementById('dm-hours').textContent=c.business_hours||'&mdash;';
-  document.getElementById('dm-revenue').textContent=c.est_annual_revenue?fmt$(c.est_annual_revenue)+'/yr':'&mdash;';
-  document.getElementById('dm-phone').innerHTML=c.phone?`<a href="tel:${c.phone}">${c.phone}</a>`:'&mdash;';
+  document.getElementById('dm-pitch').textContent=c.pitch_angle||'No pitch angle recorded.';
+  document.getElementById('dm-insights').textContent=c.review_insights||'No review insights recorded.';
+  document.getElementById('dm-owner').innerHTML=c.owner_name||dash;
+  document.getElementById('dm-hours').innerHTML=c.business_hours||dash;
+  document.getElementById('dm-revenue').innerHTML=c.est_annual_revenue?fmt$(c.est_annual_revenue)+'/yr':dash;
+  document.getElementById('dm-phone').innerHTML=c.phone?`<a href="tel:${c.phone}">${c.phone}</a>`:dash;
   const loc=[c.location,c.county?c.county+' County':''].filter(Boolean).join(', ');
-  document.getElementById('dm-location').textContent=loc||'&mdash;';
-  document.getElementById('dm-website').innerHTML=c.website_url?`<a href="${c.website_url}" target="_blank">${c.website_url}</a>`:(c.has_website||'&mdash;');
-  if(c.google_rating){document.getElementById('dm-rating').textContent=c.google_rating;const s=Math.round(c.google_rating);document.getElementById('dm-stars').textContent='★'.repeat(s)+'☆'.repeat(5-s);document.getElementById('dm-rcount').textContent=`${c.review_count||0} reviews`;}
-  else{document.getElementById('dm-rating').textContent='&mdash;';document.getElementById('dm-stars').textContent='';document.getElementById('dm-rcount').textContent='';}
+  document.getElementById('dm-location').innerHTML=loc||dash;
+  document.getElementById('dm-website').innerHTML=c.website_url?`<a href="${c.website_url}" target="_blank">${c.website_url}</a>`:(c.has_website||dash);
+  if(c.google_rating){
+    document.getElementById('dm-rating').textContent=c.google_rating;
+    const s=Math.round(c.google_rating);
+    document.getElementById('dm-stars').textContent='★'.repeat(s)+'☆'.repeat(5-s);
+    document.getElementById('dm-rcount').textContent=`${c.review_count||0} reviews`;
+  } else {
+    document.getElementById('dm-rating').innerHTML=dash;
+    document.getElementById('dm-stars').textContent='';
+    document.getElementById('dm-rcount').textContent='No rating data';
+  }
   const links=[];
   if(c.phone)links.push(`<a href="tel:${c.phone}" class="btn btn-primary btn-sm">Call Now</a>`);
   if(c.email&&c.email!=='Not found')links.push(`<a href="mailto:${c.email}" class="btn btn-secondary btn-sm">Email</a>`);
