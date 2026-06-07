@@ -533,7 +533,7 @@ tbody.innerHTML=list.map(function(c){
       '</td>'+
     '</tr>';
   }).join('')||'<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
-
+}
 function startFromList(id){
   callQueue=allClients.filter(c=>['prospect','pitched','presented','objection'].includes(c.status));
   queueIndex=Math.max(0,callQueue.findIndex(c=>c.id===id));
