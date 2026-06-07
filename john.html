@@ -427,8 +427,13 @@ let session={called:0,skipped:0,followups:0,closed:0};
 
 async function loadClients(){
   const isAdmin=profile.role==='admin';
-  const q=isAdmin?sb.from('clients').select('*').order('tier',{ascending:true}):sb.from('clients').select('*').eq('assigned_to',profile.id).order('tier',{ascending:true});
-  const{data}=await q;
+  let q=sb.from('clients').select('*').order('tier',{ascending:true});
+  if(!isAdmin){
+    // Show prospects assigned to John OR unassigned (shared pool)
+    q=sb.from('clients').select('*').or(`assigned_to.eq.${profile.id},assigned_to.is.null`).order('tier',{ascending:true});
+  }
+  const{data,error:qErr}=await q;
+  if(qErr)console.error('loadClients error:',qErr.message);
   allClients=data||[];
   const prospects=allClients.filter(c=>['prospect','pitched','presented','objection'].includes(c.status));
   const closed=allClients.filter(c=>['deposited','building','delivered','ongoing','upsell'].includes(c.status));
@@ -454,7 +459,8 @@ async function loadClients(){
 
 async function loadFollowUps(){
   const now=new Date();
-  const{data}=await sb.from('followups').select('*,clients(business_name)').eq('completed',false).lte('scheduled_date',now.toISOString()).order('scheduled_date',{ascending:true});
+  const{data,error:fuErr}=await sb.from('followups').select('*,clients(business_name)').eq('completed',false).order('scheduled_date',{ascending:true});
+  if(fuErr)console.error('loadFollowUps error:',fuErr.message);
   const fus=data||[];
   document.getElementById('s-due').textContent=fus.length;
   document.getElementById('fu-subtitle').textContent=`${fus.length} due today or overdue`;

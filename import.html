@@ -274,16 +274,16 @@ function processCSV(text){
   dupRows=parsed.filter(r=>isDupe(r));
 
   // Validate all new rows before showing import button
-  let hasErrors = false;
-  const validatedRows = newRows.map(r => {
+  // Keep validation metadata SEPARATE from row data
+  const validationMap = new Map();
+  newRows.forEach(r => {
     const issues = validateRow(r);
-    return {...r, _issues: issues, _valid: issues.length === 0};
+    validationMap.set(r, issues);
   });
-  const errorRows = validatedRows.filter(r => !r._valid);
-  const cleanRows = validatedRows.filter(r => r._valid);
-  hasErrors = errorRows.length > 0;
+  const errorRows = newRows.filter(r => validationMap.get(r).length > 0);
+  const cleanRows = newRows.filter(r => validationMap.get(r).length === 0);
 
-  // Store only clean rows for import
+  // Store only clean rows for import — these are pure data objects, no metadata
   newRows = cleanRows;
 
   document.getElementById('count-new').textContent=cleanRows.length;
@@ -303,7 +303,7 @@ function processCSV(text){
   list.innerHTML=[
     ...cleanRows.map(r=>`<div class="preview-row new-row"><strong>${r.business_name}</strong> — ${r.phone||'no phone'} — ${r.category||''} — ${r.location||''} — READY</div>`),
     ...dupRows.map(r=>`<div class="preview-row dup-row"><strong>${r.business_name}</strong> — DUPLICATE — will skip</div>`),
-    ...errorRows.map(r=>`<div class="preview-row" style="background:#fff8e6;border:1px solid #f0d080;border-radius:var(--r);padding:8px 12px;font-size:12px;margin-bottom:4px"><strong>${r.business_name||'Unknown'}</strong> — WARNING: ${r._issues.join(', ')}</div>`),
+    ...errorRows.map(r=>`<div class="preview-row" style="background:#fff8e6;border:1px solid #f0d080;border-radius:var(--r);padding:8px 12px;font-size:12px;margin-bottom:4px"><strong>${r.business_name||'Unknown'}</strong> — WARNING: ${validationMap.get(r).join(', ')}</div>`),
   ].join('');
 
   document.getElementById('step1').style.display='none';
