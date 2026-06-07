@@ -327,17 +327,16 @@ async function doImport(){
     for(const row of batch){
       // Strip internal validation fields before sending to Supabase
       const{_issues,_valid,...cleanRow}=row;
-      const{data:single,error:serr}=await sb.from('clients').insert(cleanRow).select('id');
+      const{error:serr}=await sb.from('clients').insert(cleanRow);
       if(serr){
         errors++;
         const errBox=document.getElementById('error-list');
         errBox.style.display='block';
         const e=document.createElement('div');
         e.style.cssText='padding:6px 10px;background:var(--red-l);border:1px solid var(--red-m);border-radius:4px;font-size:12px;font-family:var(--font-m);margin-bottom:4px;color:var(--dark)';
-        e.textContent=`FAILED: ${row.business_name||'unknown'} — ${serr.message}`;
+        e.textContent=`FAILED: ${cleanRow.business_name||'unknown'} — ${serr.message}`;
         errBox.appendChild(e);
-      } else if(single?.[0]){
-        await sb.from('build_tracker').insert({client_id:single[0].id});
+      } else {
         done++;
       }
     }
