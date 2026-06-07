@@ -516,21 +516,23 @@ function renderList(){
     return true;
   });
   const tbody=document.getElementById('list-tbody');
-  tbody.innerHTML=list.map(c=>`<tr onclick="openDetail('${c.id}')" style="cursor:pointer">
-    <td><strong>${c.business_name}</strong></td>
-    <td class="text-sm text-mid">${c.category||'&mdash;'}</td>
-    <td class="text-sm">${c.location||'&mdash;'}</td>
-    <td class="text-mono text-sm">${c.phone||'&mdash;'}</td>
-    <td class="text-sm">${c.business_hours||'&mdash;'}</td>
-    <td>${tierBadge(c.tier)}</td>
-    <td class="text-sm" style="font-weight:600;color:var(--red)">${c.score||'&mdash;'}</td>
-    <td class="text-sm">${c.google_rating?`<span style="color:var(--gold);font-weight:600">${c.google_rating}</span> (${c.review_count||0})`:''}</td>
-    <td style="display:flex;gap:4px">
-      <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList('${c.id}')">Call</button>
-      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule('${c.id}','${c.business_name.replace(/'/g,\"\\'\")}')">Schedule</button>
-    </td>
-  </tr>`).join('')||'<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
-}
+tbody.innerHTML=list.map(function(c){
+    var rating=c.google_rating?'<span style="color:var(--gold);font-weight:600">'+c.google_rating+'</span> ('+( c.review_count||0)+')':'';
+    return '<tr onclick="openDetail(\''+c.id+'\')" style="cursor:pointer">'+
+      '<td><strong>'+c.business_name+'</strong></td>'+
+      '<td class="text-sm text-mid">'+(c.category||'&mdash;')+'</td>'+
+      '<td class="text-sm">'+(c.location||'&mdash;')+'</td>'+
+      '<td class="text-mono text-sm">'+(c.phone||'&mdash;')+'</td>'+
+      '<td class="text-sm">'+(c.business_hours||'&mdash;')+'</td>'+
+      '<td>'+tierBadge(c.tier)+'</td>'+
+      '<td class="text-sm" style="font-weight:600;color:var(--red)">'+(c.score||'&mdash;')+'</td>'+
+      '<td class="text-sm">'+rating+'</td>'+
+      '<td style="display:flex;gap:4px">'+
+        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList(\''+c.id+'\')">Call</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule(\''+c.id+'\')">Schedule</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('')||'<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
 
 function startFromList(id){
   callQueue=allClients.filter(c=>['prospect','pitched','presented','objection'].includes(c.status));
