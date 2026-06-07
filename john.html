@@ -608,9 +608,16 @@ async function claimProspect(clientId){
 }
 
 async function saveFollowUp(){
-  if(!currentProspect)return;
-  =document.getElementById('fu-date').value;
+  const date=document.getElementById('fu-date').value;
   if(!date){toast('Please select a date','error');return;}
+  if(window._quickScheduleMode){
+    const{clientId}=window._quickScheduleMode;
+    window._quickScheduleMode=null;
+    await sb.from('followups').insert({client_id:clientId,user_id:profile.id,type:document.getElementById('fu-type').value,scheduled_date:date,next_action:document.getElementById('fu-notes').value||null,completed:false});
+    await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',clientId);
+    toast('Follow-up scheduled!');closeModal('schedule-modal');await loadFollowUps();return;
+  }
+  if(!currentProspect)return;
   await claimProspect(currentProspect.id);
   await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:document.getElementById('fu-type').value,scheduled_date:date,next_action:document.getElementById('fu-notes').value||null,completed:false});
   await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);
