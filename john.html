@@ -113,17 +113,12 @@
 
   <div class="main-content">
 
-    <!-- ALWAYS-ON SEARCH -->
     <div class="global-search-wrap">
-      <input class="global-search" id="global-search" type="text"
-        placeholder="Search any prospect by name, phone, or business..."
-        oninput="liveSearch(this.value)"
-        onblur="setTimeout(hideSearch,200)"
-        onfocus="if(this.value.length>1)showSearch()">
+      <input class="global-search" id="global-search" type="text" placeholder="Search any prospect by name, phone, or business..."
+        oninput="liveSearch(this.value)" onblur="setTimeout(hideSearch,200)" onfocus="if(this.value.length>1)showSearch()">
       <div class="search-dropdown" id="search-dropdown"></div>
     </div>
 
-    <!-- STATS -->
     <div class="stats-grid mb-24">
       <div class="stat-card"><div class="stat-label">Prospects</div><div class="stat-value" id="s-prospects">&mdash;</div></div>
       <div class="stat-card green"><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">&mdash;</div></div>
@@ -131,10 +126,8 @@
       <div class="stat-card blue"><div class="stat-label">Follow-Ups Due</div><div class="stat-value" id="s-due">&mdash;</div></div>
     </div>
 
-    <!-- ══ COLD CALLING ══════════════════════════════════════ -->
+    <!-- COLD CALLING -->
     <div class="view-panel active" id="view-calling">
-
-      <!-- LAUNCH -->
       <div id="calling-launch">
         <div class="page-header">
           <div><div class="page-title">Cold Calling</div><div class="page-subtitle">Choose how to start your session</div></div>
@@ -142,9 +135,9 @@
         </div>
         <div class="call-launch">
           <div class="launch-card" onclick="startCalling()">
-            <div class="launch-title">Start Tier 1s</div>
-            <div class="launch-sub">Jump into your hottest prospects — no warm-up needed</div>
-            <div style="margin-top:16px"><span class="badge badge-tier1 tier-call-today">Call Today</span> <span id="t1-count" class="text-sm text-mid"></span></div>
+            <div class="launch-title">Start Hot Prospects</div>
+            <div class="launch-sub">Jump into your hottest prospects &mdash; no warm-up needed</div>
+            <div style="margin-top:16px"><span class="badge badge-tier1">Hot</span> <span id="t1-count" class="text-sm text-mid"></span></div>
           </div>
           <div class="launch-card" onclick="showList()">
             <div class="launch-title">Review List First</div>
@@ -152,14 +145,15 @@
             <div style="margin-top:16px;font-size:13px;color:var(--mid)">Full list with scores and pitch angles</div>
           </div>
         </div>
-
-        <!-- PROSPECT LIST -->
         <div id="list-wrap" style="display:none">
           <div class="flex-between mb-16">
             <div class="table-title">All Prospects</div>
             <div class="filter-bar">
               <select class="filter-select" id="tier-filter" onchange="renderList()">
-                <option value="">All Priority</option><option value="1">Hot</option><option value="2">Warm</option><option value="3">Cold</option>
+                <option value="">All Priority</option>
+                <option value="1">Hot</option>
+                <option value="2">Warm</option>
+                <option value="3">Cold</option>
               </select>
               <select class="filter-select" id="cat-filter" onchange="renderList()">
                 <option value="">All Categories</option>
@@ -169,14 +163,13 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Business</th><th>Category</th><th>City</th><th>Phone</th><th>Hours</th><th>Tier</th><th>Score</th><th>Rating</th><th></th></tr></thead>
+              <thead><tr><th>Business</th><th>Category</th><th>City</th><th>Phone</th><th>Hours</th><th>Priority</th><th>Score</th><th>Rating</th><th></th></tr></thead>
               <tbody id="list-tbody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- CALLING CARD -->
       <div id="calling-session" style="display:none">
         <div class="flex-between mb-16">
           <div><div class="page-title">Cold Calling</div><div class="page-subtitle" id="session-progress"></div></div>
@@ -236,13 +229,12 @@
             <button class="btn btn-secondary" onclick="openModal('schedule-modal')">Schedule Follow-Up</button>
             <button class="btn btn-ghost" onclick="skipProspect()">Skip &rarr;</button>
             <div class="call-close">
-              <button class="btn btn-primary btn-lg" onclick="openConvert(currentProspect?.id,currentProspect?.business_name)">Close Sale — Convert to Client</button>
+              <button class="btn btn-primary btn-lg" onclick="openConvert(currentProspect ? currentProspect.id : null, currentProspect ? currentProspect.business_name : '')">Close Sale &mdash; Convert to Client</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SESSION SUMMARY -->
       <div id="session-summary" style="display:none">
         <div class="card" style="text-align:center;padding:48px">
           <div style="font-family:var(--font-d);font-size:26px;font-weight:700;margin-bottom:8px">Session Complete</div>
@@ -250,7 +242,7 @@
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:480px;margin:0 auto 32px">
             <div><div style="font-family:var(--font-d);font-size:36px;font-weight:700;color:var(--red)" id="sum-called">0</div><div class="text-xs text-mid">Called</div></div>
             <div><div style="font-family:var(--font-d);font-size:36px;font-weight:700" id="sum-skipped">0</div><div class="text-xs text-mid">Skipped</div></div>
-            <div><div style="font-family:var(--font-d);font-size:36px;font-weight:700;color:var(--blue)" id="sum-scheduled">0</div><div class="text-xs text-mid">Follow-Ups</div></div>
+            <div><div style="font-family:var(--font-d);font-size:36px;font-weight:700;color:var(--blue)" id="sum-followups">0</div><div class="text-xs text-mid">Follow-Ups</div></div>
             <div><div style="font-family:var(--font-d);font-size:36px;font-weight:700;color:var(--green)" id="sum-closed">0</div><div class="text-xs text-mid">Closed</div></div>
           </div>
           <button class="btn btn-primary btn-lg" onclick="resetSession()">Start Another Session</button>
@@ -258,7 +250,7 @@
       </div>
     </div>
 
-    <!-- ══ FOLLOW UPS ════════════════════════════════════════ -->
+    <!-- FOLLOW UPS -->
     <div class="view-panel" id="view-followups">
       <div class="page-header">
         <div><div class="page-title">Follow Ups</div><div class="page-subtitle" id="fu-subtitle">Loading...</div></div>
@@ -271,7 +263,7 @@
       </div>
     </div>
 
-    <!-- ══ UPSELLS ════════════════════════════════════════════ -->
+    <!-- UPSELLS -->
     <div class="view-panel" id="view-upsells">
       <div class="page-header">
         <div><div class="page-title">Upsells</div><div class="page-subtitle">Closed clients and what they could use next</div></div>
@@ -279,7 +271,7 @@
       <div id="upsell-list"><div class="loading">Loading...</div></div>
     </div>
 
-    <!-- ══ SCRIPTS & PLAYBOOK ════════════════════════════════ -->
+    <!-- SCRIPTS & PLAYBOOK -->
     <div class="view-panel" id="view-playbook">
       <div class="page-header">
         <div><div class="page-title">Scripts &amp; Playbook</div><div class="page-subtitle">What to sell, what to say, how to handle pushback</div></div>
@@ -295,7 +287,9 @@
       </div>
       <div class="card mb-24">
         <div class="card-title">Key Phrases to Listen for on the Call</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px"><span class="call-phrase">I miss calls sometimes</span><span class="call-phrase">I am always on a job</span><span class="call-phrase">I need to hire someone</span><span class="call-phrase">I am drowning in paperwork</span><span class="call-phrase">I never have time</span><span class="call-phrase">customers can't find me</span><span class="call-phrase">I get all my work from referrals</span><span class="call-phrase">my website is old</span><span class="call-phrase">I don't have the budget</span><span class="call-phrase">business is slow right now</span><span class="call-phrase">I work nights and weekends</span><span class="call-phrase">I can't keep up</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="call-phrase">I miss calls sometimes</span><span class="call-phrase">I am always on a job</span><span class="call-phrase">I need to hire someone</span><span class="call-phrase">I am drowning in paperwork</span><span class="call-phrase">I never have time</span><span class="call-phrase">customers can't find me</span><span class="call-phrase">I get all my work from referrals</span><span class="call-phrase">my website is old</span><span class="call-phrase">I don't have the budget</span><span class="call-phrase">business is slow right now</span><span class="call-phrase">I work nights and weekends</span><span class="call-phrase">I can't keep up</span>
+        </div>
       </div>
       <div id="scripts-list"><div class="loading">Loading scripts...</div></div>
     </div>
@@ -305,105 +299,174 @@
 
 <!-- MODALS -->
 <div class="modal-overlay" id="prospect-modal" style="display:none">
-  <div class="modal"><div class="modal-header"><div class="modal-title">Add Prospect</div><button class="modal-close" onclick="closeModal('prospect-modal')">&times;</button></div>
-  <div class="modal-body">
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Business Name</label><input class="form-control" id="p-biz"></div>
-      <div class="form-group"><label class="form-label">Owner</label><input class="form-control" id="p-owner"></div>
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Prospect</div><button class="modal-close" onclick="closeModal('prospect-modal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Business Name</label><input class="form-control" id="p-biz"></div>
+        <div class="form-group"><label class="form-label">Owner</label><input class="form-control" id="p-owner"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="p-phone" type="tel"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="p-email" type="email"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">City</label><input class="form-control" id="p-city"></div>
+        <div class="form-group"><label class="form-label">County</label><input class="form-control" id="p-county" placeholder="Mecosta, Osceola..."></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Category</label><input class="form-control" id="p-cat" placeholder="Plumber, HVAC..."></div>
+        <div class="form-group"><label class="form-label">Business Hours</label><input class="form-control" id="p-hours" placeholder="Mon-Fri 8am-5pm"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Priority</label>
+          <select class="form-control" id="p-tier">
+            <option value="1">Hot</option>
+            <option value="2">Warm</option>
+            <option value="3">Cold</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Score (1-10)</label><input class="form-control" id="p-score" type="number" min="1" max="10"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Pitch Angle</label><input class="form-control" id="p-pitch"></div>
+      <div class="form-group"><label class="form-label">Review Insights</label><textarea class="form-control" id="p-reviews" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">Website URL</label><input class="form-control" id="p-url" type="url" placeholder="https://"></div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Website Platform</label><input class="form-control" id="p-platform" placeholder="Wix, WordPress..."></div>
+        <div class="form-group"><label class="form-label">Google Rating</label><input class="form-control" id="p-rating" type="number" step="0.1" min="0" max="5" placeholder="4.8"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Website Notes</label><textarea class="form-control" id="p-web-review" rows="2" placeholder="No SSL, no mobile, no booking button..."></textarea></div>
     </div>
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="p-phone" type="tel"></div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="p-email" type="email"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('prospect-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProspect()">Add Prospect</button>
     </div>
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">City</label><input class="form-control" id="p-city"></div>
-      <div class="form-group"><label class="form-label">County</label><input class="form-control" id="p-county" placeholder="Mecosta, Osceola..."></div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Category</label><input class="form-control" id="p-cat" placeholder="Plumber, HVAC..."></div>
-      <div class="form-group"><label class="form-label">Business Hours</label><input class="form-control" id="p-hours" placeholder="Mon-Fri 8am-5pm"></div>
-    </div>
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Tier</label><select class="form-control" id="p-tier"><option value="1">Hot</option><option value="2">Warm</option><option value="3">Cold</option></select></div>
-      <div class="form-group"><label class="form-label">Score (1-10)</label><input class="form-control" id="p-score" type="number" min="1" max="10"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Pitch Angle</label><input class="form-control" id="p-pitch"></div>
-    <div class="form-group"><label class="form-label">Review Insights</label><textarea class="form-control" id="p-reviews" rows="2"></textarea></div>
-    <div class="form-group"><label class="form-label">Website URL</label><input class="form-control" id="p-url" type="url" placeholder="https://"></div>
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Website Platform</label><input class="form-control" id="p-platform" placeholder="Wix, WordPress..."></div>
-      <div class="form-group"><label class="form-label">Google Rating</label><input class="form-control" id="p-rating" type="number" step="0.1" min="0" max="5" placeholder="4.8"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Website Review <span class="form-hint">What you noticed about their site</span></label><textarea class="form-control" id="p-web-review" rows="2" placeholder="No SSL, no mobile, no booking button..."></textarea></div>
-  </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('prospect-modal')">Cancel</button><button class="btn btn-primary" onclick="saveProspect()">Add Prospect</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="schedule-modal" style="display:none">
-  <div class="modal"><div class="modal-header"><div class="modal-title">Schedule Follow-Up</div><button class="modal-close" onclick="closeModal('schedule-modal')">&times;</button></div>
-  <div class="modal-body">
-    <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" id="fu-date"></div>
-    <div class="form-group"><label class="form-label">Type</label><select class="form-control" id="fu-type"><option value="call">Call</option><option value="text">Text</option><option value="email">Email</option><option value="visit">Visit</option></select></div>
-    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="fu-notes" rows="3"></textarea></div>
-  </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('schedule-modal')">Cancel</button><button class="btn btn-primary" onclick="saveFollowUp()">Schedule &amp; Next</button></div>
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Schedule Follow-Up</div><button class="modal-close" onclick="closeModal('schedule-modal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" id="fu-date"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-control" id="fu-type">
+          <option value="call">Call</option>
+          <option value="text">Text</option>
+          <option value="email">Email</option>
+          <option value="visit">Visit</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="fu-notes" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('schedule-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFollowUp()">Schedule</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="convert-modal" style="display:none">
-  <div class="modal"><div class="modal-header"><div class="modal-title">Close Sale</div><button class="modal-close" onclick="closeModal('convert-modal')">&times;</button></div>
-  <div class="modal-body">
-    <p class="text-sm text-mid mb-16">Converting <strong id="convert-name"></strong>.</p>
-    <div class="form-group"><label class="form-label">Deal Type</label><select class="form-control" id="cv-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select></div>
-    <div class="form-group"><label class="form-label">Deposit ($)</label><input class="form-control" id="cv-deposit" type="number"></div>
-    <div class="form-group"><label class="form-label">Method</label><select class="form-control" id="cv-method"><option value="">--</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select></div>
-    <div class="form-group"><label class="form-label">Notes for Jen</label><textarea class="form-control" id="cv-notes" rows="3"></textarea></div>
-  </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('convert-modal')">Cancel</button><button class="btn btn-primary" onclick="doConvert()">Convert &amp; Next</button></div>
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Close Sale</div><button class="modal-close" onclick="closeModal('convert-modal')">&times;</button></div>
+    <div class="modal-body">
+      <p class="text-sm text-mid mb-16">Converting <strong id="convert-name"></strong>.</p>
+      <div class="form-group"><label class="form-label">Deal Type</label>
+        <select class="form-control" id="cv-deal">
+          <option value="">--</option>
+          <option value="upfront">Upfront</option>
+          <option value="revshare">Rev Share</option>
+          <option value="equity">Equity</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Deposit ($)</label><input class="form-control" id="cv-deposit" type="number"></div>
+      <div class="form-group"><label class="form-label">Method</label>
+        <select class="form-control" id="cv-method">
+          <option value="">--</option>
+          <option value="card">Card</option>
+          <option value="venmo">Venmo</option>
+          <option value="check">Check</option>
+          <option value="cash">Cash</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Notes for Jen</label><textarea class="form-control" id="cv-notes" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('convert-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="doConvert()">Convert &amp; Next</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="detail-modal" style="display:none">
-  <div class="modal" style="max-width:660px"><div class="modal-header">
-    <div><div class="modal-title" id="dm-biz"></div><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap" id="dm-badges"></div></div>
-    <button class="modal-close" onclick="closeModal('detail-modal')">&times;</button>
-  </div>
-  <div class="modal-body">
-    <div class="call-section"><div class="call-section-title">Pitch Angle</div><div class="pitch-box" id="dm-pitch">No pitch angle.</div></div>
-    <div class="call-section">
-      <div class="call-section-title">Reviews</div>
-      <div class="rating-row"><div class="rating-big" id="dm-rating"></div><div><div class="rating-stars" id="dm-stars"></div><div class="text-xs text-mid" id="dm-rcount"></div></div></div>
-      <div class="review-box" id="dm-insights">No insights.</div>
-    </div>
-    <div class="call-section">
-      <div class="call-section-title">Contact</div>
-      <div class="contact-grid">
-        <div class="contact-item"><div class="contact-label">Phone</div><div class="contact-value" id="dm-phone"></div></div>
-        <div class="contact-item"><div class="contact-label">Hours</div><div class="contact-value" id="dm-hours"></div></div>
-        <div class="contact-item"><div class="contact-label">Owner</div><div class="contact-value" id="dm-owner"></div></div>
-        <div class="contact-item"><div class="contact-label">City / County</div><div class="contact-value" id="dm-location"></div></div>
-        <div class="contact-item"><div class="contact-label">Website</div><div class="contact-value" id="dm-website"></div></div>
-        <div class="contact-item"><div class="contact-label">Est. Revenue</div><div class="contact-value" id="dm-revenue"></div></div>
+  <div class="modal" style="max-width:660px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="dm-biz"></div>
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap" id="dm-badges"></div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px" id="dm-links"></div>
+      <button class="modal-close" onclick="closeModal('detail-modal')">&times;</button>
     </div>
-  </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('detail-modal')">Close Window</button><button class="btn btn-secondary" id="dm-log-btn">Log Call</button><button class="btn btn-primary" id="dm-convert-btn">Close Sale</button></div>
+    <div class="modal-body">
+      <div class="call-section"><div class="call-section-title">Pitch Angle</div><div class="pitch-box" id="dm-pitch">No pitch angle recorded.</div></div>
+      <div class="call-section">
+        <div class="call-section-title">Reviews</div>
+        <div class="rating-row"><div class="rating-big" id="dm-rating">&mdash;</div><div><div class="rating-stars" id="dm-stars"></div><div class="text-xs text-mid" id="dm-rcount"></div></div></div>
+        <div class="review-box" id="dm-insights">No review insights recorded.</div>
+      </div>
+      <div class="call-section">
+        <div class="call-section-title">Contact</div>
+        <div class="contact-grid">
+          <div class="contact-item"><div class="contact-label">Phone</div><div class="contact-value" id="dm-phone">&mdash;</div></div>
+          <div class="contact-item"><div class="contact-label">Hours</div><div class="contact-value" id="dm-hours">&mdash;</div></div>
+          <div class="contact-item"><div class="contact-label">Owner</div><div class="contact-value" id="dm-owner">&mdash;</div></div>
+          <div class="contact-item"><div class="contact-label">City / County</div><div class="contact-value" id="dm-location">&mdash;</div></div>
+          <div class="contact-item"><div class="contact-label">Website</div><div class="contact-value" id="dm-website">&mdash;</div></div>
+          <div class="contact-item"><div class="contact-label">Est. Revenue</div><div class="contact-value" id="dm-revenue">&mdash;</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px" id="dm-links"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('detail-modal')">Close Window</button>
+      <button class="btn btn-secondary" id="dm-log-btn">Log Call</button>
+      <button class="btn btn-primary" id="dm-convert-btn">Close Sale</button>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="log-modal" style="display:none">
-  <div class="modal"><div class="modal-header"><div class="modal-title">Log Activity</div><button class="modal-close" onclick="closeModal('log-modal')">&times;</button></div>
-  <div class="modal-body">
-    <div class="form-group"><label class="form-label">Client</label><select class="form-control" id="log-client"></select></div>
-    <div class="form-grid-2">
-      <div class="form-group"><label class="form-label">Type</label><select class="form-control" id="log-type"><option value="call">Call</option><option value="text">Text</option><option value="email">Email</option><option value="visit">Visit</option></select></div>
-      <div class="form-group"><label class="form-label">Outcome</label><select class="form-control" id="log-outcome"><option value="interested">Interested</option><option value="not_interested">Not Interested</option><option value="callback">Wants Callback</option><option value="left_voicemail">Left Voicemail</option><option value="no_answer">No Answer</option><option value="closed">Closed</option><option value="other">Other</option></select></div>
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Log Activity</div><button class="modal-close" onclick="closeModal('log-modal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Client</label><select class="form-control" id="log-client"></select></div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-control" id="log-type">
+            <option value="call">Call</option>
+            <option value="text">Text</option>
+            <option value="email">Email</option>
+            <option value="visit">Visit</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Outcome</label>
+          <select class="form-control" id="log-outcome">
+            <option value="interested">Interested</option>
+            <option value="not_interested">Not Interested</option>
+            <option value="callback">Wants Callback</option>
+            <option value="left_voicemail">Left Voicemail</option>
+            <option value="no_answer">No Answer</option>
+            <option value="closed">Closed</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="log-notes" rows="3"></textarea></div>
     </div>
-    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="log-notes" rows="3"></textarea></div>
-  </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('log-modal')">Cancel</button><button class="btn btn-primary" onclick="saveLog()">Save</button></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('log-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLog()">Save</button>
+    </div>
   </div>
 </div>
 
@@ -411,400 +474,660 @@
 <script src="assets/js/config.js"></script>
 <script src="shared.js"></script>
 <script>
-let profile, allClients=[], scripts=[];
-let callQueue=[], queueIndex=0, currentProspect=null, convertId=null;
-let session={called:0,skipped:0,followups:0,closed:0};
+// ── STATE ─────────────────────────────────────────────────────
+var profile = null;
+var allClients = [];
+var scripts = [];
+var callQueue = [];
+var queueIndex = 0;
+var currentProspect = null;
+var convertId = null;
+var quickScheduleClientId = null;
+var session = {called:0, skipped:0, followups:0, closed:0};
 
-(async()=>{
-  const{data:{session:s}}=await sb.auth.getSession();
-  if(!s){window.location.replace('index.html');return;}
-  let p={id:s.user.id,email:s.user.email,role:'sales',full_name:'John'};
-  try{const{data}=await sb.from('profiles').select('*').eq('id',s.user.id).single();if(data)p=data;}catch(e){}
-  profile=p;renderNav(p);
-  if(p.role!=='admin')document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
-  await Promise.all([loadClients(),loadScripts()]);
+// ── INIT ──────────────────────────────────────────────────────
+(async function() {
+  var res = await sb.auth.getSession();
+  var s = res.data.session;
+  if (!s) { window.location.replace('index.html'); return; }
+
+  var p = {id: s.user.id, email: s.user.email, role: 'sales', full_name: 'John'};
+  try {
+    var pr = await sb.from('profiles').select('*').eq('id', s.user.id).single();
+    if (pr.data) p = pr.data;
+  } catch(e) {}
+
+  profile = p;
+  renderNav(p);
+  if (p.role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = 'none'; });
+  }
+
+  await loadClients();
+  await loadScripts();
 })();
 
-async function loadClients(){
-  const isAdmin=profile.role==='admin';
-  let q=sb.from('clients').select('*').order('tier',{ascending:true});
-  if(!isAdmin){
-    // Show prospects assigned to John OR unassigned (shared pool)
-    q=sb.from('clients').select('*').or('assigned_to.eq.'+profile.id+',assigned_to.is.null').order('tier',{ascending:true});
+// ── LOAD DATA ─────────────────────────────────────────────────
+async function loadClients() {
+  var isAdmin = profile.role === 'admin';
+  var result;
+
+  if (isAdmin) {
+    result = await sb.from('clients').select('*').order('tier', {ascending: true});
+  } else {
+    result = await sb.from('clients').select('*')
+      .or('assigned_to.eq.' + profile.id + ',assigned_to.is.null')
+      .order('tier', {ascending: true});
   }
-  const{data,error:qErr}=await q;
-  if(qErr)console.error('loadClients error:',qErr.message);
-  allClients=data||[];
-  const prospects=allClients.filter(c=>['prospect','pitched','presented','objection'].includes(c.status));
-  const closed=allClients.filter(c=>['deposited','building','delivered','ongoing','upsell'].includes(c.status));
-  const commission=closed.reduce((s,c)=>s+(c.deposit_collected||0)*.2,0);
-  document.getElementById('s-prospects').textContent=prospects.length;
-  document.getElementById('s-closed').textContent=closed.length;
-  document.getElementById('s-commission').textContent=fmt$(commission);
-  document.getElementById('log-client').innerHTML=allClients.map(c=>`<option value="${c.id}">${c.business_name}</option>`).join('');
 
-  // Populate category filter
-  const cats=[...new Set(allClients.map(c=>c.category).filter(Boolean))].sort();
-  const cf=document.getElementById('cat-filter');
-  cf.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  if (result.error) {
+    console.error('loadClients error:', result.error.message);
+  }
 
-  // T1 count
-  const t1=prospects.filter(c=>c.tier==1);
-  const el=document.getElementById('t1-count');
-  if(el)el.textContent=`${t1.length} prospect${t1.length!==1?'s':''}`;
+  allClients = result.data || [];
 
-  await loadFollowUps();
+  var prospects = allClients.filter(function(c) {
+    return ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1;
+  });
+  var closed = allClients.filter(function(c) {
+    return ['deposited','building','delivered','ongoing','upsell'].indexOf(c.status) !== -1;
+  });
+  var commission = closed.reduce(function(sum, c) {
+    return sum + (c.deposit_collected || 0) * 0.2;
+  }, 0);
+
+  document.getElementById('s-prospects').textContent = prospects.length;
+  document.getElementById('s-closed').textContent = closed.length;
+  document.getElementById('s-commission').textContent = fmt$(commission);
+
+  // Log client dropdown
+  document.getElementById('log-client').innerHTML = allClients.map(function(c) {
+    return '<option value="' + c.id + '">' + c.business_name + '</option>';
+  }).join('');
+
+  // Category filter
+  var cats = [];
+  allClients.forEach(function(c) { if (c.category && cats.indexOf(c.category) === -1) cats.push(c.category); });
+  cats.sort();
+  var cf = document.getElementById('cat-filter');
+  cf.innerHTML = '<option value="">All Categories</option>' + cats.map(function(c) {
+    return '<option value="' + c + '">' + c + '</option>';
+  }).join('');
+
+  // Hot count
+  var hot = prospects.filter(function(c) { return c.tier == 1; });
+  var el = document.getElementById('t1-count');
+  if (el) el.textContent = hot.length + ' prospect' + (hot.length !== 1 ? 's' : '');
+
   renderUpsells(closed);
+  await loadFollowUps();
 }
 
-async function loadFollowUps(){
-  const now=new Date();
-  const{data,error:fuErr}=await sb.from('followups').select('*,clients(business_name)').eq('completed',false).order('scheduled_date',{ascending:true});
-  if(fuErr)console.error('loadFollowUps error:',fuErr.message);
-  const fus=data||[];
-  document.getElementById('s-due').textContent=fus.length;
-  document.getElementById('fu-subtitle').textContent=`${fus.length} due today or overdue`;
-  const badge=document.getElementById('fu-badge');
-  if(fus.length>0){badge.textContent=fus.length;badge.style.display='inline';}else{badge.style.display='none';}
-  const tbody=document.getElementById('fu-tbody');
-  if(!fus.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">No follow-ups due today</div></div></td></tr>';return;}
-  const now2=new Date();
-  tbody.innerHTML=fus.map(f=>{
-    const due=new Date(f.scheduled_date);
-    const days=Math.floor((now2-due)/86400000);
-    return`<tr><td><strong>${f.clients?.business_name||'&mdash;'}</strong></td><td><span class="badge badge-prospect">${f.type}</span></td><td class="text-sm">${fmtDate(f.scheduled_date)}</td><td class="text-sm ${days>0?'text-red':'text-mid'}">${days>0?days+' days overdue':'Today'}</td><td class="text-sm text-mid">${f.next_action||'&mdash;'}</td><td><button class="btn btn-ghost btn-sm" onclick="completeFollowup('${f.id}')">Done</button></td></tr>`;
+async function loadFollowUps() {
+  var result = await sb.from('followups')
+    .select('*,clients(business_name)')
+    .eq('completed', false)
+    .order('scheduled_date', {ascending: true});
+
+  if (result.error) console.error('loadFollowUps error:', result.error.message);
+
+  var fus = result.data || [];
+  var now = new Date();
+  var due = fus.filter(function(f) { return new Date(f.scheduled_date) <= now; });
+
+  document.getElementById('s-due').textContent = due.length;
+  document.getElementById('fu-subtitle').textContent = due.length + ' due today or overdue';
+
+  var badge = document.getElementById('fu-badge');
+  if (due.length > 0) { badge.textContent = due.length; badge.style.display = 'inline'; }
+  else { badge.style.display = 'none'; }
+
+  var tbody = document.getElementById('fu-tbody');
+  if (!due.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">No follow-ups due today</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = due.map(function(f) {
+    var d = new Date(f.scheduled_date);
+    var days = Math.floor((now - d) / 86400000);
+    var bizName = (f.clients && f.clients.business_name) ? f.clients.business_name : '&mdash;';
+    return '<tr>' +
+      '<td><strong>' + bizName + '</strong></td>' +
+      '<td><span class="badge badge-prospect">' + f.type + '</span></td>' +
+      '<td class="text-sm">' + fmtDate(f.scheduled_date) + '</td>' +
+      '<td class="text-sm ' + (days > 0 ? 'text-red' : 'text-mid') + '">' + (days > 0 ? days + ' days overdue' : 'Today') + '</td>' +
+      '<td class="text-sm text-mid">' + (f.next_action || '&mdash;') + '</td>' +
+      '<td><button class="btn btn-ghost btn-sm" onclick="completeFollowup(\'' + f.id + '\')">Done</button></td>' +
+      '</tr>';
   }).join('');
 }
 
-async function loadScripts(){
-  const{data}=await sb.from('scripts').select('*').eq('active',true).order('display_order');
-  scripts=data||[];renderScripts();
+async function loadScripts() {
+  var result = await sb.from('scripts').select('*').eq('active', true).order('display_order');
+  scripts = result.data || [];
+  renderScripts();
 }
 
-function switchView(name){
-  document.querySelectorAll('.view-tab').forEach((t,i)=>{
-    const names=['calling','followups','upsells','playbook'];
-    t.classList.toggle('active',names[i]===name);
+// ── VIEW SWITCHING ────────────────────────────────────────────
+function switchView(name) {
+  var names = ['calling', 'followups', 'upsells', 'playbook'];
+  document.querySelectorAll('.view-tab').forEach(function(t, i) {
+    t.classList.toggle('active', names[i] === name);
   });
-  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById(`view-${name}`).classList.add('active');
+  document.querySelectorAll('.view-panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  document.getElementById('view-' + name).classList.add('active');
 }
 
-function startCalling(){
-  callQueue=allClients.filter(c=>c.tier==1&&['prospect','pitched','presented','objection'].includes(c.status));
-  if(!callQueue.length){toast('No Tier 1 prospects in queue','info');return;}
-  session={called:0,skipped:0,followups:0,closed:0};queueIndex=0;
-  document.getElementById('calling-launch').style.display='none';
-  document.getElementById('calling-session').style.display='block';
+// ── CALLING WORKFLOW ──────────────────────────────────────────
+function startCalling() {
+  callQueue = allClients.filter(function(c) {
+    return c.tier == 1 && ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1;
+  });
+  if (!callQueue.length) { toast('No Hot prospects in queue', 'info'); return; }
+  session = {called:0, skipped:0, followups:0, closed:0};
+  queueIndex = 0;
+  document.getElementById('calling-launch').style.display = 'none';
+  document.getElementById('calling-session').style.display = 'block';
   loadCard(callQueue[queueIndex]);
 }
 
-function showList(){
-  document.getElementById('list-wrap').style.display='block';
+function showList() {
+  document.getElementById('list-wrap').style.display = 'block';
   renderList();
 }
 
-function renderList(){
-  const tier=document.getElementById('tier-filter').value;
-  const cat=document.getElementById('cat-filter').value;
-  const q=(document.getElementById('list-search').value||'').toLowerCase();
-  const list=allClients.filter(c=>{
-    if(!['prospect','pitched','presented','objection'].includes(c.status))return false;
-    if(tier&&String(c.tier)!==tier)return false;
-    if(cat&&c.category!==cat)return false;
-    if(q&&![c.business_name,c.owner_name,c.phone,c.category,c.location].some(v=>v?.toLowerCase().includes(q)))return false;
+function renderList() {
+  var tier = document.getElementById('tier-filter').value;
+  var cat = document.getElementById('cat-filter').value;
+  var q = (document.getElementById('list-search').value || '').toLowerCase();
+
+  var list = allClients.filter(function(c) {
+    if (['prospect','pitched','presented','objection'].indexOf(c.status) === -1) return false;
+    if (tier && String(c.tier) !== tier) return false;
+    if (cat && c.category !== cat) return false;
+    if (q) {
+      var fields = [c.business_name, c.owner_name, c.phone, c.category, c.location];
+      if (!fields.some(function(v) { return v && v.toLowerCase().indexOf(q) !== -1; })) return false;
+    }
     return true;
   });
-  const tbody=document.getElementById('list-tbody');
-tbody.innerHTML=list.map(function(c){
-    var rating=c.google_rating?'<span style="color:var(--gold);font-weight:600">'+c.google_rating+'</span> ('+( c.review_count||0)+')':'';
-    return '<tr onclick="openDetail(\''+c.id+'\')" style="cursor:pointer">'+
-      '<td><strong>'+c.business_name+'</strong></td>'+
-      '<td class="text-sm text-mid">'+(c.category||'&mdash;')+'</td>'+
-      '<td class="text-sm">'+(c.location||'&mdash;')+'</td>'+
-      '<td class="text-mono text-sm">'+(c.phone||'&mdash;')+'</td>'+
-      '<td class="text-sm">'+(c.business_hours||'&mdash;')+'</td>'+
-      '<td>'+tierBadge(c.tier)+'</td>'+
-      '<td class="text-sm" style="font-weight:600;color:var(--red)">'+(c.score||'&mdash;')+'</td>'+
-      '<td class="text-sm">'+rating+'</td>'+
-      '<td style="display:flex;gap:4px">'+
-        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList(\''+c.id+'\')">Call</button>'+
-        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule(\''+c.id+'\')">Schedule</button>'+
-      '</td>'+
-    '</tr>';
-  }).join('')||'<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
+
+  var tbody = document.getElementById('list-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(function(c) {
+    var rating = c.google_rating
+      ? '<span style="color:var(--gold);font-weight:600">' + c.google_rating + '</span> (' + (c.review_count || 0) + ')'
+      : '';
+    return '<tr onclick="openDetail(\'' + c.id + '\')" style="cursor:pointer">' +
+      '<td><strong>' + c.business_name + '</strong></td>' +
+      '<td class="text-sm text-mid">' + (c.category || '&mdash;') + '</td>' +
+      '<td class="text-sm">' + (c.location || '&mdash;') + '</td>' +
+      '<td class="text-mono text-sm">' + (c.phone || '&mdash;') + '</td>' +
+      '<td class="text-sm">' + (c.business_hours || '&mdash;') + '</td>' +
+      '<td>' + tierBadge(c.tier) + '</td>' +
+      '<td class="text-sm" style="font-weight:600;color:var(--red)">' + (c.score || '&mdash;') + '</td>' +
+      '<td class="text-sm">' + rating + '</td>' +
+      '<td style="display:flex;gap:4px">' +
+        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList(\'' + c.id + '\')">Call</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule(\'' + c.id + '\')">Schedule</button>' +
+      '</td>' +
+      '</tr>';
+  }).join('');
 }
-function startFromList(id){
-  callQueue=allClients.filter(c=>['prospect','pitched','presented','objection'].includes(c.status));
-  queueIndex=Math.max(0,callQueue.findIndex(c=>c.id===id));
-  session={called:0,skipped:0,followups:0,closed:0};
-  document.getElementById('calling-launch').style.display='none';
-  document.getElementById('calling-session').style.display='block';
+
+function startFromList(id) {
+  callQueue = allClients.filter(function(c) {
+    return ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1;
+  });
+  queueIndex = Math.max(0, callQueue.findIndex(function(c) { return c.id === id; }));
+  session = {called:0, skipped:0, followups:0, closed:0};
+  document.getElementById('calling-launch').style.display = 'none';
+  document.getElementById('calling-session').style.display = 'block';
   loadCard(callQueue[queueIndex]);
 }
 
-function loadCard(c){
-  if(!c){endSession();return;}
-  currentProspect=c;
-  document.getElementById('cc-biz').textContent=c.business_name;
-  document.getElementById('cc-meta').textContent=[c.category,c.location,c.county?c.county+' County':''].filter(Boolean).join(' — ');
-  document.getElementById('cc-badges').innerHTML=statusBadge(c.status)+' '+tierBadge(c.tier)+(c.score?` <span class="badge badge-prospect">Score: ${c.score}/10</span>`:'');
-  document.getElementById('cc-skips').textContent=c._skips||0;
-  document.getElementById('cc-pitch').textContent=c.pitch_angle||'No pitch angle recorded.';
-  document.getElementById('cc-insights').textContent=c.review_insights||'No review insights recorded.';
-  document.getElementById('cc-owner').textContent=c.owner_name||'&mdash;';
-  document.getElementById('cc-hours').textContent=c.business_hours||'&mdash;';
-  document.getElementById('cc-website').textContent=c.has_website||'&mdash;';
-  document.getElementById('cc-gbp').textContent=c.gbp_status||'&mdash;';
-  document.getElementById('cc-revenue').textContent=c.est_annual_revenue?fmt$(c.est_annual_revenue)+'/yr':'&mdash;';
-  document.getElementById('cc-value').textContent=c.deal_amount?fmt$(c.deal_amount):'&mdash;';
-  document.getElementById('cc-phone').innerHTML=c.phone?`<a href="tel:${c.phone}">${c.phone}</a>`:'&mdash;';
-  const loc=[c.location,c.county?c.county+' County':''].filter(Boolean).join(', ');
-  document.getElementById('cc-location').innerHTML=loc?`${loc} &mdash; <a href="https://www.google.com/maps/search/${encodeURIComponent((c.business_name||'')+' '+(c.location||''))}" target="_blank">Map</a>`:'&mdash;';
-  if(c.google_rating){
-    document.getElementById('cc-rating').textContent=c.google_rating;
-    const s=Math.round(c.google_rating);
-    document.getElementById('cc-stars').textContent='★'.repeat(s)+'☆'.repeat(5-s);
-    document.getElementById('cc-rcount').textContent=`${c.review_count||0} Google reviews`;
-  }else{document.getElementById('cc-rating').textContent='&mdash;';document.getElementById('cc-stars').textContent='';document.getElementById('cc-rcount').textContent='';}
-  const links=[];
-  if(c.phone)links.push(`<a href="tel:${c.phone}" class="btn btn-primary btn-sm">Call Now</a>`);
-  if(c.email&&c.email!=='Not found')links.push(`<a href="mailto:${c.email}" class="btn btn-secondary btn-sm">Email</a>`);
-  if(c.website_url)links.push(`<a href="${c.website_url}" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>`);
-  if(c.location)links.push(`<a href="https://www.google.com/maps/search/${encodeURIComponent((c.business_name||'')+' '+(c.location||''))}" target="_blank" class="btn btn-secondary btn-sm">Maps</a>`);
-  document.getElementById('cc-links').innerHTML=links.join('');
-  document.getElementById('session-progress').textContent=`${queueIndex+1} of ${callQueue.length}`;
+function loadCard(c) {
+  if (!c) { endSession(); return; }
+  currentProspect = c;
+
+  document.getElementById('cc-biz').textContent = c.business_name;
+  document.getElementById('cc-meta').textContent = [c.category, c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(' \u2014 ');
+  document.getElementById('cc-badges').innerHTML = statusBadge(c.status) + ' ' + tierBadge(c.tier) + (c.score ? ' <span class="badge badge-prospect">Score: ' + c.score + '/10</span>' : '');
+  document.getElementById('cc-skips').textContent = c._skips || 0;
+  document.getElementById('cc-pitch').textContent = c.pitch_angle || 'No pitch angle recorded.';
+  document.getElementById('cc-insights').textContent = c.review_insights || 'No review insights recorded.';
+  document.getElementById('cc-owner').textContent = c.owner_name || '\u2014';
+  document.getElementById('cc-hours').textContent = c.business_hours || '\u2014';
+  document.getElementById('cc-website').textContent = c.has_website || '\u2014';
+  document.getElementById('cc-gbp').textContent = c.gbp_status || '\u2014';
+  document.getElementById('cc-revenue').textContent = c.est_annual_revenue ? fmt$(c.est_annual_revenue) + '/yr' : '\u2014';
+  document.getElementById('cc-value').textContent = c.deal_amount ? fmt$(c.deal_amount) : '\u2014';
+  document.getElementById('cc-phone').innerHTML = c.phone ? '<a href="tel:' + c.phone + '">' + c.phone + '</a>' : '\u2014';
+
+  var loc = [c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(', ');
+  document.getElementById('cc-location').innerHTML = loc
+    ? loc + ' &mdash; <a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank">Map</a>'
+    : '\u2014';
+
+  if (c.google_rating) {
+    document.getElementById('cc-rating').textContent = c.google_rating;
+    var s = Math.round(c.google_rating);
+    document.getElementById('cc-stars').textContent = '\u2605'.repeat(s) + '\u2606'.repeat(5 - s);
+    document.getElementById('cc-rcount').textContent = (c.review_count || 0) + ' Google reviews';
+  } else {
+    document.getElementById('cc-rating').textContent = '\u2014';
+    document.getElementById('cc-stars').textContent = '';
+    document.getElementById('cc-rcount').textContent = '';
+  }
+
+  var links = [];
+  if (c.phone) links.push('<a href="tel:' + c.phone + '" class="btn btn-primary btn-sm">Call Now</a>');
+  if (c.email && c.email !== 'Not found') links.push('<a href="mailto:' + c.email + '" class="btn btn-secondary btn-sm">Email</a>');
+  if (c.website_url) links.push('<a href="' + c.website_url + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
+  if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
+  document.getElementById('cc-links').innerHTML = links.join('');
+
+  document.getElementById('session-progress').textContent = (queueIndex + 1) + ' of ' + callQueue.length;
   updateBars();
 }
 
-function updateBars(){
-  ['called','skipped','followups','closed'].forEach(k=>{
-    const el=document.getElementById('ss-'+k);if(el)el.textContent=session[k];
-    const sb=document.getElementById('sb-'+k);if(sb)sb.textContent=session[k];
-  });
-  // fix scheduled
-  document.getElementById('ss-scheduled').textContent=session.followups;
+function updateBars() {
+  document.getElementById('ss-called').textContent = session.called;
+  document.getElementById('ss-skipped').textContent = session.skipped;
+  document.getElementById('ss-scheduled').textContent = session.followups;
+  document.getElementById('ss-closed').textContent = session.closed;
+  document.getElementById('sb-called').textContent = session.called;
+  document.getElementById('sb-skipped').textContent = session.skipped;
+  document.getElementById('sb-followups').textContent = session.followups;
+  document.getElementById('sb-closed').textContent = session.closed;
 }
 
-function nextProspect(){session.called++;queueIndex++;if(queueIndex>=callQueue.length){showSummary();return;}loadCard(callQueue[queueIndex]);updateBars();}
+function nextProspect() {
+  session.called++;
+  queueIndex++;
+  if (queueIndex >= callQueue.length) { showSummary(); return; }
+  loadCard(callQueue[queueIndex]);
+  updateBars();
+}
 
-function skipProspect(){
+function skipProspect() {
   session.skipped++;
-  if(currentProspect){currentProspect._skips=(currentProspect._skips||0)+1;sb.from('clients').update({status:'pitched'}).eq('id',currentProspect.id);}
-  queueIndex++;if(queueIndex>=callQueue.length){showSummary();return;}loadCard(callQueue[queueIndex]);updateBars();
+  if (currentProspect) {
+    currentProspect._skips = (currentProspect._skips || 0) + 1;
+    sb.from('clients').update({status: 'pitched'}).eq('id', currentProspect.id);
+  }
+  queueIndex++;
+  if (queueIndex >= callQueue.length) { showSummary(); return; }
+  loadCard(callQueue[queueIndex]);
+  updateBars();
 }
 
-async function leftVoicemail(){if(!currentProspect)return;await claimProspect(currentProspect.id);await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:'call',outcome:'left_voicemail',notes:'Left voicemail',completed:true,completed_date:new Date().toISOString()});await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Voicemail logged');nextProspect();}
-async function wrongNumber(){if(!currentProspect)return;await claimProspect(currentProspect.id);await sb.from('clients').update({johns_notes:(currentProspect.johns_notes||'')+'\nWRONG/DISCONNECTED NUMBER',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Flagged');nextProspect();}
-async function notInterested(){if(!currentProspect)return;await claimProspect(currentProspect.id);await sb.from('clients').update({status:'objection',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Marked not interested');nextProspect();}
-async function doNotCall(){if(!currentProspect)return;await sb.from('clients').update({status:'churned',johns_notes:(currentProspect.johns_notes||'')+'\nDO NOT CALL',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);toast('Do Not Call');nextProspect();}
+async function leftVoicemail() {
+  if (!currentProspect) return;
+  await claimProspect(currentProspect.id);
+  await sb.from('followups').insert({client_id: currentProspect.id, user_id: profile.id, type: 'call', outcome: 'left_voicemail', notes: 'Left voicemail', completed: true, completed_date: new Date().toISOString()});
+  await sb.from('clients').update({status: 'pitched', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  toast('Voicemail logged');
+  nextProspect();
+}
 
-// Auto-assign prospect to whoever takes first action
-async function claimProspect(clientId){
-  if(!clientId)return;
+async function wrongNumber() {
+  if (!currentProspect) return;
+  await claimProspect(currentProspect.id);
+  await sb.from('clients').update({johns_notes: (currentProspect.johns_notes || '') + '\nWRONG/DISCONNECTED NUMBER', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  toast('Flagged');
+  nextProspect();
+}
+
+async function notInterested() {
+  if (!currentProspect) return;
+  await claimProspect(currentProspect.id);
+  await sb.from('clients').update({status: 'objection', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  toast('Marked not interested');
+  nextProspect();
+}
+
+async function doNotCall() {
+  if (!currentProspect) return;
+  await sb.from('clients').update({status: 'churned', johns_notes: (currentProspect.johns_notes || '') + '\nDO NOT CALL', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  toast('Do Not Call');
+  nextProspect();
+}
+
+async function claimProspect(clientId) {
+  if (!clientId) return;
   await sb.from('clients').update({
     assigned_to: profile.id,
     updated_by: profile.id,
-    updated_by_name: profile.full_name||profile.email
-  }).eq('id',clientId).is('assigned_to',null);
+    updated_by_name: profile.full_name || profile.email
+  }).eq('id', clientId).is('assigned_to', null);
 }
 
-async function saveFollowUp(){
-  const date=document.getElementById('fu-date').value;
-  if(!date){toast('Please select a date','error');return;}
-  if(window._quickScheduleMode){
-    const{clientId}=window._quickScheduleMode;
-    window._quickScheduleMode=null;
-    await sb.from('followups').insert({client_id:clientId,user_id:profile.id,type:document.getElementById('fu-type').value,scheduled_date:date,next_action:document.getElementById('fu-notes').value||null,completed:false});
-    await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',clientId);
-    toast('Follow-up scheduled!');closeModal('schedule-modal');await loadFollowUps();return;
+async function saveFollowUp() {
+  var date = document.getElementById('fu-date').value;
+  if (!date) { toast('Please select a date', 'error'); return; }
+  var type = document.getElementById('fu-type').value;
+  var notes = document.getElementById('fu-notes').value || null;
+
+  if (quickScheduleClientId) {
+    // Quick schedule from list — no dialer
+    await claimProspect(quickScheduleClientId);
+    await sb.from('followups').insert({client_id: quickScheduleClientId, user_id: profile.id, type: type, scheduled_date: date, next_action: notes, completed: false});
+    await sb.from('clients').update({status: 'pitched', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', quickScheduleClientId);
+    quickScheduleClientId = null;
+    toast('Follow-up scheduled!');
+    closeModal('schedule-modal');
+    await loadFollowUps();
+    return;
   }
-  if(!currentProspect)return;
+
+  if (!currentProspect) return;
   await claimProspect(currentProspect.id);
-  await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:document.getElementById('fu-type').value,scheduled_date:date,next_action:document.getElementById('fu-notes').value||null,completed:false});
-  await sb.from('clients').update({status:'pitched',updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',currentProspect.id);
-  session.followups++;toast('Follow-up scheduled!');closeModal('schedule-modal');nextProspect();
+  await sb.from('followups').insert({client_id: currentProspect.id, user_id: profile.id, type: type, scheduled_date: date, next_action: notes, completed: false});
+  await sb.from('clients').update({status: 'pitched', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  session.followups++;
+  toast('Follow-up scheduled!');
+  closeModal('schedule-modal');
+  nextProspect();
 }
 
-function openConvert(id,name){convertId=id;document.getElementById('convert-name').textContent=name||'';openModal('convert-modal');}
-async function doConvert(){
-  if(!convertId)return;
+function openConvert(id, name) {
+  convertId = id;
+  document.getElementById('convert-name').textContent = name || '';
+  openModal('convert-modal');
+}
+
+async function doConvert() {
+  if (!convertId) return;
   await claimProspect(convertId);
-  await sb.from('clients').update({status:'deposited',deal_type:document.getElementById('cv-deal').value||null,deposit_collected:document.getElementById('cv-deposit').value||null,deposit_method:document.getElementById('cv-method').value||null,assigned_to:profile.id,updated_by:profile.id,updated_by_name:profile.full_name||profile.email}).eq('id',convertId);
-  const notes=document.getElementById('cv-notes').value;
-  if(notes)await sb.from('followups').insert({client_id:convertId,user_id:profile.id,type:'other',outcome:'closed',notes:`CONVERTED: ${notes}`,completed:true,completed_date:new Date().toISOString()});
-  session.closed++;toast('Converted!');closeModal('convert-modal');convertId=null;nextProspect();
+  await sb.from('clients').update({
+    status: 'deposited',
+    deal_type: document.getElementById('cv-deal').value || null,
+    deposit_collected: document.getElementById('cv-deposit').value || null,
+    deposit_method: document.getElementById('cv-method').value || null,
+    assigned_to: profile.id,
+    updated_by: profile.id,
+    updated_by_name: profile.full_name || profile.email
+  }).eq('id', convertId);
+  var notes = document.getElementById('cv-notes').value;
+  if (notes) {
+    await sb.from('followups').insert({client_id: convertId, user_id: profile.id, type: 'other', outcome: 'closed', notes: 'CONVERTED: ' + notes, completed: true, completed_date: new Date().toISOString()});
+  }
+  session.closed++;
+  toast('Converted!');
+  closeModal('convert-modal');
+  convertId = null;
+  nextProspect();
 }
 
-function endSession(){document.getElementById('calling-session').style.display='none';showSummary();}
-function showSummary(){
-  document.getElementById('calling-session').style.display='none';
-  document.getElementById('calling-launch').style.display='none';
-  document.getElementById('session-summary').style.display='block';
-  ['called','skipped','followups','closed'].forEach(k=>document.getElementById('sum-'+k).textContent=session[k]);
-  document.getElementById('sum-scheduled').textContent=session.followups;
-  document.getElementById('summary-msg').textContent=`${session.called} prospect${session.called!==1?'s':''} contacted this session.`;
+function endSession() {
+  document.getElementById('calling-session').style.display = 'none';
+  showSummary();
+}
+
+function showSummary() {
+  document.getElementById('calling-session').style.display = 'none';
+  document.getElementById('calling-launch').style.display = 'none';
+  document.getElementById('session-summary').style.display = 'block';
+  document.getElementById('sum-called').textContent = session.called;
+  document.getElementById('sum-skipped').textContent = session.skipped;
+  document.getElementById('sum-followups').textContent = session.followups;
+  document.getElementById('sum-closed').textContent = session.closed;
+  document.getElementById('summary-msg').textContent = session.called + ' prospect' + (session.called !== 1 ? 's' : '') + ' contacted this session.';
   updateBars();
 }
-function resetSession(){
-  session={called:0,skipped:0,followups:0,closed:0};callQueue=[];queueIndex=0;currentProspect=null;
-  document.getElementById('session-summary').style.display='none';
-  document.getElementById('calling-launch').style.display='block';
-  document.getElementById('list-wrap').style.display='none';
-  updateBars();loadClients();
+
+function resetSession() {
+  session = {called:0, skipped:0, followups:0, closed:0};
+  callQueue = []; queueIndex = 0; currentProspect = null;
+  document.getElementById('session-summary').style.display = 'none';
+  document.getElementById('calling-launch').style.display = 'block';
+  document.getElementById('list-wrap').style.display = 'none';
+  updateBars();
+  loadClients();
 }
 
-function renderUpsells(closed){
-  const SERVICES={website:'Website',gbp:'Google Listing',voice_ai:'Voice AI',email:'Business Email',booking:'Booking',automation:'Automation',managed_it:'Managed IT',payments:'Payments'};
-  const list=document.getElementById('upsell-list');
-  if(!closed.length){list.innerHTML='<div class="empty-state"><div class="empty-state-text">No closed clients yet — keep calling</div></div>';return;}
-  list.innerHTML=closed.map(c=>`<div class="upsell-card">
-    <div>
-      <div class="upsell-biz">${c.business_name}</div>
-      <div style="font-size:12px;color:var(--mid);margin-bottom:10px">${c.owner_name||''} &mdash; ${statusBadge(c.status)} ${dealBadge(c.deal_type)}</div>
-      <div>${Object.values(SERVICES).map(s=>`<span class="upsell-tag">${s}</span>`).join('')}</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <a href="client.html?id=${c.id}" class="btn btn-secondary btn-sm">View</a>
-      <button class="btn btn-primary btn-sm" onclick="openLog('${c.id}')">Log</button>
-    </div>
-  </div>`).join('');
-}
-
-function renderScripts(){
-  const list=document.getElementById('scripts-list');
-  if(!scripts.length){list.innerHTML='<div class="empty-state"><div class="empty-state-text">No scripts — add them in Supabase scripts table</div></div>';return;}
-  list.innerHTML=scripts.map((s,i)=>{
-    const objs=Array.isArray(s.objections)?s.objections:(s.objections?JSON.parse(s.objections):[]);
-    return`<div class="script-card">
-      <div class="script-head" onclick="toggleScript(${i})"><div class="script-service">${s.service}</div><div class="script-toggle" id="st-${i}">&#9660;</div></div>
-      <div class="script-body" id="sb-${i}">
-        <div class="script-section"><div class="script-section-title">What It Is</div><p style="font-size:14px;line-height:1.7">${s.what_it_is||'&mdash;'}</p></div>
-        <div class="script-section"><div class="script-section-title">The Pitch</div><div class="script-pitch">${s.pitch||'&mdash;'}</div></div>
-        ${s.key_stat?`<div class="script-section"><div class="script-section-title">Key Stat</div><div class="stat-callout">${s.key_stat}</div></div>`:''}
-        ${s.when_to_recommend?`<div class="script-section"><div class="script-section-title">When to Recommend</div><p style="font-size:13px;line-height:1.7">${s.when_to_recommend}</p></div>`:''}
-        ${objs.length?`<div class="script-section"><div class="script-section-title">Objections &amp; Responses</div>${objs.map(o=>`<div class="objection-item"><div class="objection-q">"${o.objection}"</div><div class="objection-a">${o.response}</div></div>`).join('')}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
-function toggleScript(i){const b=document.getElementById(`sb-${i}`),t=document.getElementById(`st-${i}`),o=b.classList.contains('open');b.classList.toggle('open',!o);t.classList.toggle('open',!o);}
-
-let searchT;
-function liveSearch(q){
-  clearTimeout(searchT);
-  if(!q||q.length<2){hideSearch();return;}
-  searchT=setTimeout(()=>{
-    const term=q.toLowerCase();
-    const results=allClients.filter(c=>c.business_name?.toLowerCase().includes(term)||c.owner_name?.toLowerCase().includes(term)||(c.phone||'').replace(/\D/g,'').includes(term.replace(/\D/g,''))||c.category?.toLowerCase().includes(term)||c.location?.toLowerCase().includes(term)).slice(0,12);
-    const box=document.getElementById('search-dropdown');
-    box.innerHTML=!results.length?'<div style="padding:20px;text-align:center;color:var(--mid);font-size:13px">No results</div>':results.map(c=>`<div class="sd-item" onclick="openDetail('${c.id}');hideSearch()"><div><div class="sd-biz">${c.business_name}</div><div class="sd-sub">${c.category||''} &mdash; ${c.phone||''} &mdash; ${c.location||''}</div></div><div>${tierBadge(c.tier)}</div></div>`).join('');
-    showSearch();
-  },180);
-}
-function showSearch(){document.getElementById('search-dropdown').classList.add('show');}
-function hideSearch(){document.getElementById('search-dropdown').classList.remove('show');}
-document.addEventListener('click',e=>{if(!e.target.closest('.global-search-wrap'))hideSearch();});
-
-function openDetail(id){
-  const c=allClients.find(x=>x.id===id);if(!c)return;
-  const dash='&mdash;';
-  document.getElementById('dm-biz').textContent=c.business_name;
-  document.getElementById('dm-badges').innerHTML=statusBadge(c.status)
-    +` <select onchange="updatePriority('${c.id}',this.value)" style="font-size:11px;font-weight:600;padding:2px 6px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:var(--light)">
-      <option value="1" ${c.tier==1?'selected':''}>Hot</option>
-      <option value="2" ${c.tier==2?'selected':''}>Warm</option>
-      <option value="3" ${c.tier==3?'selected':''}>Cold</option>
-    </select>`
-    +(c.score?` <span class="badge badge-prospect">Score: ${c.score}/10</span>`:'');
-  document.getElementById('dm-pitch').textContent=c.pitch_angle||'No pitch angle recorded.';
-  document.getElementById('dm-insights').textContent=c.review_insights||'No review insights recorded.';
-  document.getElementById('dm-owner').innerHTML=c.owner_name||dash;
-  document.getElementById('dm-hours').innerHTML=c.business_hours||dash;
-  document.getElementById('dm-revenue').innerHTML=c.est_annual_revenue?fmt$(c.est_annual_revenue)+'/yr':dash;
-  document.getElementById('dm-phone').innerHTML=c.phone?`<a href="tel:${c.phone}">${c.phone}</a>`:dash;
-  const loc=[c.location,c.county?c.county+' County':''].filter(Boolean).join(', ');
-  document.getElementById('dm-location').innerHTML=loc||dash;
-  document.getElementById('dm-website').innerHTML=c.website_url?`<a href="${c.website_url}" target="_blank">${c.website_url}</a>`:(c.has_website||dash);
-  if(c.google_rating){
-    document.getElementById('dm-rating').textContent=c.google_rating;
-    const s=Math.round(c.google_rating);
-    document.getElementById('dm-stars').textContent='★'.repeat(s)+'☆'.repeat(5-s);
-    document.getElementById('dm-rcount').textContent=`${c.review_count||0} reviews`;
-  } else {
-    document.getElementById('dm-rating').innerHTML=dash;
-    document.getElementById('dm-stars').textContent='';
-    document.getElementById('dm-rcount').textContent='No rating data';
-  }
-  const links=[];
-  if(c.phone)links.push(`<a href="tel:${c.phone}" class="btn btn-primary btn-sm">Call Now</a>`);
-  if(c.email&&c.email!=='Not found')links.push(`<a href="mailto:${c.email}" class="btn btn-secondary btn-sm">Email</a>`);
-  if(c.website_url)links.push(`<a href="${c.website_url}" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>`);
-  if(c.location)links.push(`<a href="https://www.google.com/maps/search/${encodeURIComponent((c.business_name||'')+' '+(c.location||''))}" target="_blank" class="btn btn-secondary btn-sm">Maps</a>`);
-  document.getElementById('dm-links').innerHTML=links.join('');
-  document.getElementById('dm-log-btn').onclick=()=>{closeModal('detail-modal');openLog(id);};
-  document.getElementById('dm-convert-btn').onclick=()=>{closeModal('detail-modal');openConvert(id,c.business_name);};
-  openModal('detail-modal');
-}
-
-async function completeFollowup(id){await sb.from('followups').update({completed:true,completed_date:new Date().toISOString()}).eq('id',id);toast('Done!');await loadFollowUps();}
-
-function openLog(clientId){if(clientId)document.getElementById('log-client').value=clientId;openModal('log-modal');}
-async function saveLog(){
-  const clientId=document.getElementById('log-client').value;
-  const outcome=document.getElementById('log-outcome').value;
-  await sb.from('followups').insert({client_id:clientId,user_id:profile.id,type:document.getElementById('log-type').value,outcome,notes:document.getElementById('log-notes').value||null,completed:true,completed_date:new Date().toISOString()});
-  if(outcome==='closed')await sb.from('clients').update({status:'deposited'}).eq('id',clientId);
-  toast('Logged!');closeModal('log-modal');
-}
-
-async function saveProspect(){
-  const g=id=>document.getElementById(id)?.value.trim()||null;
-  const{data,error}=await sb.from('clients').insert({
-    business_name:g('p-biz')||'Unknown',owner_name:g('p-owner'),phone:g('p-phone'),email:g('p-email'),
-    location:g('p-city'),category:g('p-cat'),business_hours:g('p-hours'),
-    tier:parseInt(document.getElementById('p-tier').value)||1,
-    score:parseInt(g('p-score'))||null,
-    pitch_angle:g('p-pitch'),review_insights:g('p-reviews'),
-    website_url:g('p-url'),website_platform:g('p-platform'),
-    google_rating:parseFloat(g('p-rating'))||null,
-    website_review:g('p-web-review'),
-    status:'prospect',assigned_to:profile.id,
-  }).select().single();
-  if(error){toast('Error: '+error.message,'error');return;}
-  await sb.from('build_tracker').insert({client_id:data.id});
-  toast('Prospect added!');closeModal('prospect-modal');await loadClients();
-}
-
-
-// Quick schedule from list without entering dialer
-function quickSchedule(clientId, bizName){
-  document.getElementById('log-client').value = clientId;
-  // Reuse schedule modal but save as standalone followup
-  document.getElementById('fu-notes').value = '';
+// ── QUICK SCHEDULE ────────────────────────────────────────────
+function quickSchedule(clientId) {
+  quickScheduleClientId = clientId;
   document.getElementById('fu-date').value = '';
+  document.getElementById('fu-notes').value = '';
   document.getElementById('fu-type').value = 'call';
-  // Override save to not call nextProspect
-  window._quickScheduleMode = {clientId, bizName};
   openModal('schedule-modal');
 }
 
-// Update prospect priority (tier) inline
-async function updatePriority(clientId, tier){
-  const{error}=await sb.from('clients').update({
+// ── PRIORITY UPDATE ───────────────────────────────────────────
+async function updatePriority(clientId, tier) {
+  var result = await sb.from('clients').update({
     tier: parseInt(tier),
     updated_by: profile.id,
-    updated_by_name: profile.full_name||profile.email
+    updated_by_name: profile.full_name || profile.email
   }).eq('id', clientId);
-  if(error){toast('Error updating priority','error');return;}
-  const c = allClients.find(x=>x.id===clientId);
-  if(c) c.tier = parseInt(tier);
-  const labels = {1:'Hot',2:'Warm',3:'Cold'};
-  toast(`Moved to ${labels[tier]||tier}`);
+  if (result.error) { toast('Error updating priority', 'error'); return; }
+  var c = allClients.find(function(x) { return x.id === clientId; });
+  if (c) c.tier = parseInt(tier);
+  var labels = {1:'Hot', 2:'Warm', 3:'Cold'};
+  toast('Moved to ' + (labels[tier] || tier));
 }
 
-const openModal=id=>document.getElementById(id).style.display='flex';
-const closeModal=id=>document.getElementById(id).style.display='none';
+// ── UPSELLS ───────────────────────────────────────────────────
+function renderUpsells(closed) {
+  var SERVICES = ['Website','Google Listing','Voice AI','Business Email','Booking','Automation','Managed IT','Payments'];
+  var list = document.getElementById('upsell-list');
+  if (!closed.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No closed clients yet &mdash; keep calling</div></div>';
+    return;
+  }
+  list.innerHTML = closed.map(function(c) {
+    return '<div class="upsell-card">' +
+      '<div>' +
+        '<div class="upsell-biz">' + c.business_name + '</div>' +
+        '<div style="font-size:12px;color:var(--mid);margin-bottom:10px">' + (c.owner_name || '') + ' &mdash; ' + statusBadge(c.status) + ' ' + dealBadge(c.deal_type) + '</div>' +
+        '<div>' + SERVICES.map(function(s) { return '<span class="upsell-tag">' + s + '</span>'; }).join('') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+        '<a href="client.html?id=' + c.id + '" class="btn btn-secondary btn-sm">View</a>' +
+        '<button class="btn btn-primary btn-sm" onclick="openLog(\'' + c.id + '\')">Log</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── SCRIPTS ───────────────────────────────────────────────────
+function renderScripts() {
+  var list = document.getElementById('scripts-list');
+  if (!scripts.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No scripts loaded</div></div>';
+    return;
+  }
+  list.innerHTML = scripts.map(function(s, i) {
+    var objs = Array.isArray(s.objections) ? s.objections : (s.objections ? JSON.parse(s.objections) : []);
+    return '<div class="script-card">' +
+      '<div class="script-head" onclick="toggleScript(' + i + ')">' +
+        '<div class="script-service">' + s.service + '</div>' +
+        '<div class="script-toggle" id="st-' + i + '">&#9660;</div>' +
+      '</div>' +
+      '<div class="script-body" id="sb-' + i + '">' +
+        '<div class="script-section"><div class="script-section-title">What It Is</div><p style="font-size:14px;line-height:1.7">' + (s.what_it_is || '&mdash;') + '</p></div>' +
+        '<div class="script-section"><div class="script-section-title">The Pitch</div><div class="script-pitch">' + (s.pitch || '&mdash;') + '</div></div>' +
+        (s.key_stat ? '<div class="script-section"><div class="script-section-title">Key Stat</div><div class="stat-callout">' + s.key_stat + '</div></div>' : '') +
+        (s.when_to_recommend ? '<div class="script-section"><div class="script-section-title">When to Recommend</div><p style="font-size:13px;line-height:1.7">' + s.when_to_recommend + '</p></div>' : '') +
+        (objs.length ? '<div class="script-section"><div class="script-section-title">Objections &amp; Responses</div>' +
+          objs.map(function(o) {
+            return '<div class="objection-item"><div class="objection-q">&ldquo;' + o.objection + '&rdquo;</div><div class="objection-a">' + o.response + '</div></div>';
+          }).join('') + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleScript(i) {
+  var b = document.getElementById('sb-' + i);
+  var t = document.getElementById('st-' + i);
+  var open = b.classList.contains('open');
+  b.classList.toggle('open', !open);
+  t.classList.toggle('open', !open);
+}
+
+// ── LIVE SEARCH ───────────────────────────────────────────────
+var searchT;
+function liveSearch(q) {
+  clearTimeout(searchT);
+  if (!q || q.length < 2) { hideSearch(); return; }
+  searchT = setTimeout(function() {
+    var term = q.toLowerCase();
+    var results = allClients.filter(function(c) {
+      return (c.business_name && c.business_name.toLowerCase().indexOf(term) !== -1) ||
+             (c.owner_name && c.owner_name.toLowerCase().indexOf(term) !== -1) ||
+             (c.phone && c.phone.replace(/\D/g,'').indexOf(term.replace(/\D/g,'')) !== -1) ||
+             (c.category && c.category.toLowerCase().indexOf(term) !== -1) ||
+             (c.location && c.location.toLowerCase().indexOf(term) !== -1);
+    }).slice(0, 12);
+
+    var box = document.getElementById('search-dropdown');
+    if (!results.length) {
+      box.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mid);font-size:13px">No results</div>';
+    } else {
+      box.innerHTML = results.map(function(c) {
+        return '<div class="sd-item" onclick="openDetail(\'' + c.id + '\');hideSearch()">' +
+          '<div>' +
+            '<div class="sd-biz">' + c.business_name + '</div>' +
+            '<div class="sd-sub">' + (c.category || '') + ' &mdash; ' + (c.phone || '') + ' &mdash; ' + (c.location || '') + '</div>' +
+          '</div>' +
+          '<div>' + tierBadge(c.tier) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+    showSearch();
+  }, 180);
+}
+function showSearch() { document.getElementById('search-dropdown').classList.add('show'); }
+function hideSearch() { document.getElementById('search-dropdown').classList.remove('show'); }
+document.addEventListener('click', function(e) { if (!e.target.closest('.global-search-wrap')) hideSearch(); });
+
+// ── DETAIL MODAL ──────────────────────────────────────────────
+function openDetail(id) {
+  var c = allClients.find(function(x) { return x.id === id; });
+  if (!c) return;
+
+  document.getElementById('dm-biz').textContent = c.business_name;
+  document.getElementById('dm-badges').innerHTML =
+    statusBadge(c.status) +
+    ' <select onchange="updatePriority(\'' + c.id + '\',this.value)" style="font-size:11px;font-weight:600;padding:2px 6px;border-radius:12px;border:1px solid var(--border);cursor:pointer;background:var(--light)">' +
+      '<option value="1"' + (c.tier==1?' selected':'') + '>Hot</option>' +
+      '<option value="2"' + (c.tier==2?' selected':'') + '>Warm</option>' +
+      '<option value="3"' + (c.tier==3?' selected':'') + '>Cold</option>' +
+    '</select>' +
+    (c.score ? ' <span class="badge badge-prospect">Score: ' + c.score + '/10</span>' : '');
+
+  document.getElementById('dm-pitch').textContent = c.pitch_angle || 'No pitch angle recorded.';
+  document.getElementById('dm-insights').textContent = c.review_insights || 'No review insights recorded.';
+  document.getElementById('dm-owner').textContent = c.owner_name || '\u2014';
+  document.getElementById('dm-hours').textContent = c.business_hours || '\u2014';
+  document.getElementById('dm-revenue').textContent = c.est_annual_revenue ? fmt$(c.est_annual_revenue) + '/yr' : '\u2014';
+  document.getElementById('dm-phone').innerHTML = c.phone ? '<a href="tel:' + c.phone + '">' + c.phone + '</a>' : '\u2014';
+
+  var loc = [c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(', ');
+  document.getElementById('dm-location').textContent = loc || '\u2014';
+  document.getElementById('dm-website').innerHTML = c.website_url
+    ? '<a href="' + c.website_url + '" target="_blank">' + c.website_url + '</a>'
+    : (c.has_website || '\u2014');
+
+  if (c.google_rating) {
+    document.getElementById('dm-rating').textContent = c.google_rating;
+    var s = Math.round(c.google_rating);
+    document.getElementById('dm-stars').textContent = '\u2605'.repeat(s) + '\u2606'.repeat(5 - s);
+    document.getElementById('dm-rcount').textContent = (c.review_count || 0) + ' reviews';
+  } else {
+    document.getElementById('dm-rating').textContent = '\u2014';
+    document.getElementById('dm-stars').textContent = '';
+    document.getElementById('dm-rcount').textContent = 'No rating data';
+  }
+
+  var links = [];
+  if (c.phone) links.push('<a href="tel:' + c.phone + '" class="btn btn-primary btn-sm">Call Now</a>');
+  if (c.email && c.email !== 'Not found') links.push('<a href="mailto:' + c.email + '" class="btn btn-secondary btn-sm">Email</a>');
+  if (c.website_url) links.push('<a href="' + c.website_url + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
+  if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
+  document.getElementById('dm-links').innerHTML = links.join('');
+
+  document.getElementById('dm-log-btn').onclick = function() { closeModal('detail-modal'); openLog(id); };
+  document.getElementById('dm-convert-btn').onclick = function() { closeModal('detail-modal'); openConvert(id, c.business_name); };
+  openModal('detail-modal');
+}
+
+// ── FOLLOW-UP COMPLETE ────────────────────────────────────────
+async function completeFollowup(id) {
+  await sb.from('followups').update({completed: true, completed_date: new Date().toISOString()}).eq('id', id);
+  toast('Done!');
+  await loadFollowUps();
+}
+
+// ── LOG ACTIVITY ──────────────────────────────────────────────
+function openLog(clientId) {
+  if (clientId) document.getElementById('log-client').value = clientId;
+  openModal('log-modal');
+}
+
+async function saveLog() {
+  var clientId = document.getElementById('log-client').value;
+  var outcome = document.getElementById('log-outcome').value;
+  await sb.from('followups').insert({
+    client_id: clientId,
+    user_id: profile.id,
+    type: document.getElementById('log-type').value,
+    outcome: outcome,
+    notes: document.getElementById('log-notes').value || null,
+    completed: true,
+    completed_date: new Date().toISOString()
+  });
+  if (outcome === 'closed') {
+    await sb.from('clients').update({status: 'deposited'}).eq('id', clientId);
+  }
+  toast('Logged!');
+  closeModal('log-modal');
+}
+
+// ── ADD PROSPECT ──────────────────────────────────────────────
+async function saveProspect() {
+  var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() || null : null; };
+  var result = await sb.from('clients').insert({
+    business_name: g('p-biz') || 'Unknown',
+    owner_name: g('p-owner'),
+    phone: g('p-phone'),
+    email: g('p-email'),
+    location: g('p-city'),
+    county: g('p-county'),
+    category: g('p-cat'),
+    business_hours: g('p-hours'),
+    tier: parseInt(document.getElementById('p-tier').value) || 1,
+    score: parseInt(g('p-score')) || null,
+    pitch_angle: g('p-pitch'),
+    review_insights: g('p-reviews'),
+    website_url: g('p-url'),
+    website_platform: g('p-platform'),
+    google_rating: parseFloat(g('p-rating')) || null,
+    website_review: g('p-web-review'),
+    status: 'prospect',
+    assigned_to: profile.id
+  }).select().single();
+
+  if (result.error) { toast('Error: ' + result.error.message, 'error'); return; }
+  await sb.from('build_tracker').insert({client_id: result.data.id});
+  toast('Prospect added!');
+  closeModal('prospect-modal');
+  await loadClients();
+}
+
+// ── MODALS ────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
 </body>
 </html>
