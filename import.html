@@ -325,7 +325,9 @@ async function doImport(){
     }));
     // Try row by row so one bad record doesn't kill the batch
     for(const row of batch){
-      const{data:single,error:serr}=await sb.from('clients').insert(row).select('id');
+      // Strip internal validation fields before sending to Supabase
+      const{_issues,_valid,...cleanRow}=row;
+      const{data:single,error:serr}=await sb.from('clients').insert(cleanRow).select('id');
       if(serr){
         errors++;
         const errBox=document.getElementById('error-list');
