@@ -430,7 +430,7 @@ async function loadClients(){
   let q=sb.from('clients').select('*').order('tier',{ascending:true});
   if(!isAdmin){
     // Show prospects assigned to John OR unassigned (shared pool)
-    q=sb.from('clients').select('*').or(`assigned_to.eq.${profile.id},assigned_to.is.null`).order('tier',{ascending:true});
+    q=sb.from('clients').select('*').or('assigned_to.eq.'+profile.id+',assigned_to.is.null').order('tier',{ascending:true});
   }
   const{data,error:qErr}=await q;
   if(qErr)console.error('loadClients error:',qErr.message);
@@ -609,7 +609,7 @@ async function claimProspect(clientId){
 
 async function saveFollowUp(){
   if(!currentProspect)return;
-  const date=document.getElementById('fu-date').value;
+  =document.getElementById('fu-date').value;
   if(!date){toast('Please select a date','error');return;}
   await claimProspect(currentProspect.id);
   await sb.from('followups').insert({client_id:currentProspect.id,user_id:profile.id,type:document.getElementById('fu-type').value,scheduled_date:date,next_action:document.getElementById('fu-notes').value||null,completed:false});
