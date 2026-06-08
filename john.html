@@ -76,6 +76,83 @@
     .upsell-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:16px;box-shadow:var(--sh)}
     .upsell-biz{font-weight:700;font-size:15px;margin-bottom:4px}
     .upsell-tag{background:var(--green-l);border:1px solid #b0dfc0;color:var(--green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;display:inline-block;margin:2px}
+
+    /* ── MOBILE ─────────────────────────────────────────── */
+    @media(max-width:700px){
+
+      /* Layout: stack sidebar above content */
+      .app-shell{display:flex;flex-direction:column}
+      .sidebar{width:100%;min-height:unset;padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-right:none;border-bottom:2px solid var(--border)}
+      .sidebar-section{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:0}
+      .sidebar-label{display:none}
+      .sidebar-link{padding:6px 12px;font-size:12px}
+      .view-tab{width:auto;padding:6px 12px;font-size:12px;margin-bottom:0}
+      .sidebar-section:last-child{display:none} /* hide session stats sidebar block — shown on card instead */
+      .main-content{padding:12px}
+      .topbar{padding:10px 14px}
+      .topbar-logo{font-size:16px}
+      .btn-logout{font-size:11px;padding:5px 10px}
+
+      /* Stats grid: 2 columns on mobile */
+      .stats-grid{grid-template-columns:1fr 1fr !important}
+
+      /* Category cards: single column */
+      #cat-cards{grid-template-columns:1fr !important}
+      .launch-card{padding:16px !important}
+
+      /* Call card: full width, no overflow */
+      .call-card{border-radius:0;border-left:none;border-right:none}
+      .call-header{padding:16px}
+      .call-biz{font-size:18px}
+      .session-bar{flex-wrap:wrap;gap:12px;padding:10px 16px}
+
+      /* Contact grid: single column on mobile */
+      .contact-grid{grid-template-columns:1fr !important}
+
+      /* Dispo buttons: 2 columns, tall tappable targets */
+      .call-actions{
+        grid-template-columns:1fr 1fr !important;
+        gap:10px;
+        padding:16px;
+      }
+      .call-actions .btn{
+        font-size:14px !important;
+        padding:14px 8px !important;
+        min-height:52px;
+      }
+      .call-close{padding-top:12px}
+      .call-close .btn{width:100%;font-size:15px;padding:16px}
+
+      /* Call Now / Maps links in card body */
+      #cc-links .btn{
+        flex:1;
+        text-align:center;
+        padding:13px 8px;
+        font-size:14px;
+        min-height:48px;
+      }
+      #cc-links{display:flex;gap:8px}
+
+      /* Tables: horizontal scroll */
+      .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+      /* List header: stack on mobile */
+      .flex-between{flex-direction:column;align-items:flex-start;gap:10px}
+      #list-wrap .flex-between > div:last-child{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+
+      /* Modals: full screen on mobile */
+      .modal-box{width:100% !important;max-width:100% !important;margin:0;border-radius:0;min-height:100vh}
+      .modal-overlay{align-items:flex-start}
+
+      /* Phone numbers: larger tap target */
+      a[href^="tel"]{
+        display:inline-block;
+        font-size:16px;
+        font-weight:700;
+        color:var(--red);
+        padding:4px 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -130,40 +207,49 @@
     <div class="view-panel active" id="view-calling">
       <div id="calling-launch">
         <div class="page-header">
-          <div><div class="page-title">Cold Calling</div><div class="page-subtitle">Choose how to start your session</div></div>
-          <button class="btn btn-secondary" onclick="openModal('prospect-modal')">+ Add Prospect</button>
-        </div>
-        <div class="call-launch">
-          <div class="launch-card" onclick="startCalling()">
-            <div class="launch-title">Start Hot Prospects</div>
-            <div class="launch-sub">Jump into your hottest prospects &mdash; no warm-up needed</div>
-            <div style="margin-top:16px"><span class="badge badge-tier1">Hot</span> <span id="t1-count" class="text-sm text-mid"></span></div>
-          </div>
-          <div class="launch-card" onclick="showList()">
-            <div class="launch-title">Review List First</div>
-            <div class="launch-sub">Browse all prospects before you dial</div>
-            <div style="margin-top:16px;font-size:13px;color:var(--mid)">Full list with scores and pitch angles</div>
+          <div><div class="page-title">Cold Calling</div><div class="page-subtitle">Pick a category to start dialing</div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" onclick="showAllList()">View All</button>
+            <button class="btn btn-secondary" onclick="openModal('prospect-modal')">+ Add Prospect</button>
           </div>
         </div>
+
+        <!-- Category cards -->
+        <div id="cat-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px"></div>
+
+        <!-- Category prospect list (shown after picking a category) -->
         <div id="list-wrap" style="display:none">
           <div class="flex-between mb-16">
-            <div class="table-title">All Prospects</div>
-            <div class="filter-bar">
+            <div>
+              <div class="table-title" id="list-title">Prospects</div>
+              <div class="text-sm text-mid" style="margin-top:2px">Click a column header to sort &mdash; then hit Start to dial in that order</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="search-input" id="list-search" placeholder="Filter..." oninput="renderList()" style="width:160px">
               <select class="filter-select" id="tier-filter" onchange="renderList()">
                 <option value="">All Priority</option>
                 <option value="1">Hot</option>
                 <option value="2">Warm</option>
                 <option value="3">Cold</option>
               </select>
-              <select class="filter-select" id="cat-filter" onchange="renderList()">
-                <option value="">All Categories</option>
-              </select>
-              <input class="search-input" id="list-search" placeholder="Filter..." oninput="renderList()" style="width:160px">
+              <button class="btn btn-ghost btn-sm" onclick="hideCatList()">&#8592; Back</button>
+              <button class="btn btn-primary" onclick="startFromSortedList()">Start Calling &rarr;</button>
             </div>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Business</th><th>Category</th><th>City</th><th>Phone</th><th>Hours</th><th>Priority</th><th>Score</th><th>Rating</th><th></th></tr></thead>
+              <thead>
+                <tr>
+                  <th onclick="sortList('business_name')" style="cursor:pointer">Business <span id="sort-ind-business_name"></span></th>
+                  <th onclick="sortList('location')" style="cursor:pointer">City <span id="sort-ind-location"></span></th>
+                  <th onclick="sortList('phone')" style="cursor:pointer">Phone <span id="sort-ind-phone"></span></th>
+                  <th onclick="sortList('business_hours')" style="cursor:pointer">Hours <span id="sort-ind-business_hours"></span></th>
+                  <th onclick="sortList('tier')" style="cursor:pointer">Priority <span id="sort-ind-tier"></span></th>
+                  <th onclick="sortList('score')" style="cursor:pointer">Score <span id="sort-ind-score"></span></th>
+                  <th onclick="sortList('google_rating')" style="cursor:pointer">Rating <span id="sort-ind-google_rating"></span></th>
+                  <th></th>
+                </tr>
+              </thead>
               <tbody id="list-tbody"></tbody>
             </table>
           </div>
@@ -545,19 +631,7 @@ async function loadClients() {
     return '<option value="' + c.id + '">' + c.business_name + '</option>';
   }).join('');
 
-  // Category filter
-  var cats = [];
-  allClients.forEach(function(c) { if (c.category && cats.indexOf(c.category) === -1) cats.push(c.category); });
-  cats.sort();
-  var cf = document.getElementById('cat-filter');
-  cf.innerHTML = '<option value="">All Categories</option>' + cats.map(function(c) {
-    return '<option value="' + c + '">' + c + '</option>';
-  }).join('');
-
-  // Hot count
-  var hot = prospects.filter(function(c) { return c.tier == 1; });
-  var el = document.getElementById('t1-count');
-  if (el) el.textContent = hot.length + ' prospect' + (hot.length !== 1 ? 's' : '');
+  renderCategoryCards();
 
   renderUpsells(closed);
   await loadFollowUps();
@@ -621,52 +695,121 @@ function switchView(name) {
 }
 
 // ── CALLING WORKFLOW ──────────────────────────────────────────
-function startCalling() {
-  callQueue = allClients.filter(function(c) {
-    return c.tier == 1 && ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1;
+var activeCategory = null; // null = all
+var listSort = {col: 'tier', dir: 1}; // default sort: priority asc
+var sortedListCache = [];
+
+var ACTIVE_STATUSES = ['prospect','pitched','presented','objection'];
+
+function renderCategoryCards() {
+  var prospects = allClients.filter(function(c) { return ACTIVE_STATUSES.indexOf(c.status) !== -1; });
+  var catMap = {};
+  prospects.forEach(function(c) {
+    var cat = c.category || 'Uncategorized';
+    if (!catMap[cat]) catMap[cat] = {total:0, hot:0};
+    catMap[cat].total++;
+    if (c.tier == 1) catMap[cat].hot++;
   });
-  if (!callQueue.length) { toast('No Hot prospects in queue', 'info'); return; }
-  session = {called:0, skipped:0, followups:0, closed:0};
-  queueIndex = 0;
-  document.getElementById('calling-launch').style.display = 'none';
-  document.getElementById('calling-session').style.display = 'block';
-  loadCard(callQueue[queueIndex]);
+  var cats = Object.keys(catMap).sort();
+  var container = document.getElementById('cat-cards');
+  if (!cats.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No active prospects</div></div>';
+    return;
+  }
+  container.innerHTML = cats.map(function(cat) {
+    return '<div class="launch-card" onclick="showCatList(\'' + cat.replace(/'/g,"\\'") + '\')" style="text-align:left;padding:20px 22px">' +
+      '<div class="launch-title" style="font-size:15px;margin-bottom:6px">' + cat + '</div>' +
+      '<div style="font-size:13px;color:var(--mid)">' + catMap[cat].total + ' prospect' + (catMap[cat].total !== 1 ? 's' : '') +
+        (catMap[cat].hot ? ' &mdash; <span style="color:var(--red);font-weight:600">' + catMap[cat].hot + ' hot</span>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
-function showList() {
+function showCatList(cat) {
+  activeCategory = cat;
+  document.getElementById('list-title').textContent = cat;
+  document.getElementById('list-search').value = '';
+  document.getElementById('tier-filter').value = '';
+  listSort = {col: 'tier', dir: 1};
   document.getElementById('list-wrap').style.display = 'block';
+  document.getElementById('cat-cards').style.display = 'none';
+  renderList();
+}
+
+function showAllList() {
+  activeCategory = null;
+  document.getElementById('list-title').textContent = 'All Prospects';
+  document.getElementById('list-search').value = '';
+  document.getElementById('tier-filter').value = '';
+  listSort = {col: 'tier', dir: 1};
+  document.getElementById('list-wrap').style.display = 'block';
+  document.getElementById('cat-cards').style.display = 'none';
+  renderList();
+}
+
+function hideCatList() {
+  document.getElementById('list-wrap').style.display = 'none';
+  document.getElementById('cat-cards').style.display = 'grid';
+  activeCategory = null;
+}
+
+function sortList(col) {
+  if (listSort.col === col) {
+    listSort.dir *= -1;
+  } else {
+    listSort.col = col;
+    listSort.dir = 1;
+  }
   renderList();
 }
 
 function renderList() {
   var tier = document.getElementById('tier-filter').value;
-  var cat = document.getElementById('cat-filter').value;
   var q = (document.getElementById('list-search').value || '').toLowerCase();
 
   var list = allClients.filter(function(c) {
-    if (['prospect','pitched','presented','objection'].indexOf(c.status) === -1) return false;
+    if (ACTIVE_STATUSES.indexOf(c.status) === -1) return false;
+    if (activeCategory && (c.category || 'Uncategorized') !== activeCategory) return false;
     if (tier && String(c.tier) !== tier) return false;
-    if (cat && c.category !== cat) return false;
     if (q) {
-      var fields = [c.business_name, c.owner_name, c.phone, c.category, c.location];
+      var fields = [c.business_name, c.owner_name, c.phone, c.location];
       if (!fields.some(function(v) { return v && v.toLowerCase().indexOf(q) !== -1; })) return false;
     }
     return true;
   });
 
+  // Sort
+  var col = listSort.col, dir = listSort.dir;
+  list.sort(function(a, b) {
+    var av = a[col], bv = b[col];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+
+  sortedListCache = list;
+
+  // Update sort indicators
+  ['business_name','location','phone','business_hours','tier','score','google_rating'].forEach(function(c) {
+    var el = document.getElementById('sort-ind-' + c);
+    if (el) el.textContent = listSort.col === c ? (listSort.dir === 1 ? ' ▲' : ' ▼') : '';
+  });
+
   var tbody = document.getElementById('list-tbody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
     return;
   }
 
   tbody.innerHTML = list.map(function(c) {
     var rating = c.google_rating
       ? '<span style="color:var(--gold);font-weight:600">' + c.google_rating + '</span> (' + (c.review_count || 0) + ')'
-      : '';
+      : '&mdash;';
     return '<tr onclick="openDetail(\'' + c.id + '\')" style="cursor:pointer">' +
       '<td><strong>' + c.business_name + '</strong></td>' +
-      '<td class="text-sm text-mid">' + (c.category || '&mdash;') + '</td>' +
       '<td class="text-sm">' + (c.location || '&mdash;') + '</td>' +
       '<td class="text-mono text-sm">' + (c.phone || '&mdash;') + '</td>' +
       '<td class="text-sm">' + (c.business_hours || '&mdash;') + '</td>' +
@@ -674,18 +817,33 @@ function renderList() {
       '<td class="text-sm" style="font-weight:600;color:var(--red)">' + (c.score || '&mdash;') + '</td>' +
       '<td class="text-sm">' + rating + '</td>' +
       '<td style="display:flex;gap:4px">' +
-        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromList(\'' + c.id + '\')">Call</button>' +
+        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromListItem(\'' + c.id + '\')">Call</button>' +
         '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule(\'' + c.id + '\')">Schedule</button>' +
       '</td>' +
-      '</tr>';
+    '</tr>';
   }).join('');
 }
 
-function startFromList(id) {
-  callQueue = allClients.filter(function(c) {
-    return ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1;
-  });
-  queueIndex = Math.max(0, callQueue.findIndex(function(c) { return c.id === id; }));
+function startFromSortedList() {
+  if (!sortedListCache.length) { toast('No prospects in list', 'info'); return; }
+  callQueue = sortedListCache.slice();
+  queueIndex = 0;
+  session = {called:0, skipped:0, followups:0, closed:0};
+  document.getElementById('calling-launch').style.display = 'none';
+  document.getElementById('calling-session').style.display = 'block';
+  loadCard(callQueue[queueIndex]);
+}
+
+function startFromListItem(id) {
+  // Start from a specific row, continue through the rest of the sorted list
+  if (!sortedListCache.length) {
+    callQueue = allClients.filter(function(c) { return ACTIVE_STATUSES.indexOf(c.status) !== -1; });
+    queueIndex = Math.max(0, callQueue.findIndex(function(c) { return c.id === id; }));
+  } else {
+    callQueue = sortedListCache.slice();
+    var idx = callQueue.findIndex(function(c) { return c.id === id; });
+    queueIndex = idx >= 0 ? idx : 0;
+  }
   session = {called:0, skipped:0, followups:0, closed:0};
   document.getElementById('calling-launch').style.display = 'none';
   document.getElementById('calling-session').style.display = 'block';
@@ -885,10 +1043,11 @@ function showSummary() {
 
 function resetSession() {
   session = {called:0, skipped:0, followups:0, closed:0};
-  callQueue = []; queueIndex = 0; currentProspect = null;
+  callQueue = []; queueIndex = 0; currentProspect = null; activeCategory = null;
   document.getElementById('session-summary').style.display = 'none';
   document.getElementById('calling-launch').style.display = 'block';
   document.getElementById('list-wrap').style.display = 'none';
+  document.getElementById('cat-cards').style.display = 'grid';
   updateBars();
   loadClients();
 }
