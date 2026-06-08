@@ -77,7 +77,20 @@
     .upsell-biz{font-weight:700;font-size:15px;margin-bottom:4px}
     .upsell-tag{background:var(--green-l);border:1px solid #b0dfc0;color:var(--green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;display:inline-block;margin:2px}
 
-    /* ── MOBILE ─────────────────────────────────────────── */
+    /* Script drawer */
+    #script-drawer.open{transform:translateX(0)}
+    #script-drawer-overlay.open{opacity:1}
+    .sd-section{margin-bottom:20px}
+    .sd-section-title{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+    .sd-pitch{background:var(--red-l);border-left:3px solid var(--red);padding:14px 16px;border-radius:0 var(--r) var(--r) 0;font-size:14px;line-height:1.7}
+    .sd-stat{background:var(--dark);color:white;padding:12px 16px;border-radius:var(--r);font-size:14px;font-weight:600}
+    .sd-objection{background:var(--light);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
+    .sd-objection-q{font-weight:700;font-size:13px;color:var(--red);margin-bottom:6px}
+    .sd-objection-a{font-size:13px;line-height:1.6}
+
+    @media(max-width:700px){
+      #script-drawer{width:100%}
+    }
     @media(max-width:700px){
 
       /* Layout: stack sidebar above content */
@@ -247,6 +260,7 @@
                   <th onclick="sortList('tier')" style="cursor:pointer">Priority <span id="sort-ind-tier"></span></th>
                   <th onclick="sortList('score')" style="cursor:pointer">Score <span id="sort-ind-score"></span></th>
                   <th onclick="sortList('google_rating')" style="cursor:pointer">Rating <span id="sort-ind-google_rating"></span></th>
+                  <th>Last Dispo</th>
                   <th></th>
                 </tr>
               </thead>
@@ -280,6 +294,10 @@
             <div class="ss-stat"><div class="ss-num" id="ss-closed">0</div><div class="ss-label">Closed</div></div>
           </div>
           <div class="call-body">
+            <div class="call-section" id="cc-last-dispo-section" style="display:none">
+              <div class="call-section-title">Last Contact</div>
+              <div id="cc-last-dispo" style="background:var(--light);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:13px"></div>
+            </div>
             <div class="call-section">
               <div class="call-section-title">Best Pitch Angle</div>
               <div class="pitch-box" id="cc-pitch">No pitch angle recorded.</div>
@@ -314,7 +332,8 @@
             <button class="btn btn-secondary" onclick="leftVoicemail()">Left Voicemail</button>
             <button class="btn btn-secondary" onclick="openModal('schedule-modal')">Schedule Follow-Up</button>
             <button class="btn btn-ghost" onclick="skipProspect()">Skip &rarr;</button>
-            <div class="call-close">
+            <div class="call-close" style="flex-direction:column;gap:8px">
+              <button class="btn btn-secondary btn-lg" style="width:100%" onclick="openScriptDrawer()">&#128203; View Script</button>
               <button class="btn btn-primary btn-lg" onclick="openConvert(currentProspect ? currentProspect.id : null, currentProspect ? currentProspect.business_name : '')">Close Sale &mdash; Convert to Client</button>
             </div>
           </div>
@@ -556,6 +575,24 @@
   </div>
 </div>
 
+<!-- SCRIPT DRAWER -->
+<div id="script-drawer-overlay" onclick="closeScriptDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;transition:opacity .2s"></div>
+<div id="script-drawer" style="display:none;position:fixed;top:0;right:0;height:100%;width:min(480px,100%);background:var(--white);box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:401;overflow-y:auto;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)">
+  <div style="padding:20px 24px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1">
+    <div>
+      <div style="font-family:var(--font-d);font-size:18px;font-weight:700" id="sd-title">Script</div>
+      <div style="font-size:12px;color:var(--mid);margin-top:2px" id="sd-cat"></div>
+    </div>
+    <button class="btn btn-ghost" onclick="closeScriptDrawer()">&#10005; Close</button>
+  </div>
+  <div id="sd-body" style="padding:24px"></div>
+  <div id="sd-no-script" style="display:none;padding:40px 24px;text-align:center;color:var(--mid)">
+    <div style="font-size:32px;margin-bottom:12px">📋</div>
+    <div style="font-weight:600;margin-bottom:6px">No script for this category</div>
+    <div style="font-size:13px">Add one in the Scripts &amp; Playbook tab</div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="shared.js"></script>
@@ -632,6 +669,27 @@ async function loadClients() {
   }).join('');
 
   renderCategoryCards();
+
+  // Load last dispo per prospect
+  var clientIds = allClients.map(function(c) { return c.id; });
+  if (clientIds.length) {
+    var dispoRes = await sb.from('followups')
+      .select('client_id, outcome, notes, completed_date')
+      .in('client_id', clientIds)
+      .eq('completed', true)
+      .order('completed_date', {ascending: false});
+    if (!dispoRes.error && dispoRes.data) {
+      var seen = {};
+      dispoRes.data.forEach(function(f) {
+        if (!seen[f.client_id]) {
+          seen[f.client_id] = f;
+        }
+      });
+      allClients.forEach(function(c) {
+        c._lastDispo = seen[c.id] || null;
+      });
+    }
+  }
 
   renderUpsells(closed);
   await loadFollowUps();
@@ -800,7 +858,7 @@ function renderList() {
 
   var tbody = document.getElementById('list-tbody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
     return;
   }
 
@@ -808,6 +866,12 @@ function renderList() {
     var rating = c.google_rating
       ? '<span style="color:var(--gold);font-weight:600">' + c.google_rating + '</span> (' + (c.review_count || 0) + ')'
       : '&mdash;';
+    var ld = c._lastDispo;
+    var dispoCell = ld
+      ? '<div style="font-size:11px;font-weight:600;color:var(--red)">' + dispoLabel(ld.outcome) + '</div>' +
+        '<div style="font-size:10px;color:var(--mid)">' + fmtDate(ld.completed_date) + '</div>' +
+        (ld.notes ? '<div style="font-size:11px;color:var(--mid);margin-top:2px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ld.notes + '</div>' : '')
+      : '<span style="color:#ccc;font-size:12px">&mdash;</span>';
     return '<tr onclick="openDetail(\'' + c.id + '\')" style="cursor:pointer">' +
       '<td><strong>' + c.business_name + '</strong></td>' +
       '<td class="text-sm">' + (c.location || '&mdash;') + '</td>' +
@@ -816,6 +880,7 @@ function renderList() {
       '<td>' + tierBadge(c.tier) + '</td>' +
       '<td class="text-sm" style="font-weight:600;color:var(--red)">' + (c.score || '&mdash;') + '</td>' +
       '<td class="text-sm">' + rating + '</td>' +
+      '<td>' + dispoCell + '</td>' +
       '<td style="display:flex;gap:4px">' +
         '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromListItem(\'' + c.id + '\')">Call</button>' +
         '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule(\'' + c.id + '\')">Schedule</button>' +
@@ -850,6 +915,19 @@ function startFromListItem(id) {
   loadCard(callQueue[queueIndex]);
 }
 
+function dispoLabel(outcome) {
+  var map = {
+    'left_voicemail': 'Left Voicemail',
+    'not_interested': 'Not Interested',
+    'interested': 'Interested',
+    'callback': 'Wants Callback',
+    'no_answer': 'No Answer',
+    'closed': 'Closed',
+    'other': 'Other'
+  };
+  return map[outcome] || (outcome ? outcome.replace(/_/g,' ') : 'Unknown');
+}
+
 function loadCard(c) {
   if (!c) { endSession(); return; }
   currentProspect = c;
@@ -865,7 +943,7 @@ function loadCard(c) {
   document.getElementById('cc-website').textContent = c.has_website || '\u2014';
   document.getElementById('cc-gbp').textContent = c.gbp_status || '\u2014';
   document.getElementById('cc-revenue').textContent = c.est_annual_revenue ? fmt$(c.est_annual_revenue) + '/yr' : '\u2014';
-  document.getElementById('cc-value').textContent = c.deal_amount ? fmt$(c.deal_amount) : '\u2014';
+  document.getElementById('cc-value').textContent = c.est_sale ? fmt$(c.est_sale) : '\u2014';
   document.getElementById('cc-phone').innerHTML = c.phone ? '<a href="tel:' + c.phone + '">' + c.phone + '</a>' : '\u2014';
 
   var loc = [c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(', ');
@@ -892,6 +970,21 @@ function loadCard(c) {
   document.getElementById('cc-links').innerHTML = links.join('');
 
   document.getElementById('session-progress').textContent = (queueIndex + 1) + ' of ' + callQueue.length;
+
+  // Last dispo
+  var ldSection = document.getElementById('cc-last-dispo-section');
+  var ldBox = document.getElementById('cc-last-dispo');
+  var ld = c._lastDispo;
+  if (ld) {
+    ldSection.style.display = 'block';
+    ldBox.innerHTML =
+      '<span style="font-weight:700;color:var(--red)">' + dispoLabel(ld.outcome) + '</span>' +
+      ' &mdash; <span style="color:var(--mid)">' + fmtDate(ld.completed_date) + '</span>' +
+      (ld.notes ? '<div style="margin-top:6px;color:var(--dark)">' + ld.notes + '</div>' : '');
+  } else {
+    ldSection.style.display = 'none';
+  }
+
   updateBars();
 }
 
@@ -906,8 +999,16 @@ function updateBars() {
   document.getElementById('sb-closed').textContent = session.closed;
 }
 
-function nextProspect() {
+function nextProspect(dispoOutcome, dispoNotes) {
   session.called++;
+  // Update in-memory last dispo so list reflects it immediately
+  if (currentProspect && dispoOutcome) {
+    currentProspect._lastDispo = {
+      outcome: dispoOutcome,
+      notes: dispoNotes || null,
+      completed_date: new Date().toISOString()
+    };
+  }
   queueIndex++;
   if (queueIndex >= callQueue.length) { showSummary(); return; }
   loadCard(callQueue[queueIndex]);
@@ -932,7 +1033,7 @@ async function leftVoicemail() {
   await sb.from('followups').insert({client_id: currentProspect.id, user_id: profile.id, type: 'call', outcome: 'left_voicemail', notes: 'Left voicemail', completed: true, completed_date: new Date().toISOString()});
   await sb.from('clients').update({status: 'pitched', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Voicemail logged');
-  nextProspect();
+  nextProspect('left_voicemail', 'Left voicemail');
 }
 
 async function wrongNumber() {
@@ -940,7 +1041,7 @@ async function wrongNumber() {
   await claimProspect(currentProspect.id);
   await sb.from('clients').update({johns_notes: (currentProspect.johns_notes || '') + '\nWRONG/DISCONNECTED NUMBER', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Flagged');
-  nextProspect();
+  nextProspect('other', 'Wrong / Disconnected number');
 }
 
 async function notInterested() {
@@ -948,14 +1049,14 @@ async function notInterested() {
   await claimProspect(currentProspect.id);
   await sb.from('clients').update({status: 'objection', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Marked not interested');
-  nextProspect();
+  nextProspect('not_interested', null);
 }
 
 async function doNotCall() {
   if (!currentProspect) return;
   await sb.from('clients').update({status: 'churned', johns_notes: (currentProspect.johns_notes || '') + '\nDO NOT CALL', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Do Not Call');
-  nextProspect();
+  nextProspect('other', 'Do Not Call');
 }
 
 async function claimProspect(clientId) {
@@ -992,7 +1093,7 @@ async function saveFollowUp() {
   session.followups++;
   toast('Follow-up scheduled!');
   closeModal('schedule-modal');
-  nextProspect();
+  nextProspect('callback', 'Follow-up scheduled: ' + date + (notes ? ' — ' + notes : ''));
 }
 
 function openConvert(id, name) {
@@ -1021,7 +1122,7 @@ async function doConvert() {
   toast('Converted!');
   closeModal('convert-modal');
   convertId = null;
-  nextProspect();
+  nextProspect('closed', notes ? 'CONVERTED: ' + notes : 'Closed sale');
 }
 
 function endSession() {
@@ -1282,6 +1383,60 @@ async function saveProspect() {
   toast('Prospect added!');
   closeModal('prospect-modal');
   await loadClients();
+}
+
+// ── SCRIPT DRAWER ─────────────────────────────────────────────
+function openScriptDrawer() {
+  var drawer = document.getElementById('script-drawer');
+  var overlay = document.getElementById('script-drawer-overlay');
+  var body = document.getElementById('sd-body');
+  var noScript = document.getElementById('sd-no-script');
+  var title = document.getElementById('sd-title');
+  var catEl = document.getElementById('sd-cat');
+
+  var cat = currentProspect ? (currentProspect.category || '') : '';
+  var match = scripts.find(function(s) {
+    return s.service && s.service.toLowerCase() === cat.toLowerCase();
+  });
+
+  title.textContent = match ? match.service : 'Script';
+  catEl.textContent = cat ? cat : '';
+
+  if (!match) {
+    body.style.display = 'none';
+    noScript.style.display = 'block';
+  } else {
+    noScript.style.display = 'none';
+    body.style.display = 'block';
+    var objs = Array.isArray(match.objections) ? match.objections : (match.objections ? JSON.parse(match.objections) : []);
+    body.innerHTML =
+      (match.what_it_is ? '<div class="sd-section"><div class="sd-section-title">What It Is</div><p style="font-size:14px;line-height:1.7">' + match.what_it_is + '</p></div>' : '') +
+      (match.pitch ? '<div class="sd-section"><div class="sd-section-title">The Pitch</div><div class="sd-pitch">' + match.pitch + '</div></div>' : '') +
+      (match.key_stat ? '<div class="sd-section"><div class="sd-section-title">Key Stat</div><div class="sd-stat">' + match.key_stat + '</div></div>' : '') +
+      (match.when_to_recommend ? '<div class="sd-section"><div class="sd-section-title">When to Recommend</div><p style="font-size:13px;line-height:1.7">' + match.when_to_recommend + '</p></div>' : '') +
+      (objs.length ? '<div class="sd-section"><div class="sd-section-title">Objections &amp; Responses</div>' +
+        objs.map(function(o) {
+          return '<div class="sd-objection"><div class="sd-objection-q">&ldquo;' + o.objection + '&rdquo;</div><div class="sd-objection-a">' + o.response + '</div></div>';
+        }).join('') + '</div>' : '');
+  }
+
+  drawer.style.display = 'block';
+  overlay.style.display = 'block';
+  setTimeout(function() {
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+  }, 10);
+}
+
+function closeScriptDrawer() {
+  var drawer = document.getElementById('script-drawer');
+  var overlay = document.getElementById('script-drawer-overlay');
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+  setTimeout(function() {
+    drawer.style.display = 'none';
+    overlay.style.display = 'none';
+  }, 260);
 }
 
 // ── MODALS ────────────────────────────────────────────────────
