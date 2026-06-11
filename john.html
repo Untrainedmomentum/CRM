@@ -40,8 +40,12 @@
     .ss-label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.5px}
     .call-body{padding:24px}
     .call-section{margin-bottom:20px}
-    .call-section-title{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-    .pitch-box{background:var(--red-l);border-left:3px solid var(--red);padding:14px 16px;border-radius:0 var(--r) var(--r) 0;font-size:14px;line-height:1.6}
+    .call-section-title{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    /* Call Brief textarea */
+    .brief-box{width:100%;min-height:200px;padding:14px 16px;background:var(--red-l);border-left:3px solid var(--red);border-top:none;border-right:none;border-bottom:none;border-radius:0 var(--r) var(--r) 0;font-size:14px;line-height:1.7;font-family:var(--font-b);color:var(--dark);resize:vertical;outline:none;box-sizing:border-box}
+    .brief-box:focus{background:#fde8ea;outline:2px solid var(--red);outline-offset:2px}
+    .brief-box::placeholder{color:#c08090;font-style:italic}
+    .brief-save-ind{font-size:11px;color:var(--mid);font-weight:400;text-transform:none;letter-spacing:0}
     .review-box{background:var(--light);border:1px solid var(--border);padding:14px 16px;border-radius:var(--r);font-size:13px;line-height:1.7}
     .rating-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
     .rating-big{font-family:var(--font-d);font-size:32px;font-weight:700;color:var(--gold)}
@@ -77,94 +81,91 @@
     .upsell-biz{font-weight:700;font-size:15px;margin-bottom:4px}
     .upsell-tag{background:var(--green-l);border:1px solid #b0dfc0;color:var(--green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;display:inline-block;margin:2px}
 
-    /* Script drawer */
-    #script-drawer.open{transform:translateX(0)}
+    /* ── FULL-WIDTH SCRIPT DRAWER ── */
+    #script-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;opacity:0;transition:opacity .25s}
     #script-drawer-overlay.open{opacity:1}
+    #script-drawer{
+      display:none;position:fixed;top:0;right:0;height:100%;
+      width:100%;                         /* FULL WIDTH */
+      background:var(--white);
+      box-shadow:-4px 0 32px rgba(0,0,0,.22);
+      z-index:401;overflow-y:auto;
+      transform:translateX(100%);
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    #script-drawer.open{transform:translateX(0)}
+
+    /* Drawer sticky header */
+    .drawer-header{
+      padding:14px 32px;border-bottom:2px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;background:var(--white);z-index:2;
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+    /* Tab pills inside drawer header */
+    .drawer-tabs{display:flex;gap:4px;background:var(--light);border-radius:var(--r);padding:3px}
+    .drawer-tab{padding:6px 18px;border-radius:var(--r);font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-b);transition:all .12s;background:transparent;color:var(--mid)}
+    .drawer-tab.active{background:var(--dark);color:white}
+
+    /* Drawer content panels */
+    .drawer-panel{display:none;max-width:920px;margin:0 auto;padding:28px 32px}
+    .drawer-panel.active{display:block}
+
+    /* Brief textarea inside drawer — taller */
+    .sd-brief-box{
+      width:100%;min-height:420px;padding:16px 18px;
+      background:var(--red-l);border-left:4px solid var(--red);
+      border-top:none;border-right:none;border-bottom:none;
+      border-radius:0 var(--r) var(--r) 0;
+      font-size:15px;line-height:1.8;font-family:var(--font-b);
+      color:var(--dark);resize:vertical;outline:none;box-sizing:border-box;
+    }
+    .sd-brief-box:focus{background:#fde8ea;outline:2px solid var(--red);outline-offset:2px}
+    .sd-brief-box::placeholder{color:#c08090;font-style:italic}
+
+    /* Script content in drawer */
     .sd-section{margin-bottom:20px}
     .sd-section-title{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-    .sd-pitch{background:var(--red-l);border-left:3px solid var(--red);padding:14px 16px;border-radius:0 var(--r) var(--r) 0;font-size:14px;line-height:1.7}
+    .sd-pitch{background:var(--red-l);border-left:3px solid var(--red);padding:14px 16px;border-radius:0 var(--r) var(--r) 0;font-size:14px;line-height:1.7;white-space:pre-wrap}
     .sd-stat{background:var(--dark);color:white;padding:12px 16px;border-radius:var(--r);font-size:14px;font-weight:600}
     .sd-objection{background:var(--light);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
     .sd-objection-q{font-weight:700;font-size:13px;color:var(--red);margin-bottom:6px}
     .sd-objection-a{font-size:13px;line-height:1.6}
 
     @media(max-width:700px){
-      #script-drawer{width:100%}
-    }
-    @media(max-width:700px){
-
-      /* Layout: stack sidebar above content */
+      .drawer-header{padding:12px 16px}
+      .drawer-panel{padding:16px}
       .app-shell{display:flex;flex-direction:column}
       .sidebar{width:100%;min-height:unset;padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-right:none;border-bottom:2px solid var(--border)}
       .sidebar-section{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:0}
       .sidebar-label{display:none}
       .sidebar-link{padding:6px 12px;font-size:12px}
       .view-tab{width:auto;padding:6px 12px;font-size:12px;margin-bottom:0}
-      .sidebar-section:last-child{display:none} /* hide session stats sidebar block — shown on card instead */
+      .sidebar-section:last-child{display:none}
       .main-content{padding:12px}
       .topbar{padding:10px 14px}
       .topbar-logo{font-size:16px}
       .btn-logout{font-size:11px;padding:5px 10px}
-
-      /* Stats grid: 2 columns on mobile */
       .stats-grid{grid-template-columns:1fr 1fr !important}
-
-      /* Category cards: single column */
       #cat-cards{grid-template-columns:1fr !important}
       .launch-card{padding:16px !important}
-
-      /* Call card: full width, no overflow */
       .call-card{border-radius:0;border-left:none;border-right:none}
       .call-header{padding:16px}
       .call-biz{font-size:18px}
       .session-bar{flex-wrap:wrap;gap:12px;padding:10px 16px}
-
-      /* Contact grid: single column on mobile */
       .contact-grid{grid-template-columns:1fr !important}
-
-      /* Dispo buttons: 2 columns, tall tappable targets */
-      .call-actions{
-        grid-template-columns:1fr 1fr !important;
-        gap:10px;
-        padding:16px;
-      }
-      .call-actions .btn{
-        font-size:14px !important;
-        padding:14px 8px !important;
-        min-height:52px;
-      }
+      .call-actions{grid-template-columns:1fr 1fr !important;gap:10px;padding:16px}
+      .call-actions .btn{font-size:14px !important;padding:14px 8px !important;min-height:52px}
       .call-close{padding-top:12px}
       .call-close .btn{width:100%;font-size:15px;padding:16px}
-
-      /* Call Now / Maps links in card body */
-      #cc-links .btn{
-        flex:1;
-        text-align:center;
-        padding:13px 8px;
-        font-size:14px;
-        min-height:48px;
-      }
+      #cc-links .btn{flex:1;text-align:center;padding:13px 8px;font-size:14px;min-height:48px}
       #cc-links{display:flex;gap:8px}
-
-      /* Tables: horizontal scroll */
       .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-
-      /* List header: stack on mobile */
       .flex-between{flex-direction:column;align-items:flex-start;gap:10px}
       #list-wrap .flex-between > div:last-child{display:flex;flex-wrap:wrap;gap:6px;width:100%}
-
-      /* Modals: full screen on mobile */
       .modal-box{width:100% !important;max-width:100% !important;margin:0;border-radius:0;min-height:100vh}
       .modal-overlay{align-items:flex-start}
-
-      /* Phone numbers: larger tap target */
-      a[href^="tel"]{
-        display:inline-block;
-        font-size:16px;
-        font-weight:700;
-        color:var(--red);
-        padding:4px 0;
-      }
+      a[href^="tel"]{display:inline-block;font-size:16px;font-weight:700;color:var(--red);padding:4px 0}
     }
   </style>
 </head>
@@ -226,11 +227,7 @@
             <button class="btn btn-secondary" onclick="openModal('prospect-modal')">+ Add Prospect</button>
           </div>
         </div>
-
-        <!-- Category cards -->
         <div id="cat-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px"></div>
-
-        <!-- Category prospect list (shown after picking a category) -->
         <div id="list-wrap" style="display:none">
           <div class="flex-between mb-16">
             <div>
@@ -294,22 +291,38 @@
             <div class="ss-stat"><div class="ss-num" id="ss-closed">0</div><div class="ss-label">Closed</div></div>
           </div>
           <div class="call-body">
+            <!-- Last Contact -->
             <div class="call-section" id="cc-last-dispo-section" style="display:none">
               <div class="call-section-title">Last Contact</div>
               <div id="cc-last-dispo" style="background:var(--light);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:13px"></div>
             </div>
+
+            <!-- ── CALL BRIEF replaces pitch angle + review insights ── -->
             <div class="call-section">
-              <div class="call-section-title">Best Pitch Angle</div>
-              <div class="pitch-box" id="cc-pitch">No pitch angle recorded.</div>
+              <div class="call-section-title">
+                <span>Call Brief</span>
+                <span class="brief-save-ind" id="cc-brief-status"></span>
+              </div>
+              <textarea
+                class="brief-box"
+                id="cc-brief"
+                placeholder="Paste or type the full call brief here&#10;&#10;Key issue, services to pitch, pricing, power close, objection handlers...&#10;&#10;Saves automatically when you click away."
+                oninput="briefDirty()"
+                onblur="saveBrief()"
+              ></textarea>
             </div>
+
+            <!-- Google Rating — kept, it's data not text -->
             <div class="call-section">
-              <div class="call-section-title">Google Reviews &amp; Insights</div>
+              <div class="call-section-title">Google Reviews</div>
               <div class="rating-row">
                 <div class="rating-big" id="cc-rating">&mdash;</div>
                 <div><div class="rating-stars" id="cc-stars"></div><div class="text-xs text-mid" id="cc-rcount"></div></div>
               </div>
-              <div class="review-box" id="cc-insights">No review insights recorded.</div>
+              <div class="review-box" id="cc-insights" style="display:none"></div>
             </div>
+
+            <!-- Contact & Details -->
             <div class="call-section">
               <div class="call-section-title">Contact &amp; Details</div>
               <div class="contact-grid">
@@ -333,7 +346,7 @@
             <button class="btn btn-secondary" onclick="openModal('schedule-modal')">Schedule Follow-Up</button>
             <button class="btn btn-ghost" onclick="skipProspect()">Skip &rarr;</button>
             <div class="call-close" style="flex-direction:column;gap:8px">
-              <button class="btn btn-secondary btn-lg" style="width:100%" onclick="openScriptDrawer()">&#128203; View Script</button>
+              <button class="btn btn-secondary btn-lg" style="width:100%" onclick="openScriptDrawer()">&#128203; View Script &amp; Brief</button>
               <button class="btn btn-primary btn-lg" onclick="openConvert(currentProspect ? currentProspect.id : null, currentProspect ? currentProspect.business_name : '')">Close Sale &mdash; Convert to Client</button>
             </div>
           </div>
@@ -433,7 +446,7 @@
         </div>
         <div class="form-group"><label class="form-label">Score (1-10)</label><input class="form-control" id="p-score" type="number" min="1" max="10"></div>
       </div>
-      <div class="form-group"><label class="form-label">Pitch Angle</label><input class="form-control" id="p-pitch"></div>
+      <div class="form-group"><label class="form-label">Call Brief</label><textarea class="form-control" id="p-pitch" rows="4" placeholder="Key issue, services to pitch, pricing, power close, objection handlers..."></textarea></div>
       <div class="form-group"><label class="form-label">Review Insights</label><textarea class="form-control" id="p-reviews" rows="2"></textarea></div>
       <div class="form-group"><label class="form-label">Website URL</label><input class="form-control" id="p-url" type="url" placeholder="https://"></div>
       <div class="form-grid-2">
@@ -513,7 +526,7 @@
       <button class="modal-close" onclick="closeModal('detail-modal')">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="call-section"><div class="call-section-title">Pitch Angle</div><div class="pitch-box" id="dm-pitch">No pitch angle recorded.</div></div>
+      <div class="call-section"><div class="call-section-title">Call Brief</div><div class="pitch-box" id="dm-pitch" style="white-space:pre-wrap;min-height:60px">No brief recorded.</div></div>
       <div class="call-section">
         <div class="call-section-title">Reviews</div>
         <div class="rating-row"><div class="rating-big" id="dm-rating">&mdash;</div><div><div class="rating-stars" id="dm-stars"></div><div class="text-xs text-mid" id="dm-rcount"></div></div></div>
@@ -575,22 +588,50 @@
   </div>
 </div>
 
-<!-- SCRIPT DRAWER -->
-<div id="script-drawer-overlay" onclick="closeScriptDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;transition:opacity .2s"></div>
-<div id="script-drawer" style="display:none;position:fixed;top:0;right:0;height:100%;width:min(480px,100%);background:var(--white);box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:401;overflow-y:auto;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)">
-  <div style="padding:20px 24px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1">
-    <div>
-      <div style="font-family:var(--font-d);font-size:18px;font-weight:700" id="sd-title">Script</div>
-      <div style="font-size:12px;color:var(--mid);margin-top:2px" id="sd-cat"></div>
+<!-- ── FULL-WIDTH SCRIPT DRAWER ── -->
+<div id="script-drawer-overlay" onclick="closeScriptDrawer()"></div>
+<div id="script-drawer">
+
+  <!-- Sticky header with tab toggle -->
+  <div class="drawer-header">
+    <div style="display:flex;align-items:center;gap:20px">
+      <div>
+        <div style="font-family:var(--font-d);font-size:20px;font-weight:700" id="sd-title">Script</div>
+        <div style="font-size:12px;color:var(--mid);margin-top:1px" id="sd-cat"></div>
+      </div>
+      <div class="drawer-tabs">
+        <button class="drawer-tab active" id="sd-tab-brief" onclick="sdTab('brief')">&#128203; Call Brief</button>
+        <button class="drawer-tab" id="sd-tab-script" onclick="sdTab('script')">&#127775; Category Script</button>
+      </div>
     </div>
-    <button class="btn btn-ghost" onclick="closeScriptDrawer()">&#10005; Close</button>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="sd-brief-status" style="font-size:12px;color:var(--mid)"></span>
+      <button class="btn btn-ghost" onclick="closeScriptDrawer()">&#10005; Close</button>
+    </div>
   </div>
-  <div id="sd-body" style="padding:24px"></div>
-  <div id="sd-no-script" style="display:none;padding:40px 24px;text-align:center;color:var(--mid)">
-    <div style="font-size:32px;margin-bottom:12px">📋</div>
-    <div style="font-weight:600;margin-bottom:6px">No script for this category</div>
-    <div style="font-size:13px">Add one in the Scripts &amp; Playbook tab</div>
+
+  <!-- BRIEF PANEL -->
+  <div class="drawer-panel active" id="sd-panel-brief">
+    <div style="font-size:12px;color:var(--mid);margin-bottom:10px">Edit directly — auto-saves when you click away or close the drawer</div>
+    <textarea
+      id="sd-brief-box"
+      class="sd-brief-box"
+      placeholder="Paste or type the full call brief here&#10;&#10;&#8226; Key issue (what's their pain point?)&#10;&#8226; Services to pitch + pricing&#10;&#8226; Power close line&#10;&#8226; Objection handlers&#10;&#8226; What NOT to pitch&#10;&#10;This saves to the prospect record automatically."
+      oninput="sdBriefDirty()"
+      onblur="saveBriefFromDrawer()"
+    ></textarea>
   </div>
+
+  <!-- CATEGORY SCRIPT PANEL -->
+  <div class="drawer-panel" id="sd-panel-script">
+    <div id="sd-body"></div>
+    <div id="sd-no-script" style="display:none;padding:60px 0;text-align:center;color:var(--mid)">
+      <div style="font-size:40px;margin-bottom:12px">&#128203;</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:6px">No script for this category yet</div>
+      <div style="font-size:13px">Add one in the Scripts &amp; Playbook tab</div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -634,7 +675,6 @@ var session = {called:0, skipped:0, followups:0, closed:0};
 async function loadClients() {
   var isAdmin = profile.role === 'admin';
   var result;
-
   if (isAdmin) {
     result = await sb.from('clients').select('*').order('tier', {ascending: true});
   } else {
@@ -642,11 +682,7 @@ async function loadClients() {
       .or('assigned_to.eq.' + profile.id + ',assigned_to.is.null')
       .order('tier', {ascending: true});
   }
-
-  if (result.error) {
-    console.error('loadClients error:', result.error.message);
-  }
-
+  if (result.error) console.error('loadClients error:', result.error.message);
   allClients = result.data || [];
 
   var prospects = allClients.filter(function(c) {
@@ -655,22 +691,18 @@ async function loadClients() {
   var closed = allClients.filter(function(c) {
     return ['deposited','building','delivered','ongoing','upsell'].indexOf(c.status) !== -1;
   });
-  var commission = closed.reduce(function(sum, c) {
-    return sum + (c.deposit_collected || 0) * 0.2;
-  }, 0);
+  var commission = closed.reduce(function(sum, c) { return sum + (c.deposit_collected || 0) * 0.2; }, 0);
 
   document.getElementById('s-prospects').textContent = prospects.length;
   document.getElementById('s-closed').textContent = closed.length;
   document.getElementById('s-commission').textContent = fmt$(commission);
 
-  // Log client dropdown
   document.getElementById('log-client').innerHTML = allClients.map(function(c) {
     return '<option value="' + c.id + '">' + c.business_name + '</option>';
   }).join('');
 
   renderCategoryCards();
 
-  // Load last dispo per prospect
   var clientIds = allClients.map(function(c) { return c.id; });
   if (clientIds.length) {
     var dispoRes = await sb.from('followups')
@@ -680,14 +712,8 @@ async function loadClients() {
       .order('completed_date', {ascending: false});
     if (!dispoRes.error && dispoRes.data) {
       var seen = {};
-      dispoRes.data.forEach(function(f) {
-        if (!seen[f.client_id]) {
-          seen[f.client_id] = f;
-        }
-      });
-      allClients.forEach(function(c) {
-        c._lastDispo = seen[c.id] || null;
-      });
+      dispoRes.data.forEach(function(f) { if (!seen[f.client_id]) seen[f.client_id] = f; });
+      allClients.forEach(function(c) { c._lastDispo = seen[c.id] || null; });
     }
   }
 
@@ -700,16 +726,13 @@ async function loadFollowUps() {
     .select('*,clients(business_name)')
     .eq('completed', false)
     .order('scheduled_date', {ascending: true});
-
   if (result.error) console.error('loadFollowUps error:', result.error.message);
-
   var fus = result.data || [];
   var now = new Date();
   var due = fus.filter(function(f) { return new Date(f.scheduled_date) <= now; });
 
   document.getElementById('s-due').textContent = due.length;
   document.getElementById('fu-subtitle').textContent = due.length + ' due today or overdue';
-
   var badge = document.getElementById('fu-badge');
   if (due.length > 0) { badge.textContent = due.length; badge.style.display = 'inline'; }
   else { badge.style.display = 'none'; }
@@ -746,17 +769,14 @@ function switchView(name) {
   document.querySelectorAll('.view-tab').forEach(function(t, i) {
     t.classList.toggle('active', names[i] === name);
   });
-  document.querySelectorAll('.view-panel').forEach(function(p) {
-    p.classList.remove('active');
-  });
+  document.querySelectorAll('.view-panel').forEach(function(p) { p.classList.remove('active'); });
   document.getElementById('view-' + name).classList.add('active');
 }
 
 // ── CALLING WORKFLOW ──────────────────────────────────────────
-var activeCategory = null; // null = all
-var listSort = {col: 'tier', dir: 1}; // default sort: priority asc
+var activeCategory = null;
+var listSort = {col: 'tier', dir: 1};
 var sortedListCache = [];
-
 var ACTIVE_STATUSES = ['prospect','pitched','presented','objection'];
 
 function renderCategoryCards() {
@@ -813,19 +833,14 @@ function hideCatList() {
 }
 
 function sortList(col) {
-  if (listSort.col === col) {
-    listSort.dir *= -1;
-  } else {
-    listSort.col = col;
-    listSort.dir = 1;
-  }
+  if (listSort.col === col) listSort.dir *= -1;
+  else { listSort.col = col; listSort.dir = 1; }
   renderList();
 }
 
 function renderList() {
   var tier = document.getElementById('tier-filter').value;
   var q = (document.getElementById('list-search').value || '').toLowerCase();
-
   var list = allClients.filter(function(c) {
     if (ACTIVE_STATUSES.indexOf(c.status) === -1) return false;
     if (activeCategory && (c.category || 'Uncategorized') !== activeCategory) return false;
@@ -836,32 +851,24 @@ function renderList() {
     }
     return true;
   });
-
-  // Sort
   var col = listSort.col, dir = listSort.dir;
   list.sort(function(a, b) {
     var av = a[col], bv = b[col];
     if (av == null && bv == null) return 0;
-    if (av == null) return 1;
-    if (bv == null) return -1;
+    if (av == null) return 1; if (bv == null) return -1;
     if (typeof av === 'string') return av.localeCompare(bv) * dir;
     return (av - bv) * dir;
   });
-
   sortedListCache = list;
-
-  // Update sort indicators
   ['business_name','location','phone','business_hours','tier','score','google_rating'].forEach(function(c) {
     var el = document.getElementById('sort-ind-' + c);
     if (el) el.textContent = listSort.col === c ? (listSort.dir === 1 ? ' ▲' : ' ▼') : '';
   });
-
   var tbody = document.getElementById('list-tbody');
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No prospects match</div></div></td></tr>';
     return;
   }
-
   tbody.innerHTML = list.map(function(c) {
     var rating = c.google_rating
       ? '<span style="color:var(--gold);font-weight:600">' + c.google_rating + '</span> (' + (c.review_count || 0) + ')'
@@ -884,15 +891,13 @@ function renderList() {
       '<td style="display:flex;gap:4px">' +
         '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();startFromListItem(\'' + c.id + '\')">Call</button>' +
         '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();quickSchedule(\'' + c.id + '\')">Schedule</button>' +
-      '</td>' +
-    '</tr>';
+      '</td></tr>';
   }).join('');
 }
 
 function startFromSortedList() {
   if (!sortedListCache.length) { toast('No prospects in list', 'info'); return; }
-  callQueue = sortedListCache.slice();
-  queueIndex = 0;
+  callQueue = sortedListCache.slice(); queueIndex = 0;
   session = {called:0, skipped:0, followups:0, closed:0};
   document.getElementById('calling-launch').style.display = 'none';
   document.getElementById('calling-session').style.display = 'block';
@@ -900,7 +905,6 @@ function startFromSortedList() {
 }
 
 function startFromListItem(id) {
-  // Start from a specific row, continue through the rest of the sorted list
   if (!sortedListCache.length) {
     callQueue = allClients.filter(function(c) { return ACTIVE_STATUSES.indexOf(c.status) !== -1; });
     queueIndex = Math.max(0, callQueue.findIndex(function(c) { return c.id === id; }));
@@ -917,13 +921,9 @@ function startFromListItem(id) {
 
 function dispoLabel(outcome) {
   var map = {
-    'left_voicemail': 'Left Voicemail',
-    'not_interested': 'Not Interested',
-    'interested': 'Interested',
-    'callback': 'Wants Callback',
-    'no_answer': 'No Answer',
-    'closed': 'Closed',
-    'other': 'Other'
+    'left_voicemail':'Left Voicemail','not_interested':'Not Interested',
+    'interested':'Interested','callback':'Wants Callback',
+    'no_answer':'No Answer','closed':'Closed','other':'Other'
   };
   return map[outcome] || (outcome ? outcome.replace(/_/g,' ') : 'Unknown');
 }
@@ -936,8 +936,11 @@ function loadCard(c) {
   document.getElementById('cc-meta').textContent = [c.category, c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(' \u2014 ');
   document.getElementById('cc-badges').innerHTML = statusBadge(c.status) + ' ' + tierBadge(c.tier) + (c.score ? ' <span class="badge badge-prospect">Score: ' + c.score + '/10</span>' : '');
   document.getElementById('cc-skips').textContent = c._skips || 0;
-  document.getElementById('cc-pitch').textContent = c.pitch_angle || 'No pitch angle recorded.';
-  document.getElementById('cc-insights').textContent = c.review_insights || 'No review insights recorded.';
+
+  // Brief (stored in pitch_angle column)
+  document.getElementById('cc-brief').value = c.pitch_angle || '';
+  document.getElementById('cc-brief-status').textContent = '';
+
   document.getElementById('cc-owner').textContent = c.owner_name || '\u2014';
   document.getElementById('cc-hours').textContent = c.business_hours || '\u2014';
   document.getElementById('cc-website').textContent = c.has_website || '\u2014';
@@ -959,8 +962,11 @@ function loadCard(c) {
   } else {
     document.getElementById('cc-rating').textContent = '\u2014';
     document.getElementById('cc-stars').textContent = '';
-    document.getElementById('cc-rcount').textContent = '';
+    document.getElementById('cc-rcount').textContent = 'No rating data';
   }
+  var insEl = document.getElementById('cc-insights');
+  if (c.review_insights) { insEl.textContent = c.review_insights; insEl.style.display = 'block'; }
+  else { insEl.style.display = 'none'; }
 
   var links = [];
   if (c.phone) links.push('<a href="tel:' + c.phone + '" class="btn btn-primary btn-sm">Call Now</a>');
@@ -968,26 +974,125 @@ function loadCard(c) {
   if (c.website_url) links.push('<a href="' + c.website_url + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
   if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
   document.getElementById('cc-links').innerHTML = links.join('');
-
   document.getElementById('session-progress').textContent = (queueIndex + 1) + ' of ' + callQueue.length;
 
-  // Last dispo
   var ldSection = document.getElementById('cc-last-dispo-section');
-  var ldBox = document.getElementById('cc-last-dispo');
   var ld = c._lastDispo;
   if (ld) {
     ldSection.style.display = 'block';
-    ldBox.innerHTML =
+    document.getElementById('cc-last-dispo').innerHTML =
       '<span style="font-weight:700;color:var(--red)">' + dispoLabel(ld.outcome) + '</span>' +
       ' &mdash; <span style="color:var(--mid)">' + fmtDate(ld.completed_date) + '</span>' +
       (ld.notes ? '<div style="margin-top:6px;color:var(--dark)">' + ld.notes + '</div>' : '');
-  } else {
-    ldSection.style.display = 'none';
-  }
+  } else { ldSection.style.display = 'none'; }
 
   updateBars();
 }
 
+// ── BRIEF SAVE (card) ─────────────────────────────────────────
+function briefDirty() {
+  document.getElementById('cc-brief-status').textContent = 'Unsaved\u2026';
+}
+
+async function saveBrief() {
+  if (!currentProspect) return;
+  var val = document.getElementById('cc-brief').value;
+  currentProspect.pitch_angle = val;
+  var el = document.getElementById('cc-brief-status');
+  el.textContent = 'Saving\u2026';
+  var res = await sb.from('clients').update({
+    pitch_angle: val,
+    updated_by: profile.id,
+    updated_by_name: profile.full_name || profile.email
+  }).eq('id', currentProspect.id);
+  el.textContent = res.error ? '\u26a0 Save failed' : '\u2713 Saved';
+  setTimeout(function() { el.textContent = ''; }, 2000);
+  // Mirror to open drawer
+  var dr = document.getElementById('sd-brief-box');
+  if (dr) dr.value = val;
+}
+
+// ── SCRIPT DRAWER ─────────────────────────────────────────────
+function sdTab(name) {
+  ['brief','script'].forEach(function(t) {
+    document.getElementById('sd-tab-' + t).classList.toggle('active', t === name);
+    document.getElementById('sd-panel-' + t).classList.toggle('active', t === name);
+  });
+}
+
+function sdBriefDirty() {
+  document.getElementById('sd-brief-status').textContent = 'Unsaved\u2026';
+}
+
+async function saveBriefFromDrawer() {
+  if (!currentProspect) return;
+  var val = document.getElementById('sd-brief-box').value;
+  currentProspect.pitch_angle = val;
+  var el = document.getElementById('sd-brief-status');
+  el.textContent = 'Saving\u2026';
+  var res = await sb.from('clients').update({
+    pitch_angle: val,
+    updated_by: profile.id,
+    updated_by_name: profile.full_name || profile.email
+  }).eq('id', currentProspect.id);
+  el.textContent = res.error ? '\u26a0 Failed' : '\u2713 Saved';
+  setTimeout(function() { el.textContent = ''; }, 2000);
+  var cardBox = document.getElementById('cc-brief');
+  if (cardBox) cardBox.value = val;
+}
+
+function openScriptDrawer() {
+  // Populate brief
+  document.getElementById('sd-brief-box').value = currentProspect ? (currentProspect.pitch_angle || '') : '';
+  document.getElementById('sd-brief-status').textContent = '';
+  document.getElementById('sd-title').textContent = currentProspect ? currentProspect.business_name : 'Script';
+
+  var cat = currentProspect ? (currentProspect.category || '') : '';
+  document.getElementById('sd-cat').textContent = cat;
+
+  // Populate category script
+  var match = scripts.find(function(s) { return s.service && s.service.toLowerCase() === cat.toLowerCase(); });
+  var body = document.getElementById('sd-body');
+  var noScript = document.getElementById('sd-no-script');
+  if (!match) {
+    body.style.display = 'none'; noScript.style.display = 'block';
+  } else {
+    noScript.style.display = 'none'; body.style.display = 'block';
+    var objs = Array.isArray(match.objections) ? match.objections : (match.objections ? JSON.parse(match.objections) : []);
+    body.innerHTML =
+      (match.what_it_is ? '<div class="sd-section"><div class="sd-section-title">What It Is</div><p style="font-size:14px;line-height:1.7">' + match.what_it_is + '</p></div>' : '') +
+      (match.pitch ? '<div class="sd-section"><div class="sd-section-title">The Pitch</div><div class="sd-pitch">' + match.pitch + '</div></div>' : '') +
+      (match.key_stat ? '<div class="sd-section"><div class="sd-section-title">Key Stat</div><div class="sd-stat">' + match.key_stat + '</div></div>' : '') +
+      (match.when_to_recommend ? '<div class="sd-section"><div class="sd-section-title">When to Recommend</div><p style="font-size:13px;line-height:1.7">' + match.when_to_recommend + '</p></div>' : '') +
+      (objs.length ? '<div class="sd-section"><div class="sd-section-title">Objections &amp; Responses</div>' +
+        objs.map(function(o) {
+          return '<div class="sd-objection"><div class="sd-objection-q">&ldquo;' + o.objection + '&rdquo;</div><div class="sd-objection-a">' + o.response + '</div></div>';
+        }).join('') + '</div>' : '');
+  }
+
+  // Always open to Brief tab
+  sdTab('brief');
+
+  var drawer = document.getElementById('script-drawer');
+  var overlay = document.getElementById('script-drawer-overlay');
+  drawer.style.display = 'block';
+  overlay.style.display = 'block';
+  setTimeout(function() {
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+  }, 10);
+}
+
+function closeScriptDrawer() {
+  saveBriefFromDrawer();
+  var drawer = document.getElementById('script-drawer');
+  var overlay = document.getElementById('script-drawer-overlay');
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+  setTimeout(function() { drawer.style.display = 'none'; overlay.style.display = 'none'; }, 290);
+}
+
+// ── SESSION ───────────────────────────────────────────────────
 function updateBars() {
   document.getElementById('ss-called').textContent = session.called;
   document.getElementById('ss-skipped').textContent = session.skipped;
@@ -1001,13 +1106,8 @@ function updateBars() {
 
 function nextProspect(dispoOutcome, dispoNotes) {
   session.called++;
-  // Update in-memory last dispo so list reflects it immediately
   if (currentProspect && dispoOutcome) {
-    currentProspect._lastDispo = {
-      outcome: dispoOutcome,
-      notes: dispoNotes || null,
-      completed_date: new Date().toISOString()
-    };
+    currentProspect._lastDispo = {outcome: dispoOutcome, notes: dispoNotes || null, completed_date: new Date().toISOString()};
   }
   queueIndex++;
   if (queueIndex >= callQueue.length) { showSummary(); return; }
@@ -1073,9 +1173,7 @@ async function saveFollowUp() {
   if (!date) { toast('Please select a date', 'error'); return; }
   var type = document.getElementById('fu-type').value;
   var notes = document.getElementById('fu-notes').value || null;
-
   if (quickScheduleClientId) {
-    // Quick schedule from list — no dialer
     await claimProspect(quickScheduleClientId);
     await sb.from('followups').insert({client_id: quickScheduleClientId, user_id: profile.id, type: type, scheduled_date: date, next_action: notes, completed: false});
     await sb.from('clients').update({status: 'pitched', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', quickScheduleClientId);
@@ -1085,7 +1183,6 @@ async function saveFollowUp() {
     await loadFollowUps();
     return;
   }
-
   if (!currentProspect) return;
   await claimProspect(currentProspect.id);
   await sb.from('followups').insert({client_id: currentProspect.id, user_id: profile.id, type: type, scheduled_date: date, next_action: notes, completed: false});
@@ -1093,7 +1190,7 @@ async function saveFollowUp() {
   session.followups++;
   toast('Follow-up scheduled!');
   closeModal('schedule-modal');
-  nextProspect('callback', 'Follow-up scheduled: ' + date + (notes ? ' — ' + notes : ''));
+  nextProspect('callback', 'Follow-up scheduled: ' + date + (notes ? ' \u2014 ' + notes : ''));
 }
 
 function openConvert(id, name) {
@@ -1125,10 +1222,7 @@ async function doConvert() {
   nextProspect('closed', notes ? 'CONVERTED: ' + notes : 'Closed sale');
 }
 
-function endSession() {
-  document.getElementById('calling-session').style.display = 'none';
-  showSummary();
-}
+function endSession() { document.getElementById('calling-session').style.display = 'none'; showSummary(); }
 
 function showSummary() {
   document.getElementById('calling-session').style.display = 'none';
@@ -1153,7 +1247,6 @@ function resetSession() {
   loadClients();
 }
 
-// ── QUICK SCHEDULE ────────────────────────────────────────────
 function quickSchedule(clientId) {
   quickScheduleClientId = clientId;
   document.getElementById('fu-date').value = '';
@@ -1162,7 +1255,6 @@ function quickSchedule(clientId) {
   openModal('schedule-modal');
 }
 
-// ── PRIORITY UPDATE ───────────────────────────────────────────
 async function updatePriority(clientId, tier) {
   var result = await sb.from('clients').update({
     tier: parseInt(tier),
@@ -1176,7 +1268,6 @@ async function updatePriority(clientId, tier) {
   toast('Moved to ' + (labels[tier] || tier));
 }
 
-// ── UPSELLS ───────────────────────────────────────────────────
 function renderUpsells(closed) {
   var SERVICES = ['Website','Google Listing','Voice AI','Business Email','Booking','Automation','Managed IT','Payments'];
   var list = document.getElementById('upsell-list');
@@ -1199,7 +1290,6 @@ function renderUpsells(closed) {
   }).join('');
 }
 
-// ── SCRIPTS ───────────────────────────────────────────────────
 function renderScripts() {
   var list = document.getElementById('scripts-list');
   if (!scripts.length) {
@@ -1235,7 +1325,6 @@ function toggleScript(i) {
   t.classList.toggle('open', !open);
 }
 
-// ── LIVE SEARCH ───────────────────────────────────────────────
 var searchT;
 function liveSearch(q) {
   clearTimeout(searchT);
@@ -1249,17 +1338,13 @@ function liveSearch(q) {
              (c.category && c.category.toLowerCase().indexOf(term) !== -1) ||
              (c.location && c.location.toLowerCase().indexOf(term) !== -1);
     }).slice(0, 12);
-
     var box = document.getElementById('search-dropdown');
     if (!results.length) {
       box.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mid);font-size:13px">No results</div>';
     } else {
       box.innerHTML = results.map(function(c) {
         return '<div class="sd-item" onclick="openDetail(\'' + c.id + '\');hideSearch()">' +
-          '<div>' +
-            '<div class="sd-biz">' + c.business_name + '</div>' +
-            '<div class="sd-sub">' + (c.category || '') + ' &mdash; ' + (c.phone || '') + ' &mdash; ' + (c.location || '') + '</div>' +
-          '</div>' +
+          '<div><div class="sd-biz">' + c.business_name + '</div><div class="sd-sub">' + (c.category || '') + ' &mdash; ' + (c.phone || '') + ' &mdash; ' + (c.location || '') + '</div></div>' +
           '<div>' + tierBadge(c.tier) + '</div>' +
         '</div>';
       }).join('');
@@ -1271,11 +1356,9 @@ function showSearch() { document.getElementById('search-dropdown').classList.add
 function hideSearch() { document.getElementById('search-dropdown').classList.remove('show'); }
 document.addEventListener('click', function(e) { if (!e.target.closest('.global-search-wrap')) hideSearch(); });
 
-// ── DETAIL MODAL ──────────────────────────────────────────────
 function openDetail(id) {
   var c = allClients.find(function(x) { return x.id === id; });
   if (!c) return;
-
   document.getElementById('dm-biz').textContent = c.business_name;
   document.getElementById('dm-badges').innerHTML =
     statusBadge(c.status) +
@@ -1285,20 +1368,17 @@ function openDetail(id) {
       '<option value="3"' + (c.tier==3?' selected':'') + '>Cold</option>' +
     '</select>' +
     (c.score ? ' <span class="badge badge-prospect">Score: ' + c.score + '/10</span>' : '');
-
-  document.getElementById('dm-pitch').textContent = c.pitch_angle || 'No pitch angle recorded.';
+  document.getElementById('dm-pitch').textContent = c.pitch_angle || 'No brief recorded.';
   document.getElementById('dm-insights').textContent = c.review_insights || 'No review insights recorded.';
   document.getElementById('dm-owner').textContent = c.owner_name || '\u2014';
   document.getElementById('dm-hours').textContent = c.business_hours || '\u2014';
   document.getElementById('dm-revenue').textContent = c.est_annual_revenue ? fmt$(c.est_annual_revenue) + '/yr' : '\u2014';
   document.getElementById('dm-phone').innerHTML = c.phone ? '<a href="tel:' + c.phone + '">' + c.phone + '</a>' : '\u2014';
-
   var loc = [c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(', ');
   document.getElementById('dm-location').textContent = loc || '\u2014';
   document.getElementById('dm-website').innerHTML = c.website_url
     ? '<a href="' + c.website_url + '" target="_blank">' + c.website_url + '</a>'
     : (c.has_website || '\u2014');
-
   if (c.google_rating) {
     document.getElementById('dm-rating').textContent = c.google_rating;
     var s = Math.round(c.google_rating);
@@ -1309,27 +1389,23 @@ function openDetail(id) {
     document.getElementById('dm-stars').textContent = '';
     document.getElementById('dm-rcount').textContent = 'No rating data';
   }
-
   var links = [];
   if (c.phone) links.push('<a href="tel:' + c.phone + '" class="btn btn-primary btn-sm">Call Now</a>');
   if (c.email && c.email !== 'Not found') links.push('<a href="mailto:' + c.email + '" class="btn btn-secondary btn-sm">Email</a>');
   if (c.website_url) links.push('<a href="' + c.website_url + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
   if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
   document.getElementById('dm-links').innerHTML = links.join('');
-
   document.getElementById('dm-log-btn').onclick = function() { closeModal('detail-modal'); openLog(id); };
   document.getElementById('dm-convert-btn').onclick = function() { closeModal('detail-modal'); openConvert(id, c.business_name); };
   openModal('detail-modal');
 }
 
-// ── FOLLOW-UP COMPLETE ────────────────────────────────────────
 async function completeFollowup(id) {
   await sb.from('followups').update({completed: true, completed_date: new Date().toISOString()}).eq('id', id);
   toast('Done!');
   await loadFollowUps();
 }
 
-// ── LOG ACTIVITY ──────────────────────────────────────────────
 function openLog(clientId) {
   if (clientId) document.getElementById('log-client').value = clientId;
   openModal('log-modal');
@@ -1339,13 +1415,11 @@ async function saveLog() {
   var clientId = document.getElementById('log-client').value;
   var outcome = document.getElementById('log-outcome').value;
   await sb.from('followups').insert({
-    client_id: clientId,
-    user_id: profile.id,
+    client_id: clientId, user_id: profile.id,
     type: document.getElementById('log-type').value,
     outcome: outcome,
     notes: document.getElementById('log-notes').value || null,
-    completed: true,
-    completed_date: new Date().toISOString()
+    completed: true, completed_date: new Date().toISOString()
   });
   if (outcome === 'closed') {
     await sb.from('clients').update({status: 'deposited'}).eq('id', clientId);
@@ -1354,30 +1428,22 @@ async function saveLog() {
   closeModal('log-modal');
 }
 
-// ── ADD PROSPECT ──────────────────────────────────────────────
 async function saveProspect() {
   var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() || null : null; };
   var result = await sb.from('clients').insert({
     business_name: g('p-biz') || 'Unknown',
-    owner_name: g('p-owner'),
-    phone: g('p-phone'),
-    email: g('p-email'),
-    location: g('p-city'),
-    county: g('p-county'),
-    category: g('p-cat'),
+    owner_name: g('p-owner'), phone: g('p-phone'), email: g('p-email'),
+    location: g('p-city'), county: g('p-county'), category: g('p-cat'),
     business_hours: g('p-hours'),
     tier: parseInt(document.getElementById('p-tier').value) || 1,
     score: parseInt(g('p-score')) || null,
     pitch_angle: g('p-pitch'),
     review_insights: g('p-reviews'),
-    website_url: g('p-url'),
-    website_platform: g('p-platform'),
+    website_url: g('p-url'), website_platform: g('p-platform'),
     google_rating: parseFloat(g('p-rating')) || null,
     website_review: g('p-web-review'),
-    status: 'prospect',
-    assigned_to: profile.id
+    status: 'prospect', assigned_to: profile.id
   }).select().single();
-
   if (result.error) { toast('Error: ' + result.error.message, 'error'); return; }
   await sb.from('build_tracker').insert({client_id: result.data.id});
   toast('Prospect added!');
@@ -1385,61 +1451,6 @@ async function saveProspect() {
   await loadClients();
 }
 
-// ── SCRIPT DRAWER ─────────────────────────────────────────────
-function openScriptDrawer() {
-  var drawer = document.getElementById('script-drawer');
-  var overlay = document.getElementById('script-drawer-overlay');
-  var body = document.getElementById('sd-body');
-  var noScript = document.getElementById('sd-no-script');
-  var title = document.getElementById('sd-title');
-  var catEl = document.getElementById('sd-cat');
-
-  var cat = currentProspect ? (currentProspect.category || '') : '';
-  var match = scripts.find(function(s) {
-    return s.service && s.service.toLowerCase() === cat.toLowerCase();
-  });
-
-  title.textContent = match ? match.service : 'Script';
-  catEl.textContent = cat ? cat : '';
-
-  if (!match) {
-    body.style.display = 'none';
-    noScript.style.display = 'block';
-  } else {
-    noScript.style.display = 'none';
-    body.style.display = 'block';
-    var objs = Array.isArray(match.objections) ? match.objections : (match.objections ? JSON.parse(match.objections) : []);
-    body.innerHTML =
-      (match.what_it_is ? '<div class="sd-section"><div class="sd-section-title">What It Is</div><p style="font-size:14px;line-height:1.7">' + match.what_it_is + '</p></div>' : '') +
-      (match.pitch ? '<div class="sd-section"><div class="sd-section-title">The Pitch</div><div class="sd-pitch">' + match.pitch + '</div></div>' : '') +
-      (match.key_stat ? '<div class="sd-section"><div class="sd-section-title">Key Stat</div><div class="sd-stat">' + match.key_stat + '</div></div>' : '') +
-      (match.when_to_recommend ? '<div class="sd-section"><div class="sd-section-title">When to Recommend</div><p style="font-size:13px;line-height:1.7">' + match.when_to_recommend + '</p></div>' : '') +
-      (objs.length ? '<div class="sd-section"><div class="sd-section-title">Objections &amp; Responses</div>' +
-        objs.map(function(o) {
-          return '<div class="sd-objection"><div class="sd-objection-q">&ldquo;' + o.objection + '&rdquo;</div><div class="sd-objection-a">' + o.response + '</div></div>';
-        }).join('') + '</div>' : '');
-  }
-
-  drawer.style.display = 'block';
-  overlay.style.display = 'block';
-  setTimeout(function() {
-    drawer.classList.add('open');
-    overlay.classList.add('open');
-  }, 10);
-}
-
-function closeScriptDrawer() {
-  var drawer = document.getElementById('script-drawer');
-  var overlay = document.getElementById('script-drawer-overlay');
-  drawer.classList.remove('open');
-  overlay.classList.remove('open');
-  setTimeout(function() {
-    drawer.style.display = 'none';
-    overlay.style.display = 'none';
-  }, 260);
-}
-
-// ── MODALS ────────────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 </script>
