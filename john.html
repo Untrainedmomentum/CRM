@@ -146,7 +146,7 @@
       .topbar{padding:10px 14px}
       .topbar-logo{font-size:16px}
       .btn-logout{font-size:11px;padding:5px 10px}
-      .stats-grid{grid-template-columns:1fr 1fr !important}
+      .stats-grid{grid-template-columns:repeat(3,1fr) !important}
       #cat-cards{grid-template-columns:1fr !important}
       .launch-card{padding:16px !important}
       .call-card{border-radius:0;border-left:none;border-right:none}
@@ -210,10 +210,11 @@
       <div class="search-dropdown" id="search-dropdown"></div>
     </div>
 
-    <div class="stats-grid mb-24">
+    <div class="stats-grid mb-24" style="grid-template-columns:repeat(5,1fr)">
       <div class="stat-card"><div class="stat-label">Prospects</div><div class="stat-value" id="s-prospects">&mdash;</div></div>
       <div class="stat-card green"><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">&mdash;</div></div>
       <div class="stat-card gold"><div class="stat-label">Commission</div><div class="stat-value" id="s-commission">&mdash;</div><div class="stat-sub">20% of deposits</div></div>
+      <div class="stat-card" style="border-top-color:#7c3aed"><div class="stat-label">Pipeline Value</div><div class="stat-value" id="s-pipeline">&mdash;</div><div class="stat-sub">est. sale · active prospects</div></div>
       <div class="stat-card blue"><div class="stat-label">Follow-Ups Due</div><div class="stat-value" id="s-due">&mdash;</div></div>
     </div>
 
@@ -228,6 +229,31 @@
           </div>
         </div>
         <div id="cat-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px"></div>
+
+        <!-- Category summary table -->
+        <div id="cat-summary" style="margin-bottom:24px;display:none">
+          <div style="font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Category Breakdown</div>
+          <div class="table-wrap">
+            <table id="cat-summary-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Prospects</th>
+                  <th style="color:#888">Fresh</th>
+                  <th style="color:var(--gold)">Voicemail</th>
+                  <th style="color:var(--blue)">Callback</th>
+                  <th style="color:var(--red)">Not Interested</th>
+                  <th style="color:#888">Wrong #</th>
+                  <th style="color:var(--green)">Closed</th>
+                  <th style="color:var(--green)">Closed Value</th>
+                  <th style="color:var(--gold)">Commission</th>
+                </tr>
+              </thead>
+              <tbody id="cat-summary-tbody"></tbody>
+              <tfoot id="cat-summary-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
         <div id="list-wrap" style="display:none">
           <div class="flex-between mb-16">
             <div>
@@ -693,16 +719,18 @@ async function loadClients() {
   });
   var commission = closed.reduce(function(sum, c) { return sum + (c.deposit_collected || 0) * 0.2; }, 0);
 
+  var pipeline = prospects.reduce(function(sum, c) { return sum + (c.est_sale || 0); }, 0);
+
   document.getElementById('s-prospects').textContent = prospects.length;
   document.getElementById('s-closed').textContent = closed.length;
   document.getElementById('s-commission').textContent = fmt$(commission);
+  document.getElementById('s-pipeline').textContent = fmt$(pipeline);
 
   document.getElementById('log-client').innerHTML = allClients.map(function(c) {
     return '<option value="' + c.id + '">' + c.business_name + '</option>';
   }).join('');
 
-  renderCategoryCards();
-
+  // ── Load dispos FIRST so cards can show them ──────────────
   var clientIds = allClients.map(function(c) { return c.id; });
   if (clientIds.length) {
     var dispoRes = await sb.from('followups')
@@ -717,6 +745,8 @@ async function loadClients() {
     }
   }
 
+  renderCategoryCards();
+  renderCategorySummary(prospects, closed);
   renderUpsells(closed);
   await loadFollowUps();
 }
@@ -784,9 +814,24 @@ function renderCategoryCards() {
   var catMap = {};
   prospects.forEach(function(c) {
     var cat = c.category || 'Uncategorized';
-    if (!catMap[cat]) catMap[cat] = {total:0, hot:0};
+    if (!catMap[cat]) catMap[cat] = {total:0, hot:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0};
     catMap[cat].total++;
     if (c.tier == 1) catMap[cat].hot++;
+    // Tally dispo chips
+    var ld = c._lastDispo;
+    if (!ld) {
+      catMap[cat].fresh++;
+    } else if (ld.outcome === 'left_voicemail') {
+      catMap[cat].voicemail++;
+    } else if (ld.outcome === 'callback') {
+      catMap[cat].callback++;
+    } else if (ld.outcome === 'not_interested') {
+      catMap[cat].not_interested++;
+    } else if (ld.outcome === 'other' && ld.notes && ld.notes.indexOf('Wrong') !== -1) {
+      catMap[cat].wrong++;
+    } else {
+      catMap[cat].fresh++; // anything else counts as untouched for this purpose
+    }
   });
   var cats = Object.keys(catMap).sort();
   var container = document.getElementById('cat-cards');
@@ -795,13 +840,103 @@ function renderCategoryCards() {
     return;
   }
   container.innerHTML = cats.map(function(cat) {
-    return '<div class="launch-card" onclick="showCatList(\'' + cat.replace(/'/g,"\\'") + '\')" style="text-align:left;padding:20px 22px">' +
-      '<div class="launch-title" style="font-size:15px;margin-bottom:6px">' + cat + '</div>' +
-      '<div style="font-size:13px;color:var(--mid)">' + catMap[cat].total + ' prospect' + (catMap[cat].total !== 1 ? 's' : '') +
-        (catMap[cat].hot ? ' &mdash; <span style="color:var(--red);font-weight:600">' + catMap[cat].hot + ' hot</span>' : '') +
+    var d = catMap[cat];
+    var chips = [];
+    if (d.fresh)         chips.push('<span style="background:#f0f0f0;color:#555;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#128337; ' + d.fresh + ' Fresh</span>');
+    if (d.voicemail)     chips.push('<span style="background:var(--gold-l);color:#a07000;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#128222; ' + d.voicemail + ' VM</span>');
+    if (d.callback)      chips.push('<span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#8635; ' + d.callback + ' CB</span>');
+    if (d.not_interested)chips.push('<span style="background:var(--red-l);color:var(--red);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#10005; ' + d.not_interested + ' NI</span>');
+    if (d.wrong)         chips.push('<span style="background:#f0f0f0;color:#888;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#8709; ' + d.wrong + ' Wrong</span>');
+    return '<div class="launch-card" onclick="showCatList(\'' + cat.replace(/'/g,"\\'") + '\')" style="text-align:left;padding:16px 18px">' +
+      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + cat + '</div>' +
+      '<div style="font-size:12px;color:var(--mid);margin-bottom:10px">' + d.total + ' prospect' + (d.total !== 1 ? 's' : '') +
+        (d.hot ? ' &mdash; <span style="color:var(--red);font-weight:600">' + d.hot + ' hot</span>' : '') +
       '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:4px">' + chips.join('') + '</div>' +
     '</div>';
   }).join('');
+}
+
+function renderCategorySummary(prospects, closed) {
+  // Build per-category stats across ALL clients (prospects + closed)
+  var catData = {};
+
+  // Tally active prospects by category
+  prospects.forEach(function(c) {
+    var cat = c.category || 'Uncategorized';
+    if (!catData[cat]) catData[cat] = {prospects:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0, closedCount:0, closedValue:0, commission:0};
+    catData[cat].prospects++;
+    var ld = c._lastDispo;
+    if (!ld) {
+      catData[cat].fresh++;
+    } else if (ld.outcome === 'left_voicemail') {
+      catData[cat].voicemail++;
+    } else if (ld.outcome === 'callback') {
+      catData[cat].callback++;
+    } else if (ld.outcome === 'not_interested') {
+      catData[cat].not_interested++;
+    } else if (ld.outcome === 'other' && ld.notes && ld.notes.indexOf('Wrong') !== -1) {
+      catData[cat].wrong++;
+    } else {
+      catData[cat].fresh++;
+    }
+  });
+
+  // Tally closed deals by category
+  closed.forEach(function(c) {
+    var cat = c.category || 'Uncategorized';
+    if (!catData[cat]) catData[cat] = {prospects:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0, closedCount:0, closedValue:0, commission:0};
+    catData[cat].closedCount++;
+    var dep = c.deposit_collected || 0;
+    catData[cat].closedValue += dep;
+    catData[cat].commission += dep * 0.2;
+  });
+
+  var cats = Object.keys(catData).sort();
+  var summaryEl = document.getElementById('cat-summary');
+  if (!cats.length) { summaryEl.style.display = 'none'; return; }
+  summaryEl.style.display = 'block';
+
+  // Totals row
+  var tot = {prospects:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0, closedCount:0, closedValue:0, commission:0};
+  cats.forEach(function(cat) {
+    var d = catData[cat];
+    Object.keys(tot).forEach(function(k) { tot[k] += d[k] || 0; });
+  });
+
+  var chip = function(n, color) {
+    return n ? '<span style="font-weight:700;color:' + color + '">' + n + '</span>' : '<span style="color:#ddd">—</span>';
+  };
+
+  document.getElementById('cat-summary-tbody').innerHTML = cats.map(function(cat) {
+    var d = catData[cat];
+    return '<tr>' +
+      '<td style="font-weight:600">' + cat + '</td>' +
+      '<td class="text-sm">' + d.prospects + '</td>' +
+      '<td class="text-sm">' + chip(d.fresh, '#777') + '</td>' +
+      '<td class="text-sm">' + chip(d.voicemail, '#a07000') + '</td>' +
+      '<td class="text-sm">' + chip(d.callback, '#1d4ed8') + '</td>' +
+      '<td class="text-sm">' + chip(d.not_interested, 'var(--red)') + '</td>' +
+      '<td class="text-sm">' + chip(d.wrong, '#aaa') + '</td>' +
+      '<td class="text-sm">' + chip(d.closedCount, 'var(--green)') + '</td>' +
+      '<td class="text-sm" style="font-weight:600;color:var(--green)">' + (d.closedValue ? fmt$(d.closedValue) : '<span style="color:#ddd">—</span>') + '</td>' +
+      '<td class="text-sm" style="font-weight:600;color:var(--gold)">' + (d.commission ? fmt$(d.commission) : '<span style="color:#ddd">—</span>') + '</td>' +
+    '</tr>';
+  }).join('');
+
+  document.getElementById('cat-summary-tfoot').innerHTML =
+    '<tr style="background:var(--light);font-weight:700;border-top:2px solid var(--border)">' +
+      '<td>Total</td>' +
+      '<td>' + tot.prospects + '</td>' +
+      '<td style="color:#777">' + tot.fresh + '</td>' +
+      '<td style="color:#a07000">' + tot.voicemail + '</td>' +
+      '<td style="color:#1d4ed8">' + tot.callback + '</td>' +
+      '<td style="color:var(--red)">' + tot.not_interested + '</td>' +
+      '<td style="color:#aaa">' + tot.wrong + '</td>' +
+      '<td style="color:var(--green)">' + tot.closedCount + '</td>' +
+      '<td style="color:var(--green)">' + fmt$(tot.closedValue) + '</td>' +
+      '<td style="color:var(--gold)">' + fmt$(tot.commission) + '</td>' +
+    '</tr>';
 }
 
 function showCatList(cat) {
@@ -812,6 +947,7 @@ function showCatList(cat) {
   listSort = {col: 'tier', dir: 1};
   document.getElementById('list-wrap').style.display = 'block';
   document.getElementById('cat-cards').style.display = 'none';
+  document.getElementById('cat-summary').style.display = 'none';
   renderList();
 }
 
@@ -823,12 +959,14 @@ function showAllList() {
   listSort = {col: 'tier', dir: 1};
   document.getElementById('list-wrap').style.display = 'block';
   document.getElementById('cat-cards').style.display = 'none';
+  document.getElementById('cat-summary').style.display = 'none';
   renderList();
 }
 
 function hideCatList() {
   document.getElementById('list-wrap').style.display = 'none';
   document.getElementById('cat-cards').style.display = 'grid';
+  document.getElementById('cat-summary').style.display = 'block';
   activeCategory = null;
 }
 
@@ -1243,6 +1381,7 @@ function resetSession() {
   document.getElementById('calling-launch').style.display = 'block';
   document.getElementById('list-wrap').style.display = 'none';
   document.getElementById('cat-cards').style.display = 'grid';
+  document.getElementById('cat-summary').style.display = 'block';
   updateBars();
   loadClients();
 }
