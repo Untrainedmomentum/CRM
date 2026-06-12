@@ -148,10 +148,13 @@
       <!-- TICKETS -->
       <div class="tab-panel" id="tab-tickets">
         <div class="table-wrap">
-          <div class="table-header"><div class="table-title">Client Tickets</div></div>
+          <div class="table-header">
+            <div class="table-title">Client Tickets</div>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('new-ticket-modal').style.display='flex'">+ New Ticket</button>
+          </div>
           <table>
-            <thead><tr><th>Subject</th><th>Priority</th><th>Status</th><th>Received</th></tr></thead>
-            <tbody id="client-tickets"><tr><td colspan="4" class="loading">Loading&hellip;</td></tr></tbody>
+            <thead><tr><th>Subject</th><th>Priority</th><th>Status</th><th>Submitted By</th><th>Received</th></tr></thead>
+            <tbody id="client-tickets"><tr><td colspan="5" class="loading">Loading&hellip;</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -170,6 +173,44 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- NEW TICKET MODAL -->
+<div class="modal-overlay" id="new-ticket-modal" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">New Ticket</div>
+      <button class="modal-close" onclick="document.getElementById('new-ticket-modal').style.display='none'">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <input class="form-control" id="nt-subject" placeholder="e.g. Update contact info on website">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="nt-description" rows="4" placeholder="What needs to be done?"></textarea>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-control" id="nt-priority">
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Submitted By</label>
+          <input class="form-control" id="nt-submitted-by" placeholder="Your name">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('new-ticket-modal').style.display='none'">Cancel</button>
+      <button class="btn btn-primary" onclick="submitTicket()">Submit Ticket</button>
     </div>
   </div>
 </div>
@@ -578,8 +619,36 @@ async function loadTickets() {
   const { data } = await sb.from('tickets').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
   const tickets = data || [];
   document.getElementById('client-tickets').innerHTML = tickets.length === 0
-    ? '<tr><td colspan="4"><div class="empty-state"><div class="empty-state-text">No tickets from this client yet</div></div></td></tr>'
-    : tickets.map(t => `<tr><td>${t.subject}</td><td><span class="badge badge-${t.priority}">${t.priority}</span></td><td><span class="badge badge-${t.status}">${t.status.replace('_',' ')}</span></td><td class="text-sm text-mid">${fmtDate(t.created_at)}</td></tr>`).join('');
+    ? '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-text">No tickets yet</div></div></td></tr>'
+    : tickets.map(t => `<tr>
+        <td>${t.subject}</td>
+        <td><span class="badge badge-${t.priority}">${t.priority}</span></td>
+        <td><span class="badge badge-${t.status}">${t.status.replace('_',' ')}</span></td>
+        <td class="text-sm text-mid">${t.submitted_by_name || '&mdash;'}</td>
+        <td class="text-sm text-mid">${fmtDate(t.created_at)}</td>
+      </tr>`).join('');
+}
+
+async function submitTicket() {
+  const subject = document.getElementById('nt-subject').value.trim();
+  if (!subject) { toast('Subject is required', 'error'); return; }
+  const submittedBy = document.getElementById('nt-submitted-by').value.trim() || currentProfile?.full_name || 'Staff';
+  const { error } = await sb.from('tickets').insert({
+    client_id:         clientId,
+    subject:           subject,
+    description:       document.getElementById('nt-description').value.trim() || null,
+    priority:          document.getElementById('nt-priority').value,
+    status:            'open',
+    submitted_by_name: submittedBy,
+  });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Ticket submitted!');
+  document.getElementById('new-ticket-modal').style.display = 'none';
+  document.getElementById('nt-subject').value = '';
+  document.getElementById('nt-description').value = '';
+  document.getElementById('nt-priority').value = 'normal';
+  document.getElementById('nt-submitted-by').value = '';
+  loadTickets();
 }
 
 function renderPortal() {

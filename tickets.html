@@ -107,7 +107,7 @@ async function load() {
   if (!tickets.length) { b.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No tickets</div></div></td></tr>'; return; }
   b.innerHTML = tickets.map(t => `
     <tr>
-      <td class="text-sm">${t.clients?.business_name||'&mdash;'}</td>
+      <td class="text-sm">${t.client_id ? `<a href="client.html?id=${t.client_id}" style="color:var(--accent);font-weight:600;text-decoration:none">${t.clients?.business_name||'Unknown'}</a>` : '&mdash;'}</td>
       <td class="text-sm">${t.submitted_by_name}</td>
       <td>${t.subject}</td>
       <td><span class="badge badge-${t.priority}">${t.priority}</span></td>
@@ -120,7 +120,7 @@ async function load() {
 function open_t(t) {
   currentId = t.id;
   document.getElementById('tm-subject').textContent  = t.subject;
-  document.getElementById('tm-client').textContent   = t.clients?.business_name || '—';
+  document.getElementById('tm-client').innerHTML     = t.client_id ? `<a href="client.html?id=${t.client_id}" style="color:var(--accent);font-weight:600;text-decoration:none">${t.clients?.business_name||'Unknown'}</a>` : '—';
   document.getElementById('tm-by').textContent       = t.submitted_by_name;
   document.getElementById('tm-priority').innerHTML   = `<span class="badge badge-${t.priority}">${t.priority}</span>`;
   document.getElementById('tm-status').innerHTML     = `<span class="badge badge-${t.status}">${t.status.replace('_',' ')}</span>`;
