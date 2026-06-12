@@ -339,12 +339,12 @@
             </div>
 
             <!-- Category Playbook — inline, collapsible -->
-            <div class="call-section" id="cc-playbook-section" style="display:none">
-              <div class="call-section-title" style="cursor:pointer" onclick="togglePlaybook()">
-                <span id="cc-playbook-label">&#127775; Category Playbook</span>
-                <span style="font-size:11px;font-weight:400;color:var(--mid)" id="cc-playbook-toggle">Show &darr;</span>
+            <div class="call-section" id="cc-playbook-section" style="display:none;background:var(--green-l);border:1px solid #b0dfc0;border-radius:var(--r);padding:12px 14px;margin-bottom:20px">
+              <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="togglePlaybook()">
+                <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px" id="cc-playbook-label">&#127775; Category Playbook</span>
+                <span style="font-size:11px;font-weight:600;color:var(--green)" id="cc-playbook-toggle">Show &darr;</span>
               </div>
-              <div id="cc-playbook-body" style="display:none;margin-top:8px"></div>
+              <div id="cc-playbook-body" style="display:none;margin-top:12px"></div>
             </div>
 
             <!-- Google Rating — kept, it's data not text -->
@@ -1085,16 +1085,43 @@ function togglePlaybook() {
 }
 
 function renderPlaybookBody(pb) {
-  return pb.pitches.map(function(p) {
+  var sec = function(label, color) {
+    return '<div style="font-size:10px;font-weight:700;color:' + (color||'var(--mid)') + ';text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--border)">' + label + '</div>';
+  };
+  var out = '';
+
+  // What we offer
+  out += sec('What We Offer Them');
+  out += '<div style="background:var(--light);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:13px;line-height:1.7">' + pb.offer + '</div>';
+
+  // Problems it solves
+  out += sec('Problems It Solves');
+  out += '<div style="font-size:13px;line-height:1.7">' +
+    pb.problems.map(function(p) {
+      return '<div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:var(--red);font-weight:700;flex-shrink:0">&#10003;</span><span>' + p + '</span></div>';
+    }).join('') +
+  '</div>';
+
+  // Recommended package
+  out += sec('Recommended Starting Package', 'var(--green)');
+  out += '<div style="background:var(--green-l);border:1px solid #b0dfc0;border-radius:var(--r);padding:12px 14px;font-size:13px;line-height:1.7">' + pb.package + '</div>';
+
+  // Pitch angles
+  out += sec('Pitch Angles');
+  out += pb.pitches.map(function(p) {
     return '<div class="sd-pitch" style="margin-bottom:10px;font-size:13px">' + p + '</div>';
-  }).join('') +
-  '<div style="font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">Rebuttals</div>' +
-  pb.rebuttals.map(function(r) {
+  }).join('');
+
+  // Rebuttals
+  out += sec('Rebuttals');
+  out += pb.rebuttals.map(function(r) {
     return '<div class="sd-objection" style="margin-bottom:8px">' +
       '<div class="sd-objection-q">Them: &ldquo;' + r.q + '&rdquo;</div>' +
       '<div class="sd-objection-a">You: ' + r.a + '</div>' +
     '</div>';
   }).join('');
+
+  return out;
 }
 
 function loadCard(c) {
@@ -1231,6 +1258,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['restaurant','cafe','coffee','diner','bistro','eatery','bar','grill','pizza','sushi','taco','bbq','brewery','food'],
     label: 'Restaurants & Cafés',
+    offer: 'We build and manage their Google Business Profile, set up a website or landing page, run a review generation system to get more 5-star reviews, and can add an AI agent that auto-responds to reviews and handles basic customer questions online.',
+    problems: [
+      'People search "restaurants near me" and pick whoever has the best reviews — if they\'re buried or have no reviews, they lose that table every time',
+      'Negative reviews with no response make them look like they don\'t care',
+      'No website or a broken one sends people straight to a competitor',
+      'No way to automatically follow up with customers to ask for reviews'
+    ],
+    package: 'Start with Growth — $999 project + $199/mo. Covers website, GBP management, review system, and AI review agent. If they just want a foot in the door, Starter at $350 + $75/mo gets them a landing page and GBP setup.',
     pitches: [
       'You\'ve got great food — but if people can\'t find you on Google when they\'re hungry, you\'re losing tables to the place down the street that has worse reviews but shows up first.',
       'Your Google reviews are your menu before the menu. We help you get more of them, respond to the bad ones, and make sure your listing is what closes the decision.'
@@ -1244,6 +1279,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['retail','shop','store','boutique','gift','clothing','apparel','hardware','furniture','jewelry','florist','flower'],
     label: 'Retail Shops',
+    offer: 'We build them a website or landing page with their inventory focus, set up and manage their Google Business Profile, run a review generation system, and can add automation like missed-call text-back so they never lose a lead when they\'re with a customer.',
+    problems: [
+      'People search online before driving anywhere — if the store doesn\'t show up, they go to Amazon or a chain instead',
+      'No website means no credibility for anyone who hears about them second-hand',
+      'Missed calls from customers who don\'t leave a message and just move on',
+      'No system to collect reviews, so they rely on whoever happens to leave one'
+    ],
+    package: 'Starter at $350 + $75/mo is a strong entry — gets them online fast. Upsell to Growth at $999 + $199/mo if they want reviews managed and a full site. Add missed-call text-back automation as a hook — it\'s included in Growth.',
     pitches: [
       'People shop local when they know you exist. The problem is most of your potential customers are searching online and not finding you — they\'re buying from Amazon instead.',
       'Your store has things Amazon doesn\'t — a real person, same-day availability, no shipping wait. We make sure that story shows up when someone searches.'
@@ -1257,6 +1300,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['salon','spa','hair','barber','nail','beauty','wax','lash','brow','massage','estheti'],
     label: 'Salons & Spas',
+    offer: 'We build their website or landing page with booking capability, manage their Google Business Profile, run a review generation system, set up automated appointment reminders and follow-ups, and can add an AI booking assistant so they capture appointments even when they\'re with a client.',
+    problems: [
+      'Clients book based on photos and reviews — a weak Google profile loses bookings to competitors before the phone even rings',
+      'Missed calls while they\'re with a client means lost bookings — no system to capture those',
+      'No automated reminders means more no-shows',
+      'No process for collecting reviews after appointments, so their reputation doesn\'t grow'
+    ],
+    package: 'Growth at $999 + $199/mo is the sweet spot — website, GBP, reviews, booking setup with auto reminders. If they already have a booking system, lead with Starter + booking automation add-on at $150.',
     pitches: [
       'Your clients book based on trust and visuals. If your Google profile doesn\'t have photos, recent reviews, and accurate hours — you\'re losing bookings to competitors who do.',
       'Most salons live and die by repeat clients. We help you get the new ones in the door so your chair is always full, not just on good weeks.'
@@ -1270,6 +1321,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['gym','fitness','yoga','pilates','crossfit','studio','trainer','personal training','martial arts','karate','boxing'],
     label: 'Gyms & Fitness Studios',
+    offer: 'We build their website, manage their Google Business Profile, run a review generation system to build trust, set up automated follow-up sequences for leads who inquire but don\'t sign up, and can add a chatbot to handle membership questions and trial sign-ups around the clock.',
+    problems: [
+      'People decide on a gym before they ever walk in — online reviews and a strong profile are what gets them through the door',
+      'Leads who inquire but don\'t convert get forgotten — no automated follow-up to bring them back',
+      'Membership churn means they constantly need new people coming in, but have no system to generate them',
+      'No 24/7 way to answer "how much is membership?" or "do you offer trials?" — those leads go cold'
+    ],
+    package: 'Growth at $999 + $199/mo covers the website, GBP, and review system. Add chatbot at $500 + $99/mo if they want to capture leads after hours. Full Stack at $1,997 + $349/mo if they want the whole system including automation.',
     pitches: [
       'People start their fitness journey online. If you\'re not showing up when someone searches for a gym near them, you\'re invisible at the exact moment they\'re ready to commit.',
       'January is obvious — but people start fitness goals year-round. A strong Google presence means you\'re capturing those moments every month, not just in January.'
@@ -1283,6 +1342,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['pet','groom','dog','cat','veterinar','vet','animal','kennel','boarding','daycare'],
     label: 'Pet Groomers',
+    offer: 'We build their website or landing page with booking, manage their Google Business Profile, run a review generation system, and set up automated appointment reminders and post-visit follow-ups to collect reviews and bring clients back.',
+    problems: [
+      'Pet owners check reviews before trusting anyone with their animal — thin or outdated reviews send them elsewhere',
+      'No online booking means they lose clients who won\'t call during business hours',
+      'No automated reminders = more no-shows and forgotten appointments',
+      'No follow-up after appointments means missed review opportunities and lower repeat booking rates'
+    ],
+    package: 'Starter at $350 + $75/mo if they just need a web presence and GBP. Growth at $999 + $199/mo if they want booking, reminders, and review automation — that\'s the one that actually moves the needle for a groomer.',
     pitches: [
       'Pet owners are incredibly loyal — but only after they trust you. The first thing they do is check reviews. If you don\'t have recent ones, they move on to whoever does.',
       'You\'re competing with PetSmart and mobile groomers. The way an independent groomer wins is trust — and trust shows up as reviews, photos, and a polished Google presence.'
@@ -1296,6 +1363,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['real estate','realtor','realty','agent','broker','property'],
     label: 'Real Estate Agents',
+    offer: 'We build a professional website showcasing listings and testimonials, manage their Google Business Profile, run a review generation system after closings, and can set up automated follow-up sequences for leads who inquire but don\'t convert — so no lead goes cold.',
+    problems: [
+      'Sellers and buyers Google their agent before signing anything — a weak profile loses listings before the first meeting',
+      'No system to collect reviews after closings means their reputation doesn\'t grow with their business',
+      'Leads from open houses or Zillow go cold with no automated follow-up',
+      'Competing agents with weaker track records but better online presence are winning business they shouldn\'t'
+    ],
+    package: 'Growth at $999 + $199/mo is the right fit — full website, GBP management, and review system. Add automated lead follow-up sequences as part of Full Stack at $1,997 + $349/mo if they\'re doing serious volume.',
     pitches: [
       'Sellers and buyers Google their agent before they sign anything. If your reviews are thin or outdated, you\'re losing listings to agents with less experience but a better online presence.',
       'Your reputation is your entire business. One strong Google profile with recent five-star reviews can be the difference between getting the call or not.'
@@ -1307,8 +1382,16 @@ var CAT_PLAYBOOK = [
     ]
   },
   {
-    keys: ['insurance','agency','agent','allstate','farmers','state farm','coverage'],
+    keys: ['insurance','agency','coverage'],
     label: 'Insurance Agencies',
+    offer: 'We build their website, manage their Google Business Profile, run a review generation system, and set up automated follow-up sequences for quote requests that don\'t close — so every lead gets nurtured without the agent manually chasing. Can add Managed IT if they have office PCs that need patching and monitoring.',
+    problems: [
+      'Nobody signs with an agent they can\'t verify online — a thin profile kills trust before the first call',
+      'Quote requests that go unanswered or get one follow-up and die — no automated nurture sequence',
+      'Renewals keep them afloat but don\'t grow the book — no consistent source of new prospects',
+      'Office computers often running outdated software, a security risk they don\'t think about until something breaks'
+    ],
+    package: 'Growth at $999 + $199/mo for the website, GBP, and review system. Add automated lead follow-up as part of Full Stack at $1,997 + $349/mo. If they have 3+ office PCs, add Managed IT at $120/mo minimum — easy upsell.',
     pitches: [
       'Insurance is a trust business. Nobody signs with an agent they can\'t verify online. If your Google profile is thin, you\'re losing prospects before they ever pick up the phone.',
       'Most agencies rely on renewals and referrals — which is fine until a carrier change or rate hike shakes things up. We make sure you have a consistent stream of new prospects finding you.'
@@ -1322,6 +1405,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['bowling','entertainment','arcade','laser','mini golf','escape room','fun center','family fun'],
     label: 'Bowling & Entertainment',
+    offer: 'We build their website with event/party booking capability, manage their Google Business Profile, run a review generation system, and can set up automated booking confirmations, reminders, and follow-ups. AI chatbot is a strong upsell — handles event pricing questions and availability 24/7.',
+    problems: [
+      'Group event decisions happen online — if they don\'t show up in search with strong reviews, the birthday party goes somewhere else',
+      'No online booking means lost group reservations from people who won\'t call during busy hours',
+      'No automated follow-up after events means no reviews and no repeat bookings',
+      'Chatbot potential is huge here — "what\'s available Saturday?" questions that go unanswered lose the booking'
+    ],
+    package: 'Growth at $999 + $199/mo for website, GBP, and review system. Strong case for chatbot add-on at $500 + $99/mo — event venues get a ton of repetitive inquiries that an AI handles perfectly. Full Stack at $1,997 + $349/mo if they want everything.',
     pitches: [
       'People plan group outings online. If you\'re not showing up when someone searches for something to do on a Friday night, you\'re invisible when the decision is being made.',
       'Events and leagues are your bread and butter. A strong Google presence means more people discover you for birthday parties, corporate events, and league signups — not just walk-ins.'
@@ -1335,6 +1426,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['clean','maid','janitorial','housekeep','pressure wash'],
     label: 'Cleaning Services',
+    offer: 'We build their website, manage their Google Business Profile, run a review generation system after every job, and set up automated missed-call text-back so they never lose a lead when they\'re on a job. Can add automated quote follow-up sequences for leads that don\'t convert immediately.',
+    problems: [
+      'Cleaning is high-trust — people are letting someone in their home. No reviews or a weak profile means they go with whoever looks most vetted',
+      'They miss calls constantly while on jobs — those callers just move on to the next result',
+      'No system to ask for reviews after each job, so their reputation grows slowly despite doing great work',
+      'No follow-up on quotes that don\'t close — huge amount of revenue left on the table'
+    ],
+    package: 'Starter at $350 + $75/mo is a fast win if they\'re brand new. Growth at $999 + $199/mo is better — gets them reviews, automation, and GBP management. Missed-call text-back alone is worth the conversation: "Every missed call is a house you didn\'t clean."',
     pitches: [
       'Cleaning is one of the highest-trust services out there — you\'re letting someone into your home. People research heavily before booking. If your reviews aren\'t strong, they go with whoever is.',
       'You\'re competing with franchises like Molly Maid and solo ops charging half your rate. A polished Google presence is how you justify your pricing and win the clients who actually pay on time.'
@@ -1348,6 +1447,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['plumb','drain','pipe','water heater','sewer'],
     label: 'Plumbers',
+    offer: 'We manage their Google Business Profile so they dominate local emergency searches, build a clean website with click-to-call, run a review generation system after jobs, and set up missed-call text-back so every missed emergency call gets an instant response. Can add Voice AI to handle after-hours calls and qualify leads.',
+    problems: [
+      'Emergency plumbing searches go to whoever ranks first with the best reviews — if they\'re not there, that $500 job goes to a competitor',
+      'Missed calls on jobs = lost emergency work, the highest-margin calls they get',
+      'No review system means their reputation doesn\'t reflect their actual quality',
+      'After-hours calls go to voicemail — customers in a panic just call the next number'
+    ],
+    package: 'Growth at $999 + $199/mo covers GBP, website, and review system. Voice AI at $750 + $99/mo is a huge pitch for plumbers — "Your phone rings at 2am. Right now it goes to voicemail. With Voice AI, it gets answered, the job gets qualified, and you wake up to a booked call." Full Stack at $1,997 + $349/mo bundles it all.',
     pitches: [
       'When someone\'s got a leak, they grab their phone and call whoever shows up first with good reviews. If that\'s not you, it\'s your competitor. This is the highest-intent search there is.',
       'Emergency calls are great margins. We make sure you\'re the one capturing them — not the big national franchise with the ad budget.'
@@ -1361,6 +1468,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['electric','wiring','panel','outlet','generator','lighting install'],
     label: 'Electricians',
+    offer: 'We manage their Google Business Profile for local search dominance, build a professional website with click-to-call, run a review generation system after every job, set up missed-call text-back, and can add Voice AI for after-hours call handling. Managed IT is a natural fit if they have an office.',
+    problems: [
+      'Electrical work is high-stakes — homeowners only call someone they trust, and trust is built online before the first call',
+      'Missed calls while on a job site = lost estimates, especially for high-ticket panel and EV charger work',
+      'No review system means their reputation grows only by accident',
+      'Competitors with weaker skills but stronger online presence are winning bids they shouldn\'t'
+    ],
+    package: 'Growth at $999 + $199/mo for GBP, website, and reviews. Voice AI at $750 + $99/mo is an easy upsell — electricians are on job sites all day and miss calls constantly. Managed IT at $120/mo if they have office infrastructure. Full Stack at $1,997 + $349/mo for the complete package.',
     pitches: [
       'Electrical work is high-stakes. Homeowners don\'t just hire whoever\'s cheap — they hire whoever they trust. Reviews and a professional online presence are what builds that trust before you ever answer the phone.',
       'Panel upgrades, EV charger installs, whole-home rewires — the high-ticket jobs go to the electrician who looks most established online. We make sure that\'s you.'
@@ -1374,6 +1489,14 @@ var CAT_PLAYBOOK = [
   {
     keys: ['contractor','remodel','renovation','construction','handyman','carpenter','drywall','roofing','roof','siding','window','door install'],
     label: 'General Contractors',
+    offer: 'We build a professional website showcasing their project photos and reviews, manage their Google Business Profile, run a review generation system after every job, set up automated quote follow-up sequences, and can add Voice AI or a chatbot to handle initial inquiries and qualify leads while they\'re on a job site.',
+    problems: [
+      'Homeowners research contractors for weeks before calling — a weak online presence loses the bid before the estimate',
+      'Project photos and reviews are the #1 thing homeowners look for — no system to collect them means their portfolio doesn\'t grow',
+      'Quote leads go cold with no automated follow-up — they just hire whoever followed up first',
+      'On job sites all day means missed calls = missed estimates on high-ticket projects'
+    ],
+    package: 'Growth at $999 + $199/mo for website with project gallery, GBP, and reviews. Strong case for Voice AI at $750 + $99/mo — "You\'re on a roof, your phone rings, it\'s a $15,000 kitchen remodel inquiry. Right now it goes to voicemail. With us it gets answered." Full Stack at $1,997 + $349/mo is the power move.',
     pitches: [
       'Renovation is a massive financial decision. Homeowners research for weeks. If your online presence doesn\'t reflect the quality of your work, you\'re losing bids to contractors who look better on paper.',
       'Before someone calls you for a quote, they\'ve already looked you up. Photos, reviews, and a complete Google profile are what get you to that first conversation.'
@@ -1385,8 +1508,121 @@ var CAT_PLAYBOOK = [
     ]
   },
   {
+    keys: ['auto','car','repair','mechanic','tire','oil change','brake','transmission','collision','body shop','detai'],
+    label: 'Auto Repair',
+    offer: 'We manage their Google Business Profile to dominate "auto repair near me" searches, build a website with service info and click-to-call, run a review generation system after every job, and set up missed-call text-back. Voice AI is a strong upsell — handles after-hours inquiries and appointment scheduling.',
+    problems: [
+      'People in car trouble Google immediately and call whoever shows up first with strong reviews — no time to shop around',
+      'Missed calls while under a car = lost repair jobs, often the highest-ticket ones',
+      'No system to collect reviews after jobs means their rating stagnates while competitors grow theirs',
+      'No after-hours coverage — someone whose car breaks down at 6pm calls, gets voicemail, and calls the next shop'
+    ],
+    package: 'Growth at $999 + $199/mo for GBP, website, and reviews. Voice AI at $750 + $99/mo is a natural fit — mechanics are under cars all day. "Someone calls about a brake job while you\'re elbow-deep in an engine. Right now they hang up. With Voice AI, the appointment gets booked." Full Stack at $1,997 + $349/mo.',
+    pitches: [
+      'When someone\'s car breaks down, they Google the nearest shop with good reviews and call the first one that looks trustworthy. If that\'s not you, you\'re losing the easiest possible customer — someone who needs help right now.',
+      'Auto repair runs on trust. People don\'t know what\'s wrong with their car — they need to believe you do. Reviews and a strong profile are what build that before they ever walk in.'
+    ],
+    rebuttals: [
+      { q: 'I stay busy from repeat customers.', a: 'Repeat customers are great — until they move, buy a new car, or find a shop closer to their new job. You need new people coming in to replace the ones you naturally lose.' },
+      { q: 'People find me through word of mouth.', a: 'Word of mouth still ends with someone Googling you to confirm the address and check reviews. What they find either seals the deal or sends them somewhere else.' },
+      { q: 'I don\'t have time for this.', a: 'You\'re turning wrenches — we get it. You don\'t touch any of it. We handle everything so your phone rings more without you doing anything different.' }
+    ]
+  },
+  {
+    keys: ['chiro','chiropract','spine','back pain','physical therapy','physio','rehab','pt clinic'],
+    label: 'Chiropractors',
+    offer: 'We build their website with appointment booking, manage their Google Business Profile, run a review generation system after patient visits, set up automated appointment reminders to reduce no-shows, and can add a chatbot or Voice AI to handle new patient inquiries and scheduling around the clock.',
+    problems: [
+      'People in pain search immediately — a weak profile or low reviews sends them to the next chiropractor on the list',
+      'New patient no-shows with no automated reminder system cost real money every week',
+      'No process to collect reviews after successful treatment — patients who got great results don\'t think to leave one',
+      'New patient inquiries after hours go to voicemail and often don\'t call back'
+    ],
+    package: 'Growth at $999 + $199/mo for website with booking, GBP, and review system. Automated appointment reminders as part of Growth. Add chatbot at $500 + $99/mo or Voice AI at $750 + $99/mo for after-hours new patient capture — high value for a practice that lives on new patients.',
+    pitches: [
+      'People in pain Google for help immediately. If you\'re not showing up at the top with strong reviews when someone searches for a chiropractor, you\'re losing patients who are ready to book right now.',
+      'Chiropractic is a relationship business — patients who trust you come back for years. The hard part is getting them in the door the first time. A strong online presence is what does that.'
+    ],
+    rebuttals: [
+      { q: 'Most of my patients are referrals from doctors.', a: 'That\'s a great pipeline — but it\'s outside your control. Patients who find you directly through Google are yours, not dependent on another provider\'s goodwill.' },
+      { q: 'I\'m not taking new patients right now.', a: 'Then this is the perfect time to build — so when you are ready, you\'re not starting from zero. A strong profile takes months to build momentum.' },
+      { q: 'Insurance handles most of my marketing.', a: 'Being in-network gets you on a list. It doesn\'t get you chosen. Reviews and a strong presence are what get someone to pick you over the other in-network provider down the street.' }
+    ]
+  },
+  {
+    keys: ['hvac','heating','cooling','furnace','air condition','heat pump','duct','boiler','ac repair','ac install'],
+    label: 'HVAC',
+    offer: 'We manage their Google Business Profile to capture emergency searches, build a website with click-to-call and service info, run a review generation system after every job, set up missed-call text-back, and can add Voice AI to handle after-hours emergency calls — huge for HVAC. Managed IT is also a fit if they have an office.',
+    problems: [
+      'Emergency HVAC searches happen fast — whoever ranks first with good reviews gets the call, period',
+      'Seasonal peaks mean they\'re slammed and missing calls — every missed call in July is a $2,000+ AC job going to a competitor',
+      'Off-season the phone goes quiet — no system to stay visible and generate maintenance appointments year-round',
+      'After-hours furnace failures are the highest-urgency calls and currently going to voicemail'
+    ],
+    package: 'Growth at $999 + $199/mo for GBP dominance, website, and reviews. Voice AI at $750 + $99/mo is the strongest pitch for HVAC — "Your furnace calls come in at 9pm in January. Right now that\'s voicemail. With Voice AI it\'s a booked emergency call." Full Stack at $1,997 + $349/mo. Add Managed IT at $120/mo if they have office PCs.',
+    pitches: [
+      'When someone\'s heat goes out in January or their AC dies in July, they grab their phone and call whoever comes up first with good reviews. That\'s a high-urgency, high-ticket job going to whoever looks best online — it should be you.',
+      'HVAC is seasonal, which means you have slow stretches. A strong Google presence keeps the phone ringing in the off-season and makes sure you\'re slammed when peak season hits, not scrambling to catch up.'
+    ],
+    rebuttals: [
+      { q: 'We\'re already booked out in season.', a: 'Exactly — and you\'re probably turning away jobs. A stronger profile means you can raise your rates and take only the calls worth your time.' },
+      { q: 'We get most of our work from builders and contractors.', a: 'That work is great until the builder slows down or switches vendors. Direct homeowner calls are higher margin and more stable.' },
+      { q: 'We already have a website.', a: 'A website is step one. Google is where the decision actually gets made — most people never leave the search results page. We make sure you win there.' }
+    ]
+  },
+  {
+    keys: ['roof','shingle','gutter','metal roof','flat roof','commercial roof'],
+    label: 'Roofing',
+    offer: 'We build a website with project gallery and click-to-call, manage their Google Business Profile, run a review generation system after every job, set up automated quote follow-up sequences, and can add Voice AI to handle calls while crews are on roofs. After storm events, this becomes their biggest competitive edge.',
+    problems: [
+      'Homeowners get multiple quotes for roofing — whoever looks most established and trusted online wins, regardless of who\'s actually better',
+      'Storm season creates a flood of competition — being first to show up in search with strong reviews is the differentiator',
+      'Quote leads go cold fast with no follow-up system — they just hire whoever checked in first',
+      'Crews on roofs all day means missed calls = missed high-ticket estimates'
+    ],
+    package: 'Growth at $999 + $199/mo for website with project photos, GBP, and review system. Voice AI at $750 + $99/mo is an easy upsell — roofers can\'t answer phones mid-install. Full Stack at $1,997 + $349/mo if they want automated quote follow-up and full SEO. Strong ROI story: one extra $8,000 roof job pays for a full year.',
+    pitches: [
+      'Roofing is one of the biggest purchases a homeowner makes. They research heavily, get multiple quotes, and hire whoever looks most established and trustworthy online. If your profile is thin, you\'re losing bids before the first phone call.',
+      'Storm season creates a surge of demand — and a flood of competition. The contractors who win those jobs are the ones with the most reviews and the strongest Google presence. We make sure you\'re at the top when it matters.'
+    ],
+    rebuttals: [
+      { q: 'We work off insurance claims, we don\'t need marketing.', a: 'Insurance jobs are great volume — but you\'re competing with every other roofer going door to door after a storm. A strong profile means homeowners call you first instead of waiting for the knock.' },
+      { q: 'We stay busy with referrals.', a: 'Referrals dry up between storms and slow seasons. A visible online presence gives you consistent leads that don\'t depend on weather or word of mouth.' },
+      { q: 'Our crew is already maxed out.', a: 'Then this is the time to raise your prices, not your volume. A stronger reputation gives you the leverage to charge more for the same work.' }
+    ]
+  },
+  {
+    keys: ['vet','veterinar','animal hospital','animal clinic','pet clinic'],
+    label: 'Veterinary',
+    offer: 'We build their website with online appointment booking, manage their Google Business Profile, run a review generation system after visits, set up automated appointment reminders to cut no-shows, and can add a chatbot to handle new patient inquiries, appointment requests, and common questions around the clock.',
+    problems: [
+      'New pet owners and people who just moved Google for a vet immediately — no strong profile means they go to whoever shows up first',
+      'No automated appointment reminders means higher no-show rates — each missed appointment is real revenue lost',
+      'No system to collect reviews after successful visits — satisfied pet owners don\'t think to leave one without a nudge',
+      'After-hours inquiries for new patients go to voicemail and often don\'t call back'
+    ],
+    package: 'Growth at $999 + $199/mo for website with booking, GBP, review system, and appointment reminders. Chatbot at $500 + $99/mo is a strong upsell — "Do you offer payment plans?" "What vaccines does my puppy need?" — those questions come in after hours and currently get no answer. Managed IT at $120/mo if they have front-desk PCs.',
+    pitches: [
+      'Pet owners treat their animals like family — and they research veterinarians just as carefully. If your reviews are thin or your profile is incomplete, they\'re going with the practice that looks more established, even if you\'re better.',
+      'New residents and new pet owners always need a vet. If you\'re not showing up when they search, you\'re missing the easiest possible new client — someone who just moved to the area and has no existing loyalty.'
+    ],
+    rebuttals: [
+      { q: 'We have a full patient load already.', a: 'Practices turn over more than people think — people move, pets pass, schedules change. You need a steady stream of new clients to stay full, not just catch up when you\'re not.' },
+      { q: 'We rely on referrals from breeders and shelters.', a: 'Those are great — and people still Google you before booking. What they find either confirms the referral or creates doubt.' },
+      { q: 'We\'re not looking to grow right now.', a: 'Growth isn\'t the only reason to have a strong profile. It also protects you — one bad review without a response or a weak profile can cost you clients you already have.' }
+    ]
+  },
+  {
     keys: ['landscap','lawn','mow','mulch','garden','tree','snow removal','irrigation','sprinkler','outdoor'],
     label: 'Landscaping & Lawn Care',
+    offer: 'We build their website or landing page, manage their Google Business Profile, run a review generation system after jobs, set up automated quote follow-up sequences, and can add missed-call text-back so leads from job site calls don\'t go cold. Snow removal businesses especially benefit from being visible before the season hits.',
+    problems: [
+      'Spring search volume spikes and they\'re competing with dozens of ops — whoever has the most reviews and best profile gets the seasonal rush',
+      'Missed calls while mowing or on a job = lost recurring lawn contracts worth hundreds a month each',
+      'No follow-up on quotes means they lose to competitors who just checked in one more time',
+      'No review system means their reputation doesn\'t compound year over year'
+    ],
+    package: 'Starter at $350 + $75/mo is a fast, easy yes for a smaller operation — gets them online and on Google before spring. Growth at $999 + $199/mo if they want reviews and automation. Missed-call text-back is the hook: "Every time your mower drowns out your phone, that\'s a lawn contract you didn\'t sign."',
     pitches: [
       'Spring is when your phone should be ringing off the hook. If you\'re not at the top of Google with strong reviews when homeowners start thinking about their yard, you\'re losing that seasonal rush to whoever is.',
       'Recurring lawn contracts are the most valuable accounts you can have. A strong online presence gets you in the door — then your work keeps them. We handle the first part.'
@@ -1443,22 +1679,7 @@ function openScriptDrawer() {
     var pb = findPlaybook(cat);
     if (pb) {
       noScript.style.display = 'none'; body.style.display = 'block';
-      body.innerHTML =
-        '<div class="sd-section">' +
-          '<div class="sd-section-title">Pitch Angles — ' + pb.label + '</div>' +
-          pb.pitches.map(function(p) {
-            return '<div class="sd-pitch" style="margin-bottom:10px">' + p + '</div>';
-          }).join('') +
-        '</div>' +
-        '<div class="sd-section">' +
-          '<div class="sd-section-title">Rebuttals &amp; How to Handle Them</div>' +
-          pb.rebuttals.map(function(r) {
-            return '<div class="sd-objection">' +
-              '<div class="sd-objection-q">Them: &ldquo;' + r.q + '&rdquo;</div>' +
-              '<div class="sd-objection-a">You: ' + r.a + '</div>' +
-            '</div>';
-          }).join('') +
-        '</div>';
+      body.innerHTML = renderPlaybookBody(pb);
     } else {
       body.style.display = 'none'; noScript.style.display = 'block';
     }
