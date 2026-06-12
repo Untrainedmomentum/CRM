@@ -338,6 +338,15 @@
               ></textarea>
             </div>
 
+            <!-- Category Playbook — inline, collapsible -->
+            <div class="call-section" id="cc-playbook-section" style="display:none">
+              <div class="call-section-title" style="cursor:pointer" onclick="togglePlaybook()">
+                <span id="cc-playbook-label">&#127775; Category Playbook</span>
+                <span style="font-size:11px;font-weight:400;color:var(--mid)" id="cc-playbook-toggle">Show &darr;</span>
+              </div>
+              <div id="cc-playbook-body" style="display:none;margin-top:8px"></div>
+            </div>
+
             <!-- Google Rating — kept, it's data not text -->
             <div class="call-section">
               <div class="call-section-title">Google Reviews</div>
@@ -1066,9 +1075,47 @@ function dispoLabel(outcome) {
   return map[outcome] || (outcome ? outcome.replace(/_/g,' ') : 'Unknown');
 }
 
+// ── INLINE PLAYBOOK (call card) ───────────────────────────────
+var playbookOpen = false;
+
+function togglePlaybook() {
+  playbookOpen = !playbookOpen;
+  document.getElementById('cc-playbook-body').style.display = playbookOpen ? 'block' : 'none';
+  document.getElementById('cc-playbook-toggle').innerHTML = playbookOpen ? 'Hide &uarr;' : 'Show &darr;';
+}
+
+function renderPlaybookBody(pb) {
+  return pb.pitches.map(function(p) {
+    return '<div class="sd-pitch" style="margin-bottom:10px;font-size:13px">' + p + '</div>';
+  }).join('') +
+  '<div style="font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">Rebuttals</div>' +
+  pb.rebuttals.map(function(r) {
+    return '<div class="sd-objection" style="margin-bottom:8px">' +
+      '<div class="sd-objection-q">Them: &ldquo;' + r.q + '&rdquo;</div>' +
+      '<div class="sd-objection-a">You: ' + r.a + '</div>' +
+    '</div>';
+  }).join('');
+}
+
 function loadCard(c) {
   if (!c) { endSession(); return; }
   currentProspect = c;
+
+  // Reset playbook panel
+  playbookOpen = false;
+  var pbSection = document.getElementById('cc-playbook-section');
+  var pbBody = document.getElementById('cc-playbook-body');
+  var pbToggle = document.getElementById('cc-playbook-toggle');
+  var pb = findPlaybook(c.category || '');
+  if (pb) {
+    document.getElementById('cc-playbook-label').textContent = '\u2728 ' + pb.label + ' Playbook';
+    pbBody.innerHTML = renderPlaybookBody(pb);
+    pbBody.style.display = 'none';
+    pbToggle.innerHTML = 'Show &darr;';
+    pbSection.style.display = 'block';
+  } else {
+    pbSection.style.display = 'none';
+  }
 
   document.getElementById('cc-biz').textContent = c.business_name;
   document.getElementById('cc-meta').textContent = [c.category, c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(' \u2014 ');
@@ -1179,6 +1226,191 @@ async function saveBriefFromDrawer() {
   if (cardBox) cardBox.value = val;
 }
 
+// ── BUILT-IN CATEGORY PLAYBOOK ────────────────────────────────
+var CAT_PLAYBOOK = [
+  {
+    keys: ['restaurant','cafe','coffee','diner','bistro','eatery','bar','grill','pizza','sushi','taco','bbq','brewery','food'],
+    label: 'Restaurants & Cafés',
+    pitches: [
+      'You\'ve got great food — but if people can\'t find you on Google when they\'re hungry, you\'re losing tables to the place down the street that has worse reviews but shows up first.',
+      'Your Google reviews are your menu before the menu. We help you get more of them, respond to the bad ones, and make sure your listing is what closes the decision.'
+    ],
+    rebuttals: [
+      { q: 'We already have regulars.', a: 'Regulars are great for stability, but they\'re not how you grow. New customers Google you before they walk in — if your listing is weak, they go somewhere else.' },
+      { q: 'We don\'t have budget for marketing.', a: 'What does one slow Saturday cost you? That\'s usually more than a month of working with us. We\'re not an expense — we\'re filling seats.' },
+      { q: 'We tried ads and they didn\'t work.', a: 'Ads without a strong profile to land on are just wasted money. We fix the foundation first so any dollar you spend on ads actually converts.' }
+    ]
+  },
+  {
+    keys: ['retail','shop','store','boutique','gift','clothing','apparel','hardware','furniture','jewelry','florist','flower'],
+    label: 'Retail Shops',
+    pitches: [
+      'People shop local when they know you exist. The problem is most of your potential customers are searching online and not finding you — they\'re buying from Amazon instead.',
+      'Your store has things Amazon doesn\'t — a real person, same-day availability, no shipping wait. We make sure that story shows up when someone searches.'
+    ],
+    rebuttals: [
+      { q: 'Foot traffic is already good.', a: 'Good foot traffic today doesn\'t mean it\'s where it could be. How many people drove past without stopping because they didn\'t know what you carry?' },
+      { q: 'We rely on word of mouth.', a: 'Word of mouth is the best marketing — and Google reviews are digital word of mouth. We help you capture and amplify it.' },
+      { q: 'We\'re not interested in being online.', a: 'Your customers already are. Whether you\'re online or not, people are searching your name. You want to control what they find.' }
+    ]
+  },
+  {
+    keys: ['salon','spa','hair','barber','nail','beauty','wax','lash','brow','massage','estheti'],
+    label: 'Salons & Spas',
+    pitches: [
+      'Your clients book based on trust and visuals. If your Google profile doesn\'t have photos, recent reviews, and accurate hours — you\'re losing bookings to competitors who do.',
+      'Most salons live and die by repeat clients. We help you get the new ones in the door so your chair is always full, not just on good weeks.'
+    ],
+    rebuttals: [
+      { q: 'I\'m booked out already.', a: 'For now, great. But if one stylist leaves or you want to expand, that changes overnight. We build the pipeline so you\'re never scrambling.' },
+      { q: 'My clients find me on Instagram.', a: 'Instagram is discovery. Google is decision. When someone finds you on Instagram and then Googles you to book — what do they see?' },
+      { q: 'I don\'t want more clients, I want better ones.', a: 'That\'s exactly what a strong profile does — it filters in the right people and filters out the price-shoppers.' }
+    ]
+  },
+  {
+    keys: ['gym','fitness','yoga','pilates','crossfit','studio','trainer','personal training','martial arts','karate','boxing'],
+    label: 'Gyms & Fitness Studios',
+    pitches: [
+      'People start their fitness journey online. If you\'re not showing up when someone searches for a gym near them, you\'re invisible at the exact moment they\'re ready to commit.',
+      'January is obvious — but people start fitness goals year-round. A strong Google presence means you\'re capturing those moments every month, not just in January.'
+    ],
+    rebuttals: [
+      { q: 'We have memberships locked in.', a: 'Memberships churn. People move, change schedules, lose motivation. You need a steady pipeline of new members to replace the ones you lose.' },
+      { q: 'We run specials to get new members.', a: 'Specials attract price-shoppers. A strong reputation attracts committed members who stay longer and refer friends.' },
+      { q: 'We already have a website.', a: 'A website is great, but Google is where the decision gets made. 80% of people never make it past the search results page.' }
+    ]
+  },
+  {
+    keys: ['pet','groom','dog','cat','veterinar','vet','animal','kennel','boarding','daycare'],
+    label: 'Pet Groomers',
+    pitches: [
+      'Pet owners are incredibly loyal — but only after they trust you. The first thing they do is check reviews. If you don\'t have recent ones, they move on to whoever does.',
+      'You\'re competing with PetSmart and mobile groomers. The way an independent groomer wins is trust — and trust shows up as reviews, photos, and a polished Google presence.'
+    ],
+    rebuttals: [
+      { q: 'My clients already refer their friends.', a: 'Referrals are gold — and we help you capture that momentum digitally so it works even when someone doesn\'t personally know your clients.' },
+      { q: 'I\'m solo, I don\'t need more clients.', a: 'If that\'s true forever, totally fair. But if you ever want to hire a second groomer or raise your rates, a strong reputation gives you the leverage to do it.' },
+      { q: 'I don\'t have time for marketing.', a: 'You don\'t have to. That\'s the whole point of working with us — we handle it so you focus on the dogs.' }
+    ]
+  },
+  {
+    keys: ['real estate','realtor','realty','agent','broker','property'],
+    label: 'Real Estate Agents',
+    pitches: [
+      'Sellers and buyers Google their agent before they sign anything. If your reviews are thin or outdated, you\'re losing listings to agents with less experience but a better online presence.',
+      'Your reputation is your entire business. One strong Google profile with recent five-star reviews can be the difference between getting the call or not.'
+    ],
+    rebuttals: [
+      { q: 'I get all my business from referrals.', a: 'Referrals still Google you to confirm before they call. What they find either closes the deal or creates doubt.' },
+      { q: 'The market is slow right now.', a: 'Slow markets are when you build. Agents who invest in their presence now are the ones who dominate when things pick back up.' },
+      { q: 'I already pay for Zillow leads.', a: 'Zillow leads are expensive and competitive. A strong Google presence brings people directly to you — no auction, no middleman.' }
+    ]
+  },
+  {
+    keys: ['insurance','agency','agent','allstate','farmers','state farm','coverage'],
+    label: 'Insurance Agencies',
+    pitches: [
+      'Insurance is a trust business. Nobody signs with an agent they can\'t verify online. If your Google profile is thin, you\'re losing prospects before they ever pick up the phone.',
+      'Most agencies rely on renewals and referrals — which is fine until a carrier change or rate hike shakes things up. We make sure you have a consistent stream of new prospects finding you.'
+    ],
+    rebuttals: [
+      { q: 'My clients are locked in on renewals.', a: 'Until a competitor or direct carrier outbids you. New clients are your buffer against that.' },
+      { q: 'I work by referral only.', a: 'Referrals are still verifying you online before they call. Make sure what they find builds confidence, not questions.' },
+      { q: 'People choose insurance on price, not reviews.', a: 'Price gets them to compare. Trust closes the deal. People still want to feel good about who they\'re working with.' }
+    ]
+  },
+  {
+    keys: ['bowling','entertainment','arcade','laser','mini golf','escape room','fun center','family fun'],
+    label: 'Bowling & Entertainment',
+    pitches: [
+      'People plan group outings online. If you\'re not showing up when someone searches for something to do on a Friday night, you\'re invisible when the decision is being made.',
+      'Events and leagues are your bread and butter. A strong Google presence means more people discover you for birthday parties, corporate events, and league signups — not just walk-ins.'
+    ],
+    rebuttals: [
+      { q: 'We get plenty of walk-ins.', a: 'Walk-ins are reactive. We help you capture the people actively planning ahead — which is where the bigger group bookings come from.' },
+      { q: 'We advertise locally already.', a: 'Local ads build awareness. Google captures intent — people who are already looking for something to do right now. That\'s a higher-value moment.' },
+      { q: 'Our regulars keep us busy.', a: 'Great. But leagues and regulars age out or move on. New customer acquisition keeps the lanes full long-term.' }
+    ]
+  },
+  {
+    keys: ['clean','maid','janitorial','housekeep','pressure wash'],
+    label: 'Cleaning Services',
+    pitches: [
+      'Cleaning is one of the highest-trust services out there — you\'re letting someone into your home. People research heavily before booking. If your reviews aren\'t strong, they go with whoever is.',
+      'You\'re competing with franchises like Molly Maid and solo ops charging half your rate. A polished Google presence is how you justify your pricing and win the clients who actually pay on time.'
+    ],
+    rebuttals: [
+      { q: 'I have steady clients already.', a: 'Clients cancel, move, cut back. You need new inquiries coming in constantly so one cancellation doesn\'t hurt your week.' },
+      { q: 'I get clients through Facebook.', a: 'Facebook is great for local awareness, but Google captures people who are actively searching \'cleaning service near me\' right now. That intent is more valuable.' },
+      { q: 'I can\'t afford it right now.', a: 'What does one new recurring client bring you a month? Usually $150–300. One new client pays for us. Everything after that is profit.' }
+    ]
+  },
+  {
+    keys: ['plumb','drain','pipe','water heater','sewer'],
+    label: 'Plumbers',
+    pitches: [
+      'When someone\'s got a leak, they grab their phone and call whoever shows up first with good reviews. If that\'s not you, it\'s your competitor. This is the highest-intent search there is.',
+      'Emergency calls are great margins. We make sure you\'re the one capturing them — not the big national franchise with the ad budget.'
+    ],
+    rebuttals: [
+      { q: 'I\'m already busy enough.', a: 'Busy isn\'t the same as profitable. More visibility means you can be selective — raise your rates, take the jobs you want, turn down the ones you don\'t.' },
+      { q: 'Word of mouth has always worked for me.', a: 'Word of mouth is slow and unpredictable. We make it consistent — every happy customer becomes a review that works for you while you sleep.' },
+      { q: 'I don\'t need more leads.', a: 'You need better leads. Right now you\'re probably taking anything that calls. With a stronger profile, you attract higher-value jobs and better neighborhoods.' }
+    ]
+  },
+  {
+    keys: ['electric','wiring','panel','outlet','generator','lighting install'],
+    label: 'Electricians',
+    pitches: [
+      'Electrical work is high-stakes. Homeowners don\'t just hire whoever\'s cheap — they hire whoever they trust. Reviews and a professional online presence are what builds that trust before you ever answer the phone.',
+      'Panel upgrades, EV charger installs, whole-home rewires — the high-ticket jobs go to the electrician who looks most established online. We make sure that\'s you.'
+    ],
+    rebuttals: [
+      { q: 'I stay busy through contractors.', a: 'Contractor relationships are great until the contractor slows down or finds someone cheaper. Direct-to-homeowner business is more stable and higher margin.' },
+      { q: 'Licensing is what matters, not reviews.', a: 'You\'re licensed — so is every other electrician competing with you. Reviews are what differentiates you when qualifications are equal.' },
+      { q: 'I don\'t want to be too busy.', a: 'You don\'t have to be. But a stronger profile means you can raise your rates and take only the jobs worth your time.' }
+    ]
+  },
+  {
+    keys: ['contractor','remodel','renovation','construction','handyman','carpenter','drywall','roofing','roof','siding','window','door install'],
+    label: 'General Contractors',
+    pitches: [
+      'Renovation is a massive financial decision. Homeowners research for weeks. If your online presence doesn\'t reflect the quality of your work, you\'re losing bids to contractors who look better on paper.',
+      'Before someone calls you for a quote, they\'ve already looked you up. Photos, reviews, and a complete Google profile are what get you to that first conversation.'
+    ],
+    rebuttals: [
+      { q: 'I have more work than I can handle.', a: 'Then use that leverage. A stronger profile means you can be selective about projects — bigger jobs, better margins, fewer headaches.' },
+      { q: 'We work mostly on referral.', a: 'Referrals still Google you before they call. And referrals dry up in slow economies — a visible online presence is your insurance policy.' },
+      { q: 'My work speaks for itself.', a: 'It does — but only to people who\'ve seen it. Reviews and photos make your work visible to people who haven\'t met you yet.' }
+    ]
+  },
+  {
+    keys: ['landscap','lawn','mow','mulch','garden','tree','snow removal','irrigation','sprinkler','outdoor'],
+    label: 'Landscaping & Lawn Care',
+    pitches: [
+      'Spring is when your phone should be ringing off the hook. If you\'re not at the top of Google with strong reviews when homeowners start thinking about their yard, you\'re losing that seasonal rush to whoever is.',
+      'Recurring lawn contracts are the most valuable accounts you can have. A strong online presence gets you in the door — then your work keeps them. We handle the first part.'
+    ],
+    rebuttals: [
+      { q: 'Spring is our busy season, we don\'t need help.', a: 'Busy season is when you lock in contracts for the whole year. If you\'re scrambling to fill the schedule in March, you\'ve already lost.' },
+      { q: 'We get business from yard signs.', a: 'Yard signs work on the street — Google works everywhere, 24/7. Someone two towns over planning a move will never see your yard sign.' },
+      { q: 'We\'re a small operation.', a: 'Perfect — we work with small operations. You don\'t need to be a big company for this to work. You just need to look like the best option online.' }
+    ]
+  }
+];
+
+function findPlaybook(category) {
+  if (!category) return null;
+  var catLower = category.toLowerCase();
+  for (var i = 0; i < CAT_PLAYBOOK.length; i++) {
+    var entry = CAT_PLAYBOOK[i];
+    for (var j = 0; j < entry.keys.length; j++) {
+      if (catLower.indexOf(entry.keys[j]) !== -1) return entry;
+    }
+  }
+  return null;
+}
+
 function openScriptDrawer() {
   // Populate brief
   document.getElementById('sd-brief-box').value = currentProspect ? (currentProspect.pitch_angle || '') : '';
@@ -1188,13 +1420,13 @@ function openScriptDrawer() {
   var cat = currentProspect ? (currentProspect.category || '') : '';
   document.getElementById('sd-cat').textContent = cat;
 
-  // Populate category script
+  // Populate category script — check Supabase scripts first, then fall back to built-in playbook
   var match = scripts.find(function(s) { return s.service && s.service.toLowerCase() === cat.toLowerCase(); });
   var body = document.getElementById('sd-body');
   var noScript = document.getElementById('sd-no-script');
-  if (!match) {
-    body.style.display = 'none'; noScript.style.display = 'block';
-  } else {
+
+  if (match) {
+    // Supabase script exists — use it as before
     noScript.style.display = 'none'; body.style.display = 'block';
     var objs = Array.isArray(match.objections) ? match.objections : (match.objections ? JSON.parse(match.objections) : []);
     body.innerHTML =
@@ -1206,6 +1438,30 @@ function openScriptDrawer() {
         objs.map(function(o) {
           return '<div class="sd-objection"><div class="sd-objection-q">&ldquo;' + o.objection + '&rdquo;</div><div class="sd-objection-a">' + o.response + '</div></div>';
         }).join('') + '</div>' : '');
+  } else {
+    // No Supabase script — try built-in playbook
+    var pb = findPlaybook(cat);
+    if (pb) {
+      noScript.style.display = 'none'; body.style.display = 'block';
+      body.innerHTML =
+        '<div class="sd-section">' +
+          '<div class="sd-section-title">Pitch Angles — ' + pb.label + '</div>' +
+          pb.pitches.map(function(p) {
+            return '<div class="sd-pitch" style="margin-bottom:10px">' + p + '</div>';
+          }).join('') +
+        '</div>' +
+        '<div class="sd-section">' +
+          '<div class="sd-section-title">Rebuttals &amp; How to Handle Them</div>' +
+          pb.rebuttals.map(function(r) {
+            return '<div class="sd-objection">' +
+              '<div class="sd-objection-q">Them: &ldquo;' + r.q + '&rdquo;</div>' +
+              '<div class="sd-objection-a">You: ' + r.a + '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+    } else {
+      body.style.display = 'none'; noScript.style.display = 'block';
+    }
   }
 
   // Always open to Brief tab
