@@ -51,6 +51,7 @@
       <div class="tabs">
         <div class="tab active" onclick="switchTab('overview')">Overview</div>
         <div class="tab" onclick="switchTab('build')">Build Tracker</div>
+        <div class="tab" onclick="switchTab('itaudit')">IT Audit</div>
         <div class="tab admin-only" onclick="switchTab('credentials')">Credentials</div>
         <div class="tab" onclick="switchTab('tickets')">Tickets</div>
         <div class="tab" onclick="switchTab('portal')">Client Portal</div>
@@ -89,22 +90,20 @@
                 </select>
               </div></div>
               <div class="info-row"><div class="info-label">Deal Type</div><div class="info-value">
-                <select id="f-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select>
+                <select id="f-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="mrr">MRR</option><option value="project">Project</option></select>
               </div></div>
               <div class="info-row"><div class="info-label">Tier</div><div class="info-value">
                 <select id="f-tier"><option value="">--</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
               </div></div>
               <div class="info-row"><div class="info-label">Deal Amount</div><div class="info-value"><input id="f-amount" type="number"></div></div>
-              <div class="info-row"><div class="info-label">Deposit</div><div class="info-value"><input id="f-deposit" type="number"></div></div>
+              <div class="info-row"><div class="info-label">Payment Status</div><div class="info-value">
+                <select id="f-payment-status"><option value="">--</option><option value="quote">Quote</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option><option value="paid">Paid</option></select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Stripe Invoice #</div><div class="info-value"><input id="f-stripe-invoice" type="text" placeholder="in_xxxxxxxxxxxxxxxx"></div></div>
+              <div class="info-row"><div class="info-label">Deposit ($)</div><div class="info-value"><input id="f-deposit" type="number"></div></div>
               <div class="info-row"><div class="info-label">Deposit Method</div><div class="info-value">
-                <select id="f-deposit-method"><option value="">--</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
+                <select id="f-deposit-method"><option value="">--</option><option value="stripe">Stripe</option><option value="card">Card</option><option value="venmo">Venmo</option><option value="check">Check</option><option value="cash">Cash</option></select>
               </div></div>
-              <div class="info-row"><div class="info-label">Rev Share %</div><div class="info-value"><input id="f-revpct" type="number" placeholder="e.g. 12"></div></div>
-              <div class="info-row"><div class="info-label">Rev Share Term</div><div class="info-value">
-                <select id="f-revterm"><option value="">--</option><option value="18mo">18 months</option><option value="24mo">24 months</option></select>
-              </div></div>
-              <div class="info-row"><div class="info-label">Baseline Rev</div><div class="info-value"><input id="f-baseline" type="number" placeholder="Monthly $"></div></div>
-              <div class="info-row"><div class="info-label">Equity %</div><div class="info-value"><input id="f-eqpct" type="number" placeholder="e.g. 7"></div></div>
               <div class="info-row"><div class="info-label">Entity Type</div><div class="info-value">
                 <select id="f-entity"><option value="">--</option><option value="llc">LLC</option><option value="scorp">S-Corp</option><option value="ccorp">C-Corp</option><option value="sole">Sole Proprietor</option><option value="none">Not formed</option></select>
               </div></div>
@@ -122,17 +121,144 @@
       <div class="tab-panel" id="tab-build">
         <div class="card mb-16">
           <div class="flex-between mb-16">
-            <div class="card-title" style="margin:0">Build Status &mdash; click any item to cycle status</div>
+            <div class="card-title" style="margin:0">Digital Management &mdash; click any item to cycle status</div>
             <button class="btn btn-primary btn-sm" onclick="saveBuild()">Save Build</button>
           </div>
-          <div class="build-grid" id="build-grid"></div>
+          <div class="build-grid" id="build-grid-digital"></div>
         </div>
+        <div class="card mb-16">
+          <div class="flex-between mb-16">
+            <div class="card-title" style="margin:0">Managed IT &mdash; click any item to cycle status</div>
+          </div>
+          <div class="build-grid" id="build-grid-it"></div>
+          <div style="margin-top:14px">
+            <div class="info-row"><div class="info-label">IT Notes / Software Details</div><div class="info-value"><textarea id="b-it-notes" rows="3" placeholder="Network config details, software installs, audit findings&hellip;"></textarea></div></div>
+          </div>
+        </div>
+
+        <!-- PC INVENTORY -->
+        <div class="card mb-16">
+          <div class="flex-between mb-12">
+            <div class="card-title" style="margin:0">PC &amp; Workstation Inventory</div>
+            <button class="btn btn-primary btn-sm" onclick="openDeviceModal()">+ Add Device</button>
+          </div>
+          <div class="table-wrap" style="margin:0">
+            <table>
+              <thead><tr><th>Label</th><th>Type</th><th>Make / Model</th><th>User</th><th>OS</th><th>Condition</th><th>AV</th><th></th></tr></thead>
+              <tbody id="devices-body"><tr><td colspan="8" class="loading">Loading&hellip;</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PRINTER INVENTORY -->
+        <div class="card mb-16">
+          <div class="flex-between mb-12">
+            <div class="card-title" style="margin:0">Printer Inventory</div>
+            <button class="btn btn-primary btn-sm" onclick="openPrinterModal()">+ Add Printer</button>
+          </div>
+          <div class="table-wrap" style="margin:0">
+            <table>
+              <thead><tr><th>Label</th><th>Make / Model</th><th>Connection</th><th>IP</th><th>Toner</th><th>Condition</th><th></th></tr></thead>
+              <tbody id="printers-body"><tr><td colspan="7" class="loading">Loading&hellip;</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- NETWORK INVENTORY -->
+        <div class="card mb-16">
+          <div class="flex-between mb-12">
+            <div class="card-title" style="margin:0">Network Inventory</div>
+            <button class="btn btn-primary btn-sm" onclick="openNetworkModal()">+ Add Device</button>
+          </div>
+          <div class="table-wrap" style="margin:0">
+            <table>
+              <thead><tr><th>Type</th><th>Make / Model</th><th>IP</th><th>Location</th><th>ISP</th><th>Firmware</th><th></th></tr></thead>
+              <tbody id="network-body"><tr><td colspan="7" class="loading">Loading&hellip;</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-title">Notes &amp; Timeline</div>
           <div class="info-row"><div class="info-label">Overall Blocker</div><div class="info-value"><input id="b-blocker" type="text" placeholder="What's blocking progress?"></div></div>
           <div class="info-row"><div class="info-label">Waiting on Client</div><div class="info-value"><input id="b-waiting" type="text" placeholder="What do we need from them?"></div></div>
           <div class="info-row"><div class="info-label">Est. Completion</div><div class="info-value"><input id="b-est" type="date"></div></div>
           <div class="info-row"><div class="info-label">Build Notes</div><div class="info-value"><textarea id="b-notes" rows="3" placeholder="Internal notes&hellip;"></textarea></div></div>
+        </div>
+      </div>
+
+      <!-- IT AUDIT -->
+      <div class="tab-panel" id="tab-itaudit">
+        <div class="card mb-16">
+          <div class="flex-between mb-16">
+            <div class="card-title" style="margin:0">IT Audit</div>
+            <button class="btn btn-primary btn-sm" onclick="saveAudit()">Save Audit</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">General</div>
+              <div class="info-row"><div class="info-label">Audited By</div><div class="info-value"><input id="a-audited_by" type="text" placeholder="Your name"></div></div>
+              <div class="info-row"><div class="info-label">Audit Date</div><div class="info-value"><input id="a-audited_date" type="date"></div></div>
+              <div class="info-row"><div class="info-label">Total Device Count</div><div class="info-value"><input id="a-device_count" type="number" placeholder="e.g. 4"></div></div>
+              <div class="info-row"><div class="info-label">OS Summary</div><div class="info-value"><input id="a-os_summary" type="text" placeholder="e.g. Windows 11 x3, Windows 10 x1"></div></div>
+              <div class="info-row"><div class="info-label">Overall Risk</div><div class="info-value">
+                <select id="a-overall_risk">
+                  <option value="">--</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div></div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Security</div>
+              <div class="info-row"><div class="info-label">Antivirus Status</div><div class="info-value">
+                <select id="a-antivirus_status">
+                  <option value="">--</option>
+                  <option value="none">None</option>
+                  <option value="partial">Partial</option>
+                  <option value="full">Full</option>
+                </select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Antivirus Product</div><div class="info-value"><input id="a-antivirus_product" type="text" placeholder="e.g. Malwarebytes, Defender"></div></div>
+              <div class="info-row"><div class="info-label">Backup Status</div><div class="info-value">
+                <select id="a-backup_status">
+                  <option value="">--</option>
+                  <option value="none">None</option>
+                  <option value="local">Local Only</option>
+                  <option value="cloud">Cloud Only</option>
+                  <option value="both">Both</option>
+                </select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Backup Product</div><div class="info-value"><input id="a-backup_product" type="text" placeholder="e.g. Backblaze, external drive"></div></div>
+              <div class="info-row"><div class="info-label">Password Hygiene</div><div class="info-value">
+                <select id="a-password_hygiene">
+                  <option value="">--</option>
+                  <option value="poor">Poor — reusing, weak</option>
+                  <option value="fair">Fair — some good habits</option>
+                  <option value="good">Good — strong + unique</option>
+                </select>
+              </div></div>
+              <div class="info-row"><div class="info-label">Password Manager</div><div class="info-value"><input id="a-password_manager" type="text" placeholder="e.g. Bitwarden, LastPass, none"></div></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Internet &amp; Network</div>
+              <div class="info-row"><div class="info-label">ISP</div><div class="info-value"><input id="a-isp" type="text" placeholder="e.g. Comcast, AT&T"></div></div>
+              <div class="info-row"><div class="info-label">Speed Paying For</div><div class="info-value"><input id="a-internet_speed_paid" type="text" placeholder="e.g. 200/20 Mbps"></div></div>
+              <div class="info-row"><div class="info-label">Speed Actual</div><div class="info-value"><input id="a-internet_speed_actual" type="text" placeholder="Run a speed test"></div></div>
+              <div class="info-row"><div class="info-label">Admin Access Notes</div><div class="info-value"><input id="a-admin_access_notes" type="text" placeholder="Who has admin? Any shared logins?"></div></div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Notes</div>
+              <div class="form-group"><label class="form-label">Risk Notes</label><textarea id="a-risk_notes" class="form-control" rows="3" placeholder="Specific vulnerabilities, concerns&hellip;"></textarea></div>
+              <div class="form-group"><label class="form-label">Recommendations</label><textarea id="a-recommendations" class="form-control" rows="3" placeholder="What needs to be done and in what order&hellip;"></textarea></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -211,6 +337,128 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('new-ticket-modal').style.display='none'">Cancel</button>
       <button class="btn btn-primary" onclick="submitTicket()">Submit Ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- PC DEVICE MODAL -->
+<div class="modal-overlay" id="device-modal" style="display:none">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <div class="modal-title" id="device-modal-title">Add Device</div>
+      <button class="modal-close" onclick="closeDeviceModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="dm-id">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Label / Nickname</label><input class="form-control" id="dm-label" placeholder="e.g. Front Desk PC"></div>
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-control" id="dm-type"><option value="">--</option><option value="desktop">Desktop</option><option value="laptop">Laptop</option><option value="server">Server</option><option value="tablet">Tablet</option></select></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Make</label><input class="form-control" id="dm-make" placeholder="Dell, HP, Lenovo&hellip;"></div>
+        <div class="form-group"><label class="form-label">Model</label><input class="form-control" id="dm-model" placeholder="e.g. OptiPlex 7090"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Serial Number</label><input class="form-control" id="dm-serial"></div>
+        <div class="form-group"><label class="form-label">Assigned User</label><input class="form-control" id="dm-assigned_user" placeholder="Who uses this machine?"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">OS</label><input class="form-control" id="dm-os" placeholder="e.g. Windows 11 Pro"></div>
+        <div class="form-group"><label class="form-label">RAM</label><input class="form-control" id="dm-ram" placeholder="e.g. 16GB"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Storage</label><input class="form-control" id="dm-storage" placeholder="e.g. 512GB SSD"></div>
+        <div class="form-group"><label class="form-label">Antivirus</label><input class="form-control" id="dm-antivirus" placeholder="e.g. Defender, None"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Purchase Date</label><input class="form-control" id="dm-purchase_date" type="date"></div>
+        <div class="form-group"><label class="form-label">Warranty Expiry</label><input class="form-control" id="dm-warranty_expiry" type="date"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Condition</label>
+          <select class="form-control" id="dm-condition"><option value="">--</option><option value="good">Good</option><option value="fair">Fair</option><option value="needs_replacement">Needs Replacement</option></select></div>
+        <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="dm-notes"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDeviceModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDevice()">Save Device</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINTER MODAL -->
+<div class="modal-overlay" id="printer-modal" style="display:none">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-header">
+      <div class="modal-title" id="printer-modal-title">Add Printer</div>
+      <button class="modal-close" onclick="closePrinterModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pm-id">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Label / Nickname</label><input class="form-control" id="pm-label" placeholder="e.g. Front Office Printer"></div>
+        <div class="form-group"><label class="form-label">Make</label><input class="form-control" id="pm-make" placeholder="HP, Canon, Epson&hellip;"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Model</label><input class="form-control" id="pm-model" placeholder="e.g. LaserJet Pro M404n"></div>
+        <div class="form-group"><label class="form-label">Serial Number</label><input class="form-control" id="pm-serial"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Connection</label>
+          <select class="form-control" id="pm-connection"><option value="">--</option><option value="usb">USB</option><option value="network">Network (wired)</option><option value="wifi">WiFi</option></select></div>
+        <div class="form-group"><label class="form-label">IP Address</label><input class="form-control" id="pm-ip_address" placeholder="e.g. 192.168.1.50"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Toner / Ink Type</label><input class="form-control" id="pm-toner_type" placeholder="e.g. HP 58A"></div>
+        <div class="form-group"><label class="form-label">Condition</label>
+          <select class="form-control" id="pm-condition"><option value="">--</option><option value="good">Good</option><option value="fair">Fair</option><option value="needs_replacement">Needs Replacement</option></select></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Purchase Date</label><input class="form-control" id="pm-purchase_date" type="date"></div>
+        <div class="form-group"><label class="form-label">Warranty Expiry</label><input class="form-control" id="pm-warranty_expiry" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="pm-notes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePrinterModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePrinter()">Save Printer</button>
+    </div>
+  </div>
+</div>
+
+<!-- NETWORK DEVICE MODAL -->
+<div class="modal-overlay" id="network-modal" style="display:none">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-header">
+      <div class="modal-title" id="network-modal-title">Add Network Device</div>
+      <button class="modal-close" onclick="closeNetworkModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="nm-id">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Device Type</label>
+          <select class="form-control" id="nm-device_type"><option value="">--</option><option value="router">Router</option><option value="modem">Modem</option><option value="switch">Switch</option><option value="access_point">Access Point</option><option value="modem_router">Modem/Router Combo</option></select></div>
+        <div class="form-group"><label class="form-label">Make</label><input class="form-control" id="nm-make" placeholder="Cisco, Netgear, Ubiquiti&hellip;"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Model</label><input class="form-control" id="nm-model"></div>
+        <div class="form-group"><label class="form-label">Serial Number</label><input class="form-control" id="nm-serial"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">IP Address</label><input class="form-control" id="nm-ip_address" placeholder="e.g. 192.168.1.1"></div>
+        <div class="form-group"><label class="form-label">Firmware Version</label><input class="form-control" id="nm-firmware" placeholder="e.g. 1.0.9.90"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Location</label><input class="form-control" id="nm-location" placeholder="e.g. Server closet, Back office"></div>
+        <div class="form-group"><label class="form-label">ISP</label><input class="form-control" id="nm-isp" placeholder="e.g. Comcast Business"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="nm-notes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeNetworkModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNetworkDevice()">Save Device</button>
     </div>
   </div>
 </div>
@@ -382,20 +630,25 @@
 const clientId = new URLSearchParams(window.location.search).get('id');
 let clientData = {}, buildData = {}, intakeData = {};
 
-const BUILD_SERVICES = [
-  { key:'website',    name:'Website'       },
-  { key:'gbp',        name:'Google Listing'},
-  { key:'voice_ai',   name:'Voice AI'      },
-  { key:'email',      name:'Email'         },
-  { key:'booking',    name:'Booking'       },
-  { key:'crm',        name:'CRM'           },
-  { key:'invoicing',  name:'Invoicing'     },
-  { key:'payments',   name:'Payments'      },
-  { key:'social',     name:'Social Media'  },
-  { key:'automation', name:'Automation'    },
-  { key:'managed_it', name:'Managed IT'    },
-  { key:'domain',     name:'Domain'        },
+const BUILD_SERVICES_DIGITAL = [
+  { key:'website',    name:'Website'        },
+  { key:'gbp',        name:'Google Listing' },
+  { key:'voice_ai',   name:'Voice AI'       },
+  { key:'email',      name:'Email'          },
+  { key:'booking',    name:'Booking'        },
+  { key:'crm',        name:'CRM'            },
+  { key:'invoicing',  name:'Invoicing'      },
+  { key:'payments',   name:'Payments'       },
+  { key:'social',     name:'Social Media'   },
+  { key:'automation', name:'Automation'     },
+  { key:'domain',     name:'Domain'         },
 ];
+const BUILD_SERVICES_IT = [
+  { key:'it_audit',      name:'IT Audit'      },
+  { key:'network_config',name:'Network Config' },
+  { key:'software',      name:'Software'       },
+];
+const BUILD_SERVICES = [...BUILD_SERVICES_DIGITAL, ...BUILD_SERVICES_IT];
 const STATUS_CYCLE = ['not_started','in_progress','complete','blocked','na'];
 const STATUS_LABEL = { not_started:'Not Started', in_progress:'In Progress', complete:'Complete', blocked:'Blocked', na:'N/A' };
 
@@ -480,12 +733,10 @@ function renderClientFields() {
   setVal('f-deal', clientData.deal_type);
   setVal('f-tier', clientData.tier);
   setVal('f-amount', clientData.deal_amount);
+  setVal('f-payment-status', clientData.payment_status);
+  setVal('f-stripe-invoice', clientData.stripe_invoice);
   setVal('f-deposit', clientData.deposit_collected);
   setVal('f-deposit-method', clientData.deposit_method);
-  setVal('f-revpct', clientData.revenue_share_pct);
-  setVal('f-revterm', clientData.revenue_share_term);
-  setVal('f-baseline', clientData.baseline_revenue);
-  setVal('f-eqpct', clientData.equity_pct);
   setVal('f-entity', clientData.entity_type);
   setVal('f-notes', clientData.johns_notes);
   if (clientData.hard_deadline) setVal('f-deadline', clientData.hard_deadline.split('T')[0]);
@@ -507,12 +758,10 @@ async function saveClient() {
     deal_type:        g('f-deal'),
     tier:             g('f-tier'),
     deal_amount:      g('f-amount'),
+    payment_status:   g('f-payment-status'),
+    stripe_invoice:   g('f-stripe-invoice'),
     deposit_collected:g('f-deposit'),
     deposit_method:   g('f-deposit-method'),
-    revenue_share_pct:g('f-revpct'),
-    revenue_share_term:g('f-revterm'),
-    baseline_revenue: g('f-baseline'),
-    equity_pct:       g('f-eqpct'),
     entity_type:      g('f-entity'),
     johns_notes:      g('f-notes'),
     hard_deadline:    g('f-deadline'),
@@ -526,17 +775,20 @@ async function saveClient() {
 }
 
 function renderBuildTracker() {
-  document.getElementById('build-grid').innerHTML = BUILD_SERVICES.map(s => {
+  const makeTile = s => {
     const st = buildData[`${s.key}_status`] || 'not_started';
     return `<div class="build-item ${st}" id="bi-${s.key}" onclick="cycleBuild('${s.key}')">
       <div class="build-item-name">${s.name}</div>
       <div class="build-item-status">${STATUS_LABEL[st]}</div>
     </div>`;
-  }).join('');
+  };
+  document.getElementById('build-grid-digital').innerHTML = BUILD_SERVICES_DIGITAL.map(makeTile).join('');
+  document.getElementById('build-grid-it').innerHTML = BUILD_SERVICES_IT.map(makeTile).join('');
   setVal('b-blocker', buildData.overall_blocker);
   setVal('b-waiting', buildData.waiting_on_client);
   if (buildData.estimated_completion) setVal('b-est', buildData.estimated_completion.split('T')[0]);
   setVal('b-notes', buildData.build_notes);
+  setVal('b-it-notes', buildData.it_notes);
 }
 
 function cycleBuild(key) {
@@ -549,7 +801,7 @@ function cycleBuild(key) {
 
 async function saveBuild() {
   const g = id => document.getElementById(id)?.value || null;
-  const updates = { client_id: clientId, build_notes: g('b-notes'), overall_blocker: g('b-blocker'), waiting_on_client: g('b-waiting'), estimated_completion: g('b-est') };
+  const updates = { client_id: clientId, build_notes: g('b-notes'), overall_blocker: g('b-blocker'), waiting_on_client: g('b-waiting'), estimated_completion: g('b-est'), it_notes: g('b-it-notes') };
   BUILD_SERVICES.forEach(s => {
     updates[`${s.key}_status`] = buildData[`${s.key}_status`] || 'not_started';
     if (buildData[`${s.key}_completed_at`]) updates[`${s.key}_completed_at`] = buildData[`${s.key}_completed_at`];
@@ -668,12 +920,210 @@ function emailPortal() {
 }
 
 function switchTab(name) {
-  const tabs = ['overview','build','credentials','tickets','portal'];
+  const tabs = ['overview','build','itaudit','credentials','tickets','portal'];
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', tabs[i] === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
   if (name === 'credentials') renderCredentials();
+  if (name === 'build') { loadDevices(); loadPrinters(); loadNetwork(); }
+  if (name === 'itaudit') loadAudit();
 }
+
+// ── IT AUDIT ─────────────────────────────────────────────────────────────────
+const AUDIT_FIELDS = ['audited_by','audited_date','device_count','os_summary','antivirus_status','antivirus_product','backup_status','backup_product','password_hygiene','password_manager','isp','internet_speed_paid','internet_speed_actual','admin_access_notes','overall_risk','risk_notes','recommendations'];
+
+async function loadAudit() {
+  const { data } = await sb.from('it_audit').select('*').eq('client_id', clientId).single();
+  if (!data) return;
+  AUDIT_FIELDS.forEach(f => {
+    const el = document.getElementById('a-' + f);
+    if (el && data[f] != null) el.value = data[f];
+  });
+}
+
+async function saveAudit() {
+  const g = id => { const el = document.getElementById('a-' + id); return el?.value || null; };
+  const payload = { client_id: clientId };
+  AUDIT_FIELDS.forEach(f => { payload[f] = g(f); });
+  payload.updated_at = new Date().toISOString();
+  const { error } = await sb.from('it_audit').upsert(payload, { onConflict: 'client_id' });
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('IT Audit saved!');
+}
+
+// ── PC DEVICES ────────────────────────────────────────────────────────────────
+const CONDITION_LABEL = { good: 'Good', fair: 'Fair', needs_replacement: 'Needs Replacement' };
+
+async function loadDevices() {
+  const { data } = await sb.from('it_devices').select('*').eq('client_id', clientId).order('created_at');
+  const tb = document.getElementById('devices-body');
+  if (!data || !data.length) { tb.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-text">No devices added yet</div></div></td></tr>'; return; }
+  tb.innerHTML = data.map(d => `<tr>
+    <td><strong>${d.label||'&mdash;'}</strong></td>
+    <td class="text-sm">${d.type||'&mdash;'}</td>
+    <td class="text-sm">${[d.make,d.model].filter(Boolean).join(' ')||'&mdash;'}</td>
+    <td class="text-sm">${d.assigned_user||'&mdash;'}</td>
+    <td class="text-sm">${d.os||'&mdash;'}</td>
+    <td class="text-sm">${CONDITION_LABEL[d.condition]||d.condition||'&mdash;'}</td>
+    <td class="text-sm">${d.antivirus||'&mdash;'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-secondary btn-sm" onclick="editDevice('${d.id}')">Edit</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteDevice('${d.id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openDeviceModal(id) {
+  clearModal(['dm-id','dm-label','dm-type','dm-make','dm-model','dm-serial','dm-assigned_user','dm-os','dm-ram','dm-storage','dm-antivirus','dm-purchase_date','dm-warranty_expiry','dm-condition','dm-notes']);
+  document.getElementById('device-modal-title').textContent = 'Add Device';
+  document.getElementById('device-modal').style.display = 'flex';
+}
+function closeDeviceModal() { document.getElementById('device-modal').style.display = 'none'; }
+
+async function editDevice(id) {
+  const { data } = await sb.from('it_devices').select('*').eq('id', id).single();
+  if (!data) return;
+  document.getElementById('dm-id').value = data.id;
+  document.getElementById('device-modal-title').textContent = 'Edit Device';
+  ['label','type','make','model','serial','assigned_user','os','ram','storage','antivirus','condition','notes'].forEach(f => setVal('dm-' + f, data[f]));
+  if (data.purchase_date) setVal('dm-purchase_date', data.purchase_date.split('T')[0]);
+  if (data.warranty_expiry) setVal('dm-warranty_expiry', data.warranty_expiry.split('T')[0]);
+  document.getElementById('device-modal').style.display = 'flex';
+}
+
+async function saveDevice() {
+  const g = id => document.getElementById('dm-' + id)?.value || null;
+  const id = document.getElementById('dm-id').value;
+  const payload = { client_id: clientId, label:g('label'), type:g('type'), make:g('make'), model:g('model'), serial:g('serial'), assigned_user:g('assigned_user'), os:g('os'), ram:g('ram'), storage:g('storage'), antivirus:g('antivirus'), purchase_date:g('purchase_date'), warranty_expiry:g('warranty_expiry'), condition:g('condition'), notes:g('notes') };
+  const { error } = id
+    ? await sb.from('it_devices').update(payload).eq('id', id)
+    : await sb.from('it_devices').insert(payload);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  closeDeviceModal();
+  loadDevices();
+  toast('Device saved!');
+}
+
+async function deleteDevice(id) {
+  if (!confirm('Delete this device?')) return;
+  await sb.from('it_devices').delete().eq('id', id);
+  loadDevices();
+  toast('Deleted');
+}
+
+// ── PRINTERS ──────────────────────────────────────────────────────────────────
+async function loadPrinters() {
+  const { data } = await sb.from('it_printers').select('*').eq('client_id', clientId).order('created_at');
+  const tb = document.getElementById('printers-body');
+  if (!data || !data.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No printers added yet</div></div></td></tr>'; return; }
+  tb.innerHTML = data.map(p => `<tr>
+    <td><strong>${p.label||'&mdash;'}</strong></td>
+    <td class="text-sm">${[p.make,p.model].filter(Boolean).join(' ')||'&mdash;'}</td>
+    <td class="text-sm">${p.connection||'&mdash;'}</td>
+    <td class="text-sm text-mono">${p.ip_address||'&mdash;'}</td>
+    <td class="text-sm">${p.toner_type||'&mdash;'}</td>
+    <td class="text-sm">${CONDITION_LABEL[p.condition]||p.condition||'&mdash;'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-secondary btn-sm" onclick="editPrinter('${p.id}')">Edit</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deletePrinter('${p.id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openPrinterModal() {
+  clearModal(['pm-id','pm-label','pm-make','pm-model','pm-serial','pm-connection','pm-ip_address','pm-toner_type','pm-condition','pm-purchase_date','pm-warranty_expiry','pm-notes']);
+  document.getElementById('printer-modal-title').textContent = 'Add Printer';
+  document.getElementById('printer-modal').style.display = 'flex';
+}
+function closePrinterModal() { document.getElementById('printer-modal').style.display = 'none'; }
+
+async function editPrinter(id) {
+  const { data } = await sb.from('it_printers').select('*').eq('id', id).single();
+  if (!data) return;
+  document.getElementById('pm-id').value = data.id;
+  document.getElementById('printer-modal-title').textContent = 'Edit Printer';
+  ['label','make','model','serial','connection','ip_address','toner_type','condition','notes'].forEach(f => setVal('pm-' + f, data[f]));
+  if (data.purchase_date) setVal('pm-purchase_date', data.purchase_date.split('T')[0]);
+  if (data.warranty_expiry) setVal('pm-warranty_expiry', data.warranty_expiry.split('T')[0]);
+  document.getElementById('printer-modal').style.display = 'flex';
+}
+
+async function savePrinter() {
+  const g = id => document.getElementById('pm-' + id)?.value || null;
+  const id = document.getElementById('pm-id').value;
+  const payload = { client_id: clientId, label:g('label'), make:g('make'), model:g('model'), serial:g('serial'), connection:g('connection'), ip_address:g('ip_address'), toner_type:g('toner_type'), condition:g('condition'), purchase_date:g('purchase_date'), warranty_expiry:g('warranty_expiry'), notes:g('notes') };
+  const { error } = id
+    ? await sb.from('it_printers').update(payload).eq('id', id)
+    : await sb.from('it_printers').insert(payload);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  closePrinterModal();
+  loadPrinters();
+  toast('Printer saved!');
+}
+
+async function deletePrinter(id) {
+  if (!confirm('Delete this printer?')) return;
+  await sb.from('it_printers').delete().eq('id', id);
+  loadPrinters();
+  toast('Deleted');
+}
+
+// ── NETWORK DEVICES ───────────────────────────────────────────────────────────
+async function loadNetwork() {
+  const { data } = await sb.from('it_network').select('*').eq('client_id', clientId).order('created_at');
+  const tb = document.getElementById('network-body');
+  if (!data || !data.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No network devices added yet</div></div></td></tr>'; return; }
+  tb.innerHTML = data.map(n => `<tr>
+    <td class="text-sm">${n.device_type||'&mdash;'}</td>
+    <td class="text-sm">${[n.make,n.model].filter(Boolean).join(' ')||'&mdash;'}</td>
+    <td class="text-sm text-mono">${n.ip_address||'&mdash;'}</td>
+    <td class="text-sm">${n.location||'&mdash;'}</td>
+    <td class="text-sm">${n.isp||'&mdash;'}</td>
+    <td class="text-sm">${n.firmware||'&mdash;'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-secondary btn-sm" onclick="editNetworkDevice('${n.id}')">Edit</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteNetworkDevice('${n.id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openNetworkModal() {
+  clearModal(['nm-id','nm-device_type','nm-make','nm-model','nm-serial','nm-ip_address','nm-firmware','nm-location','nm-isp','nm-notes']);
+  document.getElementById('network-modal-title').textContent = 'Add Network Device';
+  document.getElementById('network-modal').style.display = 'flex';
+}
+function closeNetworkModal() { document.getElementById('network-modal').style.display = 'none'; }
+
+async function editNetworkDevice(id) {
+  const { data } = await sb.from('it_network').select('*').eq('id', id).single();
+  if (!data) return;
+  document.getElementById('nm-id').value = data.id;
+  document.getElementById('network-modal-title').textContent = 'Edit Network Device';
+  ['device_type','make','model','serial','ip_address','firmware','location','isp','notes'].forEach(f => setVal('nm-' + f, data[f]));
+  document.getElementById('network-modal').style.display = 'flex';
+}
+
+async function saveNetworkDevice() {
+  const g = id => document.getElementById('nm-' + id)?.value || null;
+  const id = document.getElementById('nm-id').value;
+  const payload = { client_id: clientId, device_type:g('device_type'), make:g('make'), model:g('model'), serial:g('serial'), ip_address:g('ip_address'), firmware:g('firmware'), location:g('location'), isp:g('isp'), notes:g('notes') };
+  const { error } = id
+    ? await sb.from('it_network').update(payload).eq('id', id)
+    : await sb.from('it_network').insert(payload);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  closeNetworkModal();
+  loadNetwork();
+  toast('Network device saved!');
+}
+
+async function deleteNetworkDevice(id) {
+  if (!confirm('Delete this device?')) return;
+  await sb.from('it_network').delete().eq('id', id);
+  loadNetwork();
+  toast('Deleted');
+}
+
+function clearModal(ids) { ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }
 </script>
 </body>
 </html>
