@@ -3,144 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Progress &mdash; Untrained Momentum</title>
+  <title>Your Account — Untrained Momentum</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root { --red:#C0152A; --dark:#0f0f0f; --mid:#666; --border:#e6e6e6; --light:#f8f8f6; --green:#1a7a3a; --gold:#9a6f00; --font-d:'Playfair Display',serif; --font-b:'DM Sans',sans-serif; }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:var(--font-b);background:var(--light);color:var(--dark);-webkit-font-smoothing:antialiased}
-    .header{background:var(--dark);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--red)}
-    .logo{font-family:var(--font-d);font-size:17px;font-weight:700;color:#fff}.logo span{color:var(--red)}
-    .header-sub{font-size:11px;color:#666;letter-spacing:1px;text-transform:uppercase}
-    .wrap{max-width:680px;margin:0 auto;padding:28px 16px 60px}
-    .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-    .card-title{font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px}
-    .card-sub{font-size:13px;color:var(--mid);line-height:1.6}
-    .section-label{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px}
-    .progress-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:20px}
-    .prog-item{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center;transition:all .12s}
-    .prog-item.complete{background:#f0fff5;border-color:#a0e0b0}
-    .prog-item.in_progress{background:#fffdf0;border-color:#e0d090}
-    .prog-item.blocked{background:#fff0f2;border-color:#f0c0c8}
-    .prog-name{font-size:12px;font-weight:600;margin-bottom:4px}
-    .prog-status{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--mid)}
-    .prog-item.complete .prog-status{color:var(--green)}
-    .prog-item.in_progress .prog-status{color:var(--gold)}
-    .prog-item.blocked .prog-status{color:var(--red)}
-    .alert{padding:12px 16px;background:#fff0f2;border:1px solid #f0c0c8;border-radius:8px;font-size:13px;color:var(--red);margin-bottom:16px}
-    .form-group{margin-bottom:14px}
-    .label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
-    .input,.textarea,.select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font-b);color:var(--dark);background:var(--light)}
-    .input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--red)}
-    .textarea{resize:vertical;min-height:90px}
-    .btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;font-family:var(--font-b);cursor:pointer}
-    .btn:hover{background:#960f20}
-    .success{background:#f0fff5;border:1px solid #a0e0b0;color:var(--green);padding:14px;border-radius:8px;font-size:13px;text-align:center;display:none;margin-bottom:14px}
-    .success.show{display:block}
-    .not-found,.loading-state{text-align:center;padding:80px 20px;color:var(--mid)}
-    .footer{text-align:center;padding:20px;font-size:11px;color:#bbb}
+    :root{--red:#C0152A;--dark:#0f0f0f;--mid:#666;--border:#e6e6e6;--light:#f8f8f6;--green:#1a7a3a;--gold:#9a6f00;--font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-b);background:var(--light);color:var(--dark);-webkit-font-smoothing:antialiased}.header{background:var(--dark);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--red)}.logo{font-family:var(--font-d);font-size:17px;font-weight:700;color:#fff}.logo span{color:var(--red)}.header-sub{font-size:11px;color:#777;letter-spacing:1px;text-transform:uppercase}.wrap{max-width:760px;margin:0 auto;padding:28px 16px 60px}.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}.hero-card{display:flex;justify-content:space-between;align-items:center;gap:20px}.card-title{font-family:var(--font-d);font-size:22px;font-weight:700;margin-bottom:7px}.card-sub{font-size:13px;color:var(--mid);line-height:1.6}.balance-box{text-align:right}.balance-box span{display:block;font-size:10px;color:var(--mid);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}.balance-box strong{font-family:var(--font-d);font-size:24px}.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.summary-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}.summary-card strong{display:block;font-family:var(--font-d);font-size:25px}.summary-card span{font-size:11px;color:var(--mid)}.section-label{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}.progress-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:18px}.prog-item{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}.prog-item.complete{background:#f0fff5;border-color:#a0e0b0}.prog-item.in_progress{background:#fffdf0;border-color:#e0d090}.prog-item.blocked{background:#fff0f2;border-color:#f0c0c8}.prog-name{font-size:12px;font-weight:600;margin-bottom:4px}.prog-status{font-size:10px;text-transform:uppercase;color:var(--mid)}.alert{padding:12px 16px;background:#fff0f2;border:1px solid #f0c0c8;border-radius:8px;font-size:13px;color:var(--red);margin-bottom:16px}.form-group{margin-bottom:14px}.label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}.input,.textarea,.select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:var(--font-b);color:var(--dark);background:#fff}.textarea{resize:vertical;min-height:100px}.btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:var(--font-b);cursor:pointer}.btn:disabled{opacity:.55;cursor:wait}.success{background:#f0fff5;border:1px solid #a0e0b0;color:var(--green);padding:14px;border-radius:8px;font-size:13px;text-align:center;display:none;margin-bottom:14px}.success.show{display:block}.work-row,.ledger-row,.ticket-row{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--border)}.work-row:last-child,.ledger-row:last-child,.ticket-row:last-child{border-bottom:none}.work-row p{font-size:12px;color:var(--mid);margin-top:6px;line-height:1.5}.work-meta,.ledger-row span,.ticket-row span{display:block;font-size:11px;color:var(--mid);margin-top:3px}.work-amount{font-weight:700;white-space:nowrap}.ledger-row>strong,.ledger-row div+strong{white-space:nowrap}.due{color:var(--red)}.credit{color:var(--green)}.ticket-status{text-transform:capitalize}.empty{font-size:13px;color:var(--mid);padding:8px 0}.not-found,.loading-state{text-align:center;padding:80px 20px;color:var(--mid)}.footer{text-align:center;padding:20px;font-size:11px;color:#bbb}@media(max-width:600px){.hero-card{display:block}.balance-box{text-align:left;margin-top:16px}.summary-grid{grid-template-columns:1fr}.work-row,.ledger-row,.ticket-row{align-items:flex-start}}
   </style>
 </head>
 <body>
-<div class="header">
-  <div class="logo">Untrained <span>Momentum</span></div>
-  <div class="header-sub">Client Portal</div>
-</div>
-
-<div class="wrap" id="wrap"><div class="loading-state">Loading your progress&hellip;</div></div>
-
-<div class="footer">Untrained Momentum, LLC &mdash; Big Rapids, MI &mdash; untrainedmomentum.com</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js"></script>
-<script>
-const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-const token = new URLSearchParams(window.location.search).get('token');
-let client;
-
-const SERVICES = [
-  {key:'website',name:'Website'},{key:'gbp',name:'Google Listing'},{key:'voice_ai',name:'Voice AI'},
-  {key:'email',name:'Business Email'},{key:'booking',name:'Booking'},{key:'invoicing',name:'Invoicing'},
-  {key:'payments',name:'Payments'},{key:'social',name:'Social Media'},{key:'automation',name:'Automation'},{key:'managed_it',name:'Managed IT'},
-];
-const S_LABEL = {not_started:'Not Started',in_progress:'In Progress',complete:'Complete',blocked:'Needs Info',na:'N/A'};
-
-(async () => {
-  if (!token) { show404(); return; }
-  const { data, error } = await sb.from('clients').select('*').eq('portal_token', token).eq('portal_active', true).single();
-  if (error || !data) { show404(); return; }
-  client = data;
-  const { data: build } = await sb.from('build_tracker').select('*').eq('client_id', data.id).single();
-  render(data, build);
-})();
-
-function render(c, b) {
-  const included = b ? SERVICES.filter(s => b[`${s.key}_status`] && b[`${s.key}_status`] !== 'na') : [];
-  const done = included.filter(s => b[`${s.key}_status`] === 'complete').length;
-
-  document.getElementById('wrap').innerHTML = `
-    <div class="card">
-      <div class="card-title">Hi, ${c.owner_name?.split(' ')[0] || 'there'}</div>
-      <div class="card-sub">
-        Here&rsquo;s what we&rsquo;re building for <strong>${c.business_name}</strong>.
-        ${included.length > 0 ? `<br>${done} of ${included.length} services complete.` : ''}
-      </div>
-    </div>
-
-    ${b?.waiting_on_client ? `<div class="alert"><strong>We need something from you:</strong> ${b.waiting_on_client}</div>` : ''}
-
-    ${included.length > 0 ? `
-      <div class="section-label">Your Build Progress</div>
-      <div class="progress-grid">
-        ${included.map(s => {
-          const st = b[`${s.key}_status`] || 'not_started';
-          return `<div class="prog-item ${st}"><div class="prog-name">${s.name}</div><div class="prog-status">${S_LABEL[st]||st}</div></div>`;
-        }).join('')}
-      </div>` : ''}
-
-    <div class="section-label">Questions or Issues?</div>
-    <div class="card">
-      <div class="success" id="ok">Your message has been sent. We&rsquo;ll be in touch shortly.</div>
-      <div id="form">
-        <div class="form-group"><label class="label">Your Name</label><input class="input" id="t-name" value="${c.owner_name||''}" placeholder="Your name"></div>
-        <div class="form-group"><label class="label">Your Email</label><input class="input" type="email" id="t-email" value="${c.email||''}" placeholder="your@email.com"></div>
-        <div class="form-group"><label class="label">Subject</label><input class="input" id="t-subject" placeholder="What&rsquo;s this about?"></div>
-        <div class="form-group"><label class="label">Priority</label>
-          <select class="select" id="t-priority"><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="low">Low &mdash; no rush</option></select>
-        </div>
-        <div class="form-group"><label class="label">Message</label><textarea class="textarea" id="t-desc" placeholder="Describe your question or issue&hellip;"></textarea></div>
-        <button class="btn" onclick="send()">Send Message</button>
-      </div>
-    </div>`;
-}
-
-async function send() {
-  const name    = document.getElementById('t-name')?.value.trim();
-  const email   = document.getElementById('t-email')?.value.trim();
-  const subject = document.getElementById('t-subject')?.value.trim();
-  const desc    = document.getElementById('t-desc')?.value.trim();
-  const pri     = document.getElementById('t-priority')?.value;
-
-  if (!name || !subject || !desc) { alert('Please fill in your name, subject, and message.'); return; }
-
-  const { error } = await sb.from('tickets').insert({
-    client_id: client.id, submitted_by_name: name, submitted_by_email: email||null,
-    subject, description: desc, priority: pri||'normal', status: 'open'
-  });
-
-  if (error) { alert('Something went wrong. Please try again.'); return; }
-  document.getElementById('ok').classList.add('show');
-  const f = document.getElementById('form');
-  f.style.opacity = '.4'; f.style.pointerEvents = 'none';
-}
-
-function show404() {
-  document.getElementById('wrap').innerHTML = `
-    <div class="not-found">
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">Portal not found</div>
-      <div style="font-size:13px">This link may have expired or is invalid.<br>Contact us at info@untrainedmomentum.com</div>
-    </div>`;
-}
-</script>
+  <div class="header"><div class="logo">Untrained <span>Momentum</span></div><div class="header-sub">Client Portal</div></div>
+  <div class="wrap" id="wrap"><div class="loading-state">Loading your account…</div></div>
+  <div class="footer">Untrained Momentum, LLC — Big Rapids, MI — untrainedmomentum.com</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/portal-v2.js"></script>
 </body>
 </html>
