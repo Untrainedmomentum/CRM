@@ -42,15 +42,18 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-secondary admin-only" onclick="exportCSV()">Export CSV</button>
         <a href="import.html" class="btn btn-secondary admin-only">Import</a>
-        <button class="btn btn-primary" onclick="document.getElementById('new-modal').style.display='flex'">+ New Client</button>
+        <button class="btn btn-primary" onclick="document.getElementById('new-modal').style.display='flex'">+ New Record</button>
       </div>
     </div>
 
     <div class="filter-bar mb-16">
       <input class="search-input" id="search" type="text" placeholder="Search name, owner, location&hellip;" oninput="filter()">
+      <select class="filter-select" id="f-relationship" onchange="filter()">
+        <option value="">Prospects &amp; Clients</option><option value="prospect">Prospects</option><option value="client">Clients</option>
+      </select>
       <select class="filter-select" id="f-status" onchange="filter()">
-        <option value="">All Statuses</option>
-        <option value="prospect">Prospect</option><option value="pitched">Pitched</option>
+        <option value="">All Stages</option>
+        <option value="prospect">New</option><option value="pitched">Contacted / Pitched</option>
         <option value="presented">Presented</option><option value="closed">Closed</option>
         <option value="deposited">Deposited</option><option value="building">Building</option>
         <option value="delivered">Delivered</option><option value="ongoing">Ongoing</option>
@@ -69,9 +72,9 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Business</th><th>Owner</th><th>Location</th><th>Category</th><th>Tier</th><th>Deal</th><th>Status</th><th>Deposit</th><th>Added</th></tr>
+          <tr><th>Business</th><th>Type</th><th>Owner</th><th>Location</th><th>Category</th><th>Tier</th><th>Deal</th><th>Stage</th><th>Deposit</th><th>Added</th></tr>
         </thead>
-        <tbody id="clients-body"><tr><td colspan="9" class="loading">Loading&hellip;</td></tr></tbody>
+        <tbody id="clients-body"><tr><td colspan="10" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -80,7 +83,7 @@
 <!-- NEW CLIENT MODAL -->
 <div class="modal-overlay" id="new-modal" style="display:none">
   <div class="modal" style="max-width:600px">
-    <div class="modal-header"><div class="modal-title">New Client</div><button class="modal-close" onclick="document.getElementById('new-modal').style.display='none'">&times;</button></div>
+    <div class="modal-header"><div class="modal-title">New Prospect or Client</div><button class="modal-close" onclick="document.getElementById('new-modal').style.display='none'">&times;</button></div>
     <div class="modal-body">
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Business Name</label><input class="form-control" id="n-biz" placeholder="Pete's Plumbing LLC"></div>
@@ -98,10 +101,11 @@
         <div class="form-group"><label class="form-label">Tier</label>
           <select class="form-control" id="n-tier"><option value="">--</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
         </div>
-        <div class="form-group"><label class="form-label">Status</label>
-          <select class="form-control" id="n-status"><option value="prospect">Prospect</option><option value="pitched">Pitched</option><option value="deposited">Deposited</option></select>
+        <div class="form-group"><label class="form-label">Relationship</label>
+          <select class="form-control" id="n-relationship"><option value="prospect">Prospect</option><option value="client">Client</option></select>
         </div>
       </div>
+      <div class="form-group"><label class="form-label">Stage</label><select class="form-control" id="n-status"><option value="prospect">New</option><option value="pitched">Contacted / Pitched</option><option value="presented">Presented</option><option value="deposited">Deposited</option><option value="building">Building</option><option value="ongoing">Ongoing</option></select></div>
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Deal Type</label>
           <select class="form-control" id="n-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select>
@@ -147,15 +151,16 @@ let all = [], currentProfile;
 })();
 
 function render(clients) {
-  document.getElementById('count-label').textContent = `${clients.length} client${clients.length !== 1 ? 's' : ''}`;
+  document.getElementById('count-label').textContent = `${clients.length} record${clients.length !== 1 ? 's' : ''}`;
   const b = document.getElementById('clients-body');
   if (!clients.length) {
-    b.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-state-text">No clients found</div></div></td></tr>';
+    b.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-state-text">No records found</div></div></td></tr>';
     return;
   }
   b.innerHTML = clients.map(c => `
     <tr onclick="window.location='client.html?id=${c.id}'">
       <td><strong>${c.business_name}</strong></td>
+      <td><span class="badge">${c.relationship_type==='client'?'Client':'Prospect'}</span></td>
       <td class="text-sm">${c.owner_name||'&mdash;'}</td>
       <td class="text-sm text-mid">${c.location||'&mdash;'}</td>
       <td class="text-sm text-mid">${c.category||'&mdash;'}</td>
@@ -170,10 +175,12 @@ function render(clients) {
 function filter() {
   const q  = document.getElementById('search').value.toLowerCase();
   const fs = document.getElementById('f-status').value;
+  const fr = document.getElementById('f-relationship').value;
   const fd = document.getElementById('f-deal').value;
   const ft = document.getElementById('f-tier').value;
   render(all.filter(c =>
     (!q  || [c.business_name,c.owner_name,c.location,c.category].some(v=>v?.toLowerCase().includes(q))) &&
+    (!fr || c.relationship_type === fr) &&
     (!fs || c.status === fs) &&
     (!fd || c.deal_type === fd) &&
     (!ft || String(c.tier) === ft)
@@ -192,6 +199,7 @@ async function saveNew() {
     tier:          g('n-tier'),
     deal_type:     g('n-deal'),
     status:        document.getElementById('n-status').value || 'prospect',
+    relationship_type: document.getElementById('n-relationship').value || 'prospect',
     deposit_collected: g('n-deposit'),
     assigned_to:   currentProfile.id,
   }).select().single();
@@ -205,7 +213,7 @@ async function saveNew() {
 function exportCSV() {
   const cols = [
     'business_name','owner_name','phone','email','location','category',
-    'tier','status','deal_type','deal_amount','deposit_collected',
+    'relationship_type','tier','status','deal_type','deal_amount','deposit_collected',
     'google_rating','review_count','review_insights','has_website',
     'website_platform','gbp_status','est_annual_revenue','pitch_angle',
     'call_priority','business_hours','year_established','created_at'
