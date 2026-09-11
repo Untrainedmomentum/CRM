@@ -8,19 +8,19 @@ async function requireAuth(requiredRole) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.replace('index.html'); return null; }
 
-  // Try profile fetch — fall back to session data if RLS blocks
-  let profile;
+  let profile = null;
   try {
-    const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    profile = data;
+    const { data, error } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    if (!error && data) profile = data;
   } catch(e) {}
 
+  // Never elevate a session just because profile lookup failed.
   if (!profile) {
-    profile = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' };
+    profile = { id: session.user.id, email: session.user.email, role: 'viewer', full_name: session.user.email };
   }
 
   if (requiredRole && profile.role !== requiredRole && profile.role !== 'admin') {
-    window.location.replace('index.html'); return null;
+    window.location.replace('dashboard.html'); return null;
   }
 
   return profile;
@@ -32,11 +32,40 @@ async function logout() {
 }
 
 // ── NAV ───────────────────────────────────────────────────────
+function ensureOperationsNav(profile) {
+  const main = document.querySelector('.sidebar-section');
+  if (main && !document.querySelector('.sidebar a[href="work.html"]')) {
+    const link = document.createElement('a');
+    link.className = 'nav-link sidebar-link';
+    link.href = 'work.html';
+    link.textContent = 'Work';
+    const tickets = main.querySelector('a[href="tickets.html"]');
+    tickets ? main.insertBefore(link, tickets) : main.appendChild(link);
+  }
+
+  if (profile.role === 'admin' && !document.querySelector('.sidebar a[href="inventory.html"]')) {
+    const sections = [...document.querySelectorAll('.sidebar-section')];
+    let ops = sections.find(s => ['Admin','Finance','Operations'].includes(s.querySelector('.sidebar-label')?.textContent?.trim()));
+    if (!ops) {
+      ops = document.createElement('div');
+      ops.className = 'sidebar-section admin-only';
+      ops.innerHTML = '<div class="sidebar-label">Operations</div>';
+      document.querySelector('.sidebar')?.appendChild(ops);
+    }
+    const link = document.createElement('a');
+    link.className = 'nav-link sidebar-link admin-only';
+    link.href = 'inventory.html';
+    link.textContent = 'Inventory';
+    ops.appendChild(link);
+  }
+}
+
 function renderNav(profile) {
+  ensureOperationsNav(profile);
   const el = document.getElementById('nav-name');
   const re = document.getElementById('nav-role');
   if (el) el.textContent = profile.full_name || profile.email;
-  if (re) re.textContent = profile.role === 'admin' ? 'Admin' : 'Sales';
+  if (re) re.textContent = profile.role === 'admin' ? 'Admin' : profile.role === 'sales' ? 'Sales' : 'Viewer';
 
   if (profile.role !== 'admin') {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
@@ -74,7 +103,7 @@ const STATUS_LABELS = {
   closed:'Closed', deposited:'Deposited', building:'Building', delivered:'Delivered',
   ongoing:'Ongoing', upsell:'Upsell', churned:'Churned'
 };
-const DEAL_LABELS = { upfront:'Upfront', revshare:'Rev Share', equity:'Equity' };
+const DEAL_LABELS = { upfront:'Upfront', revshare:'Rev Share', equity:'Equity', mrr:'MRR', project:'Project' };
 
 const statusBadge = s => `<span class="badge badge-${s||'prospect'}">${STATUS_LABELS[s]||s||'—'}</span>`;
 const tierBadge = t => { const labels = {1:'Hot',2:'Warm',3:'Cold'}; return t ? `<span class="badge badge-tier${t}">${labels[t]||t}</span>` : '—'; };
@@ -85,7 +114,6 @@ function buildDot(status) {
   return `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};margin-right:6px;flex-shrink:0"></span>`;
 }
 
-// Inject animation keyframes once
 const _s = document.createElement('style');
 _s.textContent = '@keyframes _fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
 document.head.appendChild(_s);
