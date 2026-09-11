@@ -136,7 +136,7 @@
     ', ' + (profile.full_name?.split(' ')[0] || 'Jen');
 
   const [clientsRes, ticketsRes, subsRes, buildsRes] = await Promise.all([
-    sb.from('clients').select('id,business_name,owner_name,status,deal_type,deal_amount,tier,created_at').order('created_at', { ascending: false }),
+    sb.from('clients').select('id,business_name,owner_name,relationship_type,status,deal_type,deal_amount,tier,created_at').order('created_at', { ascending: false }),
     sb.from('tickets').select('id,subject,priority,status,client_id,clients(business_name)').eq('status','open').order('created_at',{ascending:false}),
     sb.from('subscriptions').select('*,clients(business_name)').in('status',['trial','expiring_soon']).lte('trial_end', new Date(Date.now()+30*86400000).toISOString()).order('trial_end',{ascending:true}),
     sb.from('build_tracker').select('*,clients(id,business_name)').or('website_status.eq.in_progress,gbp_status.eq.in_progress,voice_ai_status.eq.in_progress,email_status.eq.in_progress,booking_status.eq.in_progress')
@@ -147,7 +147,7 @@
   const subs    = subsRes.data || [];
   const builds  = buildsRes.data || [];
 
-  const active = clients.filter(c => ['building','delivered','ongoing','upsell'].includes(c.status));
+  const active = clients.filter(c => c.relationship_type === 'client' && c.status !== 'churned');
   document.getElementById('stat-active').textContent = active.length;
   document.getElementById('stat-total').textContent = clients.length;
   document.getElementById('stat-tickets').textContent = tickets.length;
