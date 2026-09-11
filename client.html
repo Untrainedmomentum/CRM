@@ -79,10 +79,11 @@
           </div>
           <div>
             <div class="card mb-16">
-              <div class="card-title">Deal</div>
-              <div class="info-row"><div class="info-label">Status</div><div class="info-value">
+              <div class="card-title">Relationship &amp; Deal</div>
+              <div class="info-row"><div class="info-label">Relationship</div><div class="info-value"><select id="f-relationship"><option value="prospect">Prospect</option><option value="client">Client</option></select></div></div>
+              <div class="info-row"><div class="info-label">Stage</div><div class="info-value">
                 <select id="f-status">
-                  <option value="prospect">Prospect</option><option value="pitched">Pitched</option>
+                  <option value="prospect">New</option><option value="pitched">Contacted / Pitched</option>
                   <option value="presented">Presented</option><option value="objection">Objection</option>
                   <option value="closed">Closed</option><option value="deposited">Deposited</option>
                   <option value="building">Building</option><option value="delivered">Delivered</option>
@@ -711,7 +712,7 @@ function renderHeader() {
   document.getElementById('h-name').textContent = name;
   document.getElementById('h-title').textContent = name;
   document.getElementById('h-badges').innerHTML =
-    statusBadge(clientData.status) + ' ' + tierBadge(clientData.tier) + ' ' + dealBadge(clientData.deal_type);
+    `<span class="badge">${clientData.relationship_type==='client'?'Client':'Prospect'}</span> ` + statusBadge(clientData.status) + ' ' + tierBadge(clientData.tier) + ' ' + dealBadge(clientData.deal_type);
 }
 
 function setVal(id, val) {
@@ -730,6 +731,7 @@ function renderClientFields() {
   setVal('f-legal', clientData.legal_name);
   setVal('f-ein', clientData.ein);
   setVal('f-status', clientData.status);
+  setVal('f-relationship', clientData.relationship_type || 'prospect');
   setVal('f-deal', clientData.deal_type);
   setVal('f-tier', clientData.tier);
   setVal('f-amount', clientData.deal_amount);
@@ -755,6 +757,7 @@ async function saveClient() {
     legal_name:       g('f-legal'),
     ein:              g('f-ein'),
     status:           g('f-status'),
+    relationship_type:g('f-relationship'),
     deal_type:        g('f-deal'),
     tier:             g('f-tier'),
     deal_amount:      g('f-amount'),
