@@ -33,7 +33,8 @@ async function logout() {
 
 // ── NAV ───────────────────────────────────────────────────────
 function ensureOperationsNav(profile) {
-  const main = document.querySelector('.sidebar-section');
+  const sections = [...document.querySelectorAll('.sidebar-section')];
+  const main = sections[0];
   if (main && !document.querySelector('.sidebar a[href="work.html"]')) {
     const link = document.createElement('a');
     link.className = 'nav-link sidebar-link';
@@ -43,8 +44,23 @@ function ensureOperationsNav(profile) {
     tickets ? main.insertBefore(link, tickets) : main.appendChild(link);
   }
 
+  if (!document.querySelector('.sidebar a[href="outreach.html"]')) {
+    let sales = sections.find(s => s.querySelector('.sidebar-label')?.textContent?.trim() === 'Sales');
+    if (!sales) {
+      sales = document.createElement('div');
+      sales.className = 'sidebar-section';
+      sales.innerHTML = '<div class="sidebar-label">Sales</div>';
+      document.querySelector('.sidebar')?.appendChild(sales);
+    }
+    const link = document.createElement('a');
+    link.className = 'nav-link sidebar-link';
+    link.href = 'outreach.html';
+    link.textContent = 'Outreach';
+    const john = sales.querySelector('a[href="john.html"]');
+    john ? sales.insertBefore(link, john) : sales.appendChild(link);
+  }
+
   if (profile.role === 'admin' && !document.querySelector('.sidebar a[href="inventory.html"]')) {
-    const sections = [...document.querySelectorAll('.sidebar-section')];
     let ops = sections.find(s => ['Admin','Finance','Operations'].includes(s.querySelector('.sidebar-label')?.textContent?.trim()));
     if (!ops) {
       ops = document.createElement('div');
