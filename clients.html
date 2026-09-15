@@ -59,9 +59,18 @@
         <option value="delivered">Delivered</option><option value="ongoing">Ongoing</option>
         <option value="upsell">Upsell</option><option value="churned">Churned</option>
       </select>
+      <select class="filter-select" id="f-source" onchange="filter()">
+        <option value="">All Sources</option>
+        <option value="cold_email">Cold Email</option><option value="facebook">Facebook</option>
+        <option value="referral">Referral</option><option value="website">Website / Inbound</option>
+        <option value="networking">Networking</option><option value="score">SCORE / Small Business</option>
+        <option value="realtor">Realtor Outreach</option><option value="senior_care">Senior Care Outreach</option>
+        <option value="construction">Construction Outreach</option><option value="local_outreach">Local Outreach</option>
+        <option value="job_posting">Job Posting / Hiring Signal</option><option value="other">Other</option><option value="unknown">Unknown</option>
+      </select>
       <select class="filter-select" id="f-deal" onchange="filter()">
         <option value="">All Deals</option>
-        <option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option>
+        <option value="upfront">Upfront</option><option value="mrr">MRR</option><option value="project">Project</option>
       </select>
       <select class="filter-select" id="f-tier" onchange="filter()">
         <option value="">All Tiers</option>
@@ -72,15 +81,14 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Business</th><th>Type</th><th>Contact</th><th>Email</th><th>Contacted</th><th>Location</th><th>Category</th><th>Tier</th><th>Deal</th><th>Stage</th><th>Deposit</th><th>Added</th></tr>
+          <tr><th>Business</th><th>Type</th><th>Contact</th><th>Email</th><th>Contacted</th><th>Source</th><th>Location</th><th>Category</th><th>Tier</th><th>Deal</th><th>Stage</th><th>Deposit</th><th>Added</th></tr>
         </thead>
-        <tbody id="clients-body"><tr><td colspan="12" class="loading">Loading&hellip;</td></tr></tbody>
+        <tbody id="clients-body"><tr><td colspan="13" class="loading">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- NEW CLIENT MODAL -->
 <div class="modal-overlay" id="new-modal" style="display:none">
   <div class="modal" style="max-width:600px">
     <div class="modal-header"><div class="modal-title">New Prospect or Client</div><button class="modal-close" onclick="document.getElementById('new-modal').style.display='none'">&times;</button></div>
@@ -98,6 +106,17 @@
         <div class="form-group"><label class="form-label">Category</label><input class="form-control" id="n-cat" placeholder="Plumber, HVAC&hellip;"></div>
       </div>
       <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Lead Source</label>
+          <select class="form-control" id="n-source">
+            <option value="unknown">Unknown</option><option value="cold_email">Cold Email</option><option value="facebook">Facebook</option>
+            <option value="referral">Referral</option><option value="website">Website / Inbound</option><option value="networking">Networking</option>
+            <option value="score">SCORE / Small Business</option><option value="realtor">Realtor Outreach</option><option value="senior_care">Senior Care Outreach</option>
+            <option value="construction">Construction Outreach</option><option value="local_outreach">Local Outreach</option><option value="job_posting">Job Posting / Hiring Signal</option><option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Source Detail</label><input class="form-control" id="n-source-detail" placeholder="Referral name, Facebook group, event..."></div>
+      </div>
+      <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Tier</label>
           <select class="form-control" id="n-tier"><option value="">--</option><option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option></select>
         </div>
@@ -108,14 +127,14 @@
       <div class="form-group"><label class="form-label">Stage</label><select class="form-control" id="n-status"><option value="prospect">New</option><option value="pitched">Contacted / Pitched</option><option value="presented">Presented</option><option value="deposited">Deposited</option><option value="building">Building</option><option value="ongoing">Ongoing</option></select></div>
       <div class="form-grid-2">
         <div class="form-group"><label class="form-label">Deal Type</label>
-          <select class="form-control" id="n-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="revshare">Rev Share</option><option value="equity">Equity</option></select>
+          <select class="form-control" id="n-deal"><option value="">--</option><option value="upfront">Upfront</option><option value="mrr">MRR</option><option value="project">Project</option></select>
         </div>
         <div class="form-group"><label class="form-label">Deposit ($)</label><input class="form-control" id="n-deposit" type="number"></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('new-modal').style.display='none'">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNew()">Create Client</button>
+      <button class="btn btn-primary" onclick="saveNew()">Create Record</button>
     </div>
   </div>
 </div>
@@ -124,6 +143,7 @@
 <script src="assets/js/config.js"></script>
 <script src="shared.js"></script>
 <script>
+const SOURCE_LABELS = {unknown:'Unknown',cold_email:'Cold Email',facebook:'Facebook',referral:'Referral',website:'Website / Inbound',networking:'Networking',score:'SCORE / Small Business',realtor:'Realtor Outreach',senior_care:'Senior Care Outreach',construction:'Construction Outreach',local_outreach:'Local Outreach',job_posting:'Job Posting / Hiring Signal',other:'Other'};
 let all = [], currentProfile, latestContact = new Map();
 
 (async () => {
@@ -151,18 +171,19 @@ let all = [], currentProfile, latestContact = new Map();
   }
   render(all);
 
-  if (new URLSearchParams(window.location.search).get('new') === '1') {
-    document.getElementById('new-modal').style.display = 'flex';
-  }
-  const sf = new URLSearchParams(window.location.search).get('status');
+  if (new URLSearchParams(window.location.search).get('new') === '1') document.getElementById('new-modal').style.display = 'flex';
+  const params = new URLSearchParams(window.location.search);
+  const sf = params.get('status');
   if (sf) { document.getElementById('f-status').value = sf; filter(); }
+  const src = params.get('source');
+  if (src) { document.getElementById('f-source').value = src; filter(); }
 })();
 
 function render(clients) {
   document.getElementById('count-label').textContent = `${clients.length} record${clients.length !== 1 ? 's' : ''}`;
   const b = document.getElementById('clients-body');
   if (!clients.length) {
-    b.innerHTML = '<tr><td colspan="12"><div class="empty-state"><div class="empty-state-text">No records found</div></div></td></tr>';
+    b.innerHTML = '<tr><td colspan="13"><div class="empty-state"><div class="empty-state-text">No records found</div></div></td></tr>';
     return;
   }
   b.innerHTML = clients.map(c => { const a = latestContact.get(c.id); return `
@@ -172,6 +193,7 @@ function render(clients) {
       <td class="text-sm">${esc(c.owner_name)||'&mdash;'}</td>
       <td class="text-sm">${c.email ? `<a href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a>` : '<span class="text-mid">No email</span>'}</td>
       <td class="text-sm">${a ? `<strong>Yes</strong><br><span class="text-mid">${esc(a.activity_type)} · ${fmtDate(a.occurred_at)}</span>` : '<span class="text-mid">Not yet</span>'}</td>
+      <td class="text-sm"><span class="badge">${SOURCE_LABELS[c.lead_source||'unknown']||esc(c.lead_source)}</span>${c.lead_source_detail?`<br><span class="text-mid">${esc(c.lead_source_detail)}</span>`:''}</td>
       <td class="text-sm text-mid">${c.location||'&mdash;'}</td>
       <td class="text-sm text-mid">${c.category||'&mdash;'}</td>
       <td>${tierBadge(c.tier)}</td>
@@ -186,12 +208,14 @@ function filter() {
   const q  = document.getElementById('search').value.toLowerCase();
   const fs = document.getElementById('f-status').value;
   const fr = document.getElementById('f-relationship').value;
+  const fsrc = document.getElementById('f-source').value;
   const fd = document.getElementById('f-deal').value;
   const ft = document.getElementById('f-tier').value;
   render(all.filter(c =>
-    (!q  || [c.business_name,c.owner_name,c.email,c.phone,c.location,c.category].some(v=>v?.toLowerCase().includes(q))) &&
+    (!q  || [c.business_name,c.owner_name,c.email,c.phone,c.location,c.category,c.lead_source_detail].some(v=>v?.toLowerCase().includes(q))) &&
     (!fr || c.relationship_type === fr) &&
     (!fs || c.status === fs) &&
+    (!fsrc || (c.lead_source||'unknown') === fsrc) &&
     (!fd || c.deal_type === fd) &&
     (!ft || String(c.tier) === ft)
   ));
@@ -206,6 +230,8 @@ async function saveNew() {
     email:         g('n-email'),
     location:      g('n-loc'),
     category:      g('n-cat'),
+    lead_source:   document.getElementById('n-source').value || 'unknown',
+    lead_source_detail: g('n-source-detail'),
     tier:          g('n-tier'),
     deal_type:     g('n-deal'),
     status:        document.getElementById('n-status').value || 'prospect',
@@ -216,13 +242,13 @@ async function saveNew() {
 
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   await sb.from('build_tracker').insert({ client_id: data.id });
-  toast('Client created!');
+  toast('Record created!');
   window.location.href = 'client.html?id=' + data.id;
 }
 
 function exportCSV() {
   const cols = [
-    'business_name','owner_name','phone','email','location','category',
+    'business_name','owner_name','phone','email','location','category','lead_source','lead_source_detail',
     'relationship_type','tier','status','deal_type','deal_amount','deposit_collected',
     'google_rating','review_count','review_insights','has_website',
     'website_platform','gbp_status','est_annual_revenue','pitch_angle',
