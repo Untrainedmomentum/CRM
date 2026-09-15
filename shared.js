@@ -14,7 +14,6 @@ async function requireAuth(requiredRole) {
     if (!error && data) profile = data;
   } catch(e) {}
 
-  // Never elevate a session just because profile lookup failed.
   if (!profile) {
     profile = { id: session.user.id, email: session.user.email, role: 'viewer', full_name: session.user.email };
   }
@@ -131,6 +130,14 @@ const STATUS_LABELS = {
 };
 const DEAL_LABELS = { upfront:'Upfront', revshare:'Rev Share', equity:'Equity', mrr:'MRR', project:'Project' };
 
+const LEAD_SOURCE_OPTIONS = [
+  ['unknown','Unknown'],['cold_email','Cold Email'],['facebook','Facebook'],['referral','Referral'],
+  ['website','Website / Inbound'],['networking','Networking'],['score','SCORE / Small Business'],
+  ['realtor','Realtor Outreach'],['senior_care','Senior Care Outreach'],['construction','Construction Outreach'],
+  ['local_outreach','Local Outreach'],['job_posting','Job Posting / Hiring Signal'],['other','Other']
+];
+const LEAD_SOURCE_LABELS = Object.fromEntries(LEAD_SOURCE_OPTIONS);
+
 const statusBadge = s => `<span class="badge badge-${s||'prospect'}">${STATUS_LABELS[s]||s||'—'}</span>`;
 const tierBadge = t => { const labels = {1:'Hot',2:'Warm',3:'Cold'}; return t ? `<span class="badge badge-tier${t}">${labels[t]||t}</span>` : '—'; };
 const dealBadge   = d => d ? `<span class="badge badge-${d}">${DEAL_LABELS[d]||d}</span>` : '—';
@@ -139,6 +146,42 @@ function buildDot(status) {
   const c = { not_started:'#d0d0d0', in_progress:'#b8860b', complete:'#1a7a3a', blocked:'#C0152A', na:'#eeeeee' }[status] || '#d0d0d0';
   return `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};margin-right:6px;flex-shrink:0"></span>`;
 }
+
+// ── LEAD SOURCE RECORD EDITOR ─────────────────────────────────
+async function installLeadSourceEditor() {
+  const page = window.location.pathname.split('/').pop();
+  if (page !== 'client.html') return;
+  const clientId = new URLSearchParams(window.location.search).get('id');
+  if (!clientId || document.getElementById('lead-source-card')) return;
+
+  const rightCol = document.querySelector('#tab-overview .detail-layout > div:nth-child(2)');
+  if (!rightCol) return;
+
+  const { data, error } = await sb.from('clients').select('lead_source,lead_source_detail').eq('id', clientId).single();
+  if (error) return;
+
+  const card = document.createElement('div');
+  card.className = 'card mb-16';
+  card.id = 'lead-source-card';
+  card.innerHTML = `
+    <div class="card-title">Lead Source</div>
+    <div class="info-row"><div class="info-label">Source</div><div class="info-value">
+      <select id="record-lead-source">${LEAD_SOURCE_OPTIONS.map(([v,l])=>`<option value="${v}" ${v===(data.lead_source||'unknown')?'selected':''}>${l}</option>`).join('')}</select>
+    </div></div>
+    <div class="info-row"><div class="info-label">Detail</div><div class="info-value"><input id="record-lead-source-detail" type="text" placeholder="Referral name, group, event..." value="${String(data.lead_source_detail||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"></div></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn btn-secondary btn-sm" id="save-record-source">Save Source</button></div>`;
+  rightCol.insertBefore(card, rightCol.lastElementChild || null);
+
+  document.getElementById('save-record-source')?.addEventListener('click', async () => {
+    const lead_source = document.getElementById('record-lead-source').value;
+    const lead_source_detail = document.getElementById('record-lead-source-detail').value.trim() || null;
+    const { error: saveError } = await sb.from('clients').update({lead_source, lead_source_detail}).eq('id', clientId);
+    if (saveError) { toast(saveError.message,'error'); return; }
+    toast('Lead source saved');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => { installLeadSourceEditor(); });
 
 const _s = document.createElement('style');
 _s.textContent = '@keyframes _fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
