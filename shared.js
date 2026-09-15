@@ -44,14 +44,24 @@ function ensureOperationsNav(profile) {
     tickets ? main.insertBefore(link, tickets) : main.appendChild(link);
   }
 
+  let sales = sections.find(s => s.querySelector('.sidebar-label')?.textContent?.trim() === 'Sales');
+  if (!sales) {
+    sales = document.createElement('div');
+    sales.className = 'sidebar-section';
+    sales.innerHTML = '<div class="sidebar-label">Sales</div>';
+    document.querySelector('.sidebar')?.appendChild(sales);
+  }
+
+  if (!document.querySelector('.sidebar a[href="lead-analytics.html"]')) {
+    const link = document.createElement('a');
+    link.className = 'nav-link sidebar-link';
+    link.href = 'lead-analytics.html';
+    link.textContent = 'Lead Analytics';
+    const john = sales.querySelector('a[href="john.html"]');
+    john ? sales.insertBefore(link, john) : sales.appendChild(link);
+  }
+
   if (!document.querySelector('.sidebar a[href="outreach.html"]')) {
-    let sales = sections.find(s => s.querySelector('.sidebar-label')?.textContent?.trim() === 'Sales');
-    if (!sales) {
-      sales = document.createElement('div');
-      sales.className = 'sidebar-section';
-      sales.innerHTML = '<div class="sidebar-label">Sales</div>';
-      document.querySelector('.sidebar')?.appendChild(sales);
-    }
     const link = document.createElement('a');
     link.className = 'nav-link sidebar-link';
     link.href = 'outreach.html';
