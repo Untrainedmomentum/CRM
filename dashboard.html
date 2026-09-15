@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard &mdash; Untrained Momentum</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .conversion-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:16px}
+    .conversion-step{background:var(--surface,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:16px;position:relative;min-height:102px}
+    .conversion-step:not(:last-child)::after{content:'→';position:absolute;right:-11px;top:38px;z-index:2;font-weight:700;color:#888}
+    .conversion-label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-mid,#666);font-weight:700}
+    .conversion-value{font-size:28px;font-weight:800;margin:6px 0 2px}
+    .conversion-rate{font-size:12px;color:var(--text-mid,#666)}
+    .conversion-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 0}
+    .conversion-mini{padding:14px 16px;border-radius:10px;background:rgba(0,0,0,.025)}
+    .conversion-mini strong{display:block;font-size:22px;margin-top:3px}
+    .conversion-mini span{font-size:12px;color:var(--text-mid,#666)}
+    @media(max-width:950px){.conversion-grid{grid-template-columns:1fr 1fr}.conversion-step:not(:last-child)::after{display:none}.conversion-summary{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.conversion-grid,.conversion-summary{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
 <div class="app-shell">
@@ -54,7 +68,7 @@
       <div class="stat-card green">
         <div class="stat-label">Total Clients</div>
         <div class="stat-value" id="stat-total">&mdash;</div>
-        <div class="stat-sub">All time</div>
+        <div class="stat-sub">All CRM records</div>
       </div>
       <div class="stat-card gold">
         <div class="stat-label">Open Tickets</div>
@@ -65,6 +79,24 @@
         <div class="stat-label">Pipeline Value</div>
         <div class="stat-value" id="stat-pipeline">&mdash;</div>
         <div class="stat-sub">Est. total deal value</div>
+      </div>
+    </div>
+
+    <div class="card mb-24">
+      <div class="card-title">Lead Conversion</div>
+      <div class="text-sm text-mid">Automatically calculated from CRM relationships and logged outreach activity.</div>
+      <div class="conversion-summary">
+        <div class="conversion-mini"><span>Overall Lead → Client</span><strong id="conv-overall">&mdash;</strong></div>
+        <div class="conversion-mini"><span>Contacted → Client</span><strong id="conv-contacted">&mdash;</strong></div>
+        <div class="conversion-mini"><span>Reply Rate</span><strong id="conv-reply">&mdash;</strong></div>
+        <div class="conversion-mini"><span>Clients Won</span><strong id="conv-won">&mdash;</strong></div>
+      </div>
+      <div class="conversion-grid">
+        <div class="conversion-step"><div class="conversion-label">CRM Leads</div><div class="conversion-value" id="funnel-leads">&mdash;</div><div class="conversion-rate">All prospect + client records</div></div>
+        <div class="conversion-step"><div class="conversion-label">Contacted</div><div class="conversion-value" id="funnel-contacted">&mdash;</div><div class="conversion-rate" id="rate-contacted">&mdash;</div></div>
+        <div class="conversion-step"><div class="conversion-label">Replied</div><div class="conversion-value" id="funnel-replied">&mdash;</div><div class="conversion-rate" id="rate-replied">&mdash;</div></div>
+        <div class="conversion-step"><div class="conversion-label">Meetings</div><div class="conversion-value" id="funnel-meetings">&mdash;</div><div class="conversion-rate" id="rate-meetings">&mdash;</div></div>
+        <div class="conversion-step"><div class="conversion-label">Won</div><div class="conversion-value" id="funnel-won">&mdash;</div><div class="conversion-rate" id="rate-won">&mdash;</div></div>
       </div>
     </div>
 
@@ -135,17 +167,19 @@
     (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') +
     ', ' + (profile.full_name?.split(' ')[0] || 'Jen');
 
-  const [clientsRes, ticketsRes, subsRes, buildsRes] = await Promise.all([
+  const [clientsRes, ticketsRes, subsRes, buildsRes, activitiesRes] = await Promise.all([
     sb.from('clients').select('id,business_name,owner_name,relationship_type,status,deal_type,deal_amount,tier,created_at').order('created_at', { ascending: false }),
     sb.from('tickets').select('id,subject,priority,status,client_id,clients(business_name)').eq('status','open').order('created_at',{ascending:false}),
     sb.from('subscriptions').select('*,clients(business_name)').in('status',['trial','expiring_soon']).lte('trial_end', new Date(Date.now()+30*86400000).toISOString()).order('trial_end',{ascending:true}),
-    sb.from('build_tracker').select('*,clients(id,business_name)').or('website_status.eq.in_progress,gbp_status.eq.in_progress,voice_ai_status.eq.in_progress,email_status.eq.in_progress,booking_status.eq.in_progress')
+    sb.from('build_tracker').select('*,clients(id,business_name)').or('website_status.eq.in_progress,gbp_status.eq.in_progress,voice_ai_status.eq.in_progress,email_status.eq.in_progress,booking_status.eq.in_progress'),
+    sb.from('client_activities').select('client_id,activity_type,direction,occurred_at')
   ]);
 
   const clients = clientsRes.data || [];
   const tickets = ticketsRes.data || [];
   const subs    = subsRes.data || [];
   const builds  = buildsRes.data || [];
+  const activities = activitiesRes.data || [];
 
   const active = clients.filter(c => c.relationship_type === 'client' && c.status !== 'churned');
   document.getElementById('stat-active').textContent = active.length;
@@ -153,6 +187,33 @@
   document.getElementById('stat-tickets').textContent = tickets.length;
   document.getElementById('stat-pipeline').textContent = fmt$(clients.reduce((s,c)=>s+(c.deal_amount||0),0));
   document.getElementById('badge-tickets').textContent = tickets.length;
+
+  const pct = (n,d) => d ? `${(n/d*100).toFixed(1)}%` : '0.0%';
+  const contactedIds = new Set();
+  const repliedIds = new Set();
+  const meetingIds = new Set();
+  activities.forEach(a => {
+    if (a.direction === 'outbound' && ['email','call','text','visit','meeting'].includes(a.activity_type)) contactedIds.add(a.client_id);
+    if (a.direction === 'inbound' && ['email','call','text','meeting'].includes(a.activity_type)) repliedIds.add(a.client_id);
+    if (a.activity_type === 'meeting') meetingIds.add(a.client_id);
+  });
+  const wonIds = new Set(clients.filter(c => c.relationship_type === 'client').map(c => c.id));
+  const contactedWon = [...wonIds].filter(id => contactedIds.has(id)).length;
+
+  document.getElementById('conv-overall').textContent = pct(wonIds.size, clients.length);
+  document.getElementById('conv-contacted').textContent = pct(contactedWon, contactedIds.size);
+  document.getElementById('conv-reply').textContent = pct(repliedIds.size, contactedIds.size);
+  document.getElementById('conv-won').textContent = wonIds.size;
+
+  document.getElementById('funnel-leads').textContent = clients.length;
+  document.getElementById('funnel-contacted').textContent = contactedIds.size;
+  document.getElementById('funnel-replied').textContent = repliedIds.size;
+  document.getElementById('funnel-meetings').textContent = meetingIds.size;
+  document.getElementById('funnel-won').textContent = wonIds.size;
+  document.getElementById('rate-contacted').textContent = `${pct(contactedIds.size, clients.length)} of CRM leads`;
+  document.getElementById('rate-replied').textContent = `${pct(repliedIds.size, contactedIds.size)} of contacted leads`;
+  document.getElementById('rate-meetings').textContent = `${pct(meetingIds.size, contactedIds.size)} of contacted leads`;
+  document.getElementById('rate-won').textContent = `${pct(wonIds.size, clients.length)} overall conversion`;
 
   const stages = ['prospect','pitched','presented','closed','deposited','building','delivered','ongoing','upsell'];
   const labels = {prospect:'Prospect',pitched:'Pitched',presented:'Presented',closed:'Closed',deposited:'Deposited',building:'Building',delivered:'Delivered',ongoing:'Ongoing',upsell:'Upsell'};
@@ -164,7 +225,7 @@
   const rcb = document.getElementById('recent-clients');
   rcb.innerHTML = clients.length === 0
     ? '<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No clients yet &mdash; <a href="clients.html?new=1">add your first</a></div></div></td></tr>'
-    : clients.slice(0,8).map(c=>`<tr onclick="window.location='client.html?id=${c.id}'"><td><strong>${c.business_name}</strong><br><span class="text-sm text-mid">${c.owner_name}</span></td><td>${statusBadge(c.status)}</td><td>${dealBadge(c.deal_type)}</td></tr>`).join('');
+    : clients.slice(0,8).map(c=>`<tr onclick="window.location='client.html?id=${c.id}'"><td><strong>${c.business_name}</strong><br><span class="text-sm text-mid">${c.owner_name||''}</span></td><td>${statusBadge(c.status)}</td><td>${dealBadge(c.deal_type)}</td></tr>`).join('');
 
   const otb = document.getElementById('open-tickets');
   otb.innerHTML = tickets.length === 0
