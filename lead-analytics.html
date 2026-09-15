@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Analytics — Untrained Momentum</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .metric{background:#fff;border:1px solid var(--border,#ddd);border-radius:10px;padding:16px}
+    .metric span{display:block;font-size:12px;color:var(--mid,#666);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+    .metric strong{display:block;font-size:28px;margin-top:5px}
+    .source-pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--light,#f5f5f5);font-size:12px;font-weight:700}
+    .good{font-weight:700}
+    .muted{color:var(--mid,#666)}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .source-select{min-width:150px}
+    @media(max-width:800px){.metric-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:520px){.metric-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-logo">Untrained <span>Momentum</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a class="nav-link sidebar-link" href="dashboard.html">Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html">Clients</a>
+      <a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Sales</div>
+      <a class="nav-link sidebar-link active" href="lead-analytics.html">Lead Analytics</a>
+      <a class="nav-link sidebar-link" href="john.html">John's View</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Lead Analytics</div>
+        <div class="page-subtitle">See which prospecting channels are actually producing replies, meetings and clients.</div>
+      </div>
+      <a href="clients.html?new=1" class="btn btn-primary">+ New Lead</a>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric"><span>Total CRM Records</span><strong id="m-total">—</strong></div>
+      <div class="metric"><span>Contacted</span><strong id="m-contacted">—</strong></div>
+      <div class="metric"><span>Replies</span><strong id="m-replies">—</strong></div>
+      <div class="metric"><span>Clients Won</span><strong id="m-won">—</strong></div>
+    </div>
+
+    <div class="table-wrap mb-16">
+      <div class="table-header">
+        <div>
+          <div class="table-title">Conversion by Lead Source</div>
+          <div class="text-sm text-mid">Sorted by clients won, then reply rate.</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Source</th><th>Leads</th><th>Contacted</th><th>Replies</th><th>Meetings</th><th>Won</th><th>Reply Rate</th><th>Lead → Client</th></tr></thead>
+        <tbody id="source-body"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <div>
+          <div class="table-title">Unassigned Lead Sources</div>
+          <div class="text-sm text-mid">Old records start as Unknown. Tag them here only when you know where they came from.</div>
+        </div>
+        <div class="toolbar"><span class="badge" id="unknown-count">0 unknown</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Business</th><th>Contact</th><th>Stage</th><th>Source</th><th>Detail</th><th></th></tr></thead>
+        <tbody id="unknown-body"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="shared.js"></script>
+<script>
+const SOURCE_OPTIONS = [
+  ['cold_email','Cold Email'],
+  ['facebook','Facebook'],
+  ['referral','Referral'],
+  ['website','Website / Inbound'],
+  ['networking','Networking'],
+  ['score','SCORE / Small Business'],
+  ['realtor','Realtor Outreach'],
+  ['senior_care','Senior Care Outreach'],
+  ['construction','Construction Outreach'],
+  ['local_outreach','Local Outreach'],
+  ['job_posting','Job Posting / Hiring Signal'],
+  ['other','Other'],
+  ['unknown','Unknown']
+];
+const SOURCE_LABELS = Object.fromEntries(SOURCE_OPTIONS);
+const pct = (n,d) => d ? `${(100*n/d).toFixed(1)}%` : '0.0%';
+let clients = [], activities = [];
+
+(async()=>{
+  const profile = await requireAuth();
+  if (!profile) return;
+  renderNav(profile);
+
+  const [cRes,aRes] = await Promise.all([
+    sb.from('clients').select('id,business_name,owner_name,email,status,relationship_type,lead_source,lead_source_detail,created_at'),
+    sb.from('client_activities').select('client_id,activity_type,direction,occurred_at')
+  ]);
+  if (cRes.error) { toast(cRes.error.message,'error'); return; }
+  if (aRes.error) { toast(aRes.error.message,'error'); return; }
+  clients = cRes.data || [];
+  activities = aRes.data || [];
+  renderAll();
+})();
+
+function getSets(){
+  const contacted=new Set(), replied=new Set(), meetings=new Set();
+  for(const a of activities){
+    if(a.direction==='outbound' && ['email','call','text','visit','meeting'].includes(a.activity_type)) contacted.add(a.client_id);
+    if(a.direction==='inbound' && ['email','call','text','meeting'].includes(a.activity_type)) replied.add(a.client_id);
+    if(a.activity_type==='meeting') meetings.add(a.client_id);
+  }
+  const won=new Set(clients.filter(c=>c.relationship_type==='client').map(c=>c.id));
+  return {contacted,replied,meetings,won};
+}
+
+function renderAll(){
+  const sets=getSets();
+  document.getElementById('m-total').textContent=clients.length;
+  document.getElementById('m-contacted').textContent=sets.contacted.size;
+  document.getElementById('m-replies').textContent=sets.replied.size;
+  document.getElementById('m-won').textContent=sets.won.size;
+  renderSources(sets);
+  renderUnknown();
+}
+
+function renderSources(sets){
+  const map=new Map();
+  for(const c of clients){
+    const key=c.lead_source || 'unknown';
+    if(!map.has(key)) map.set(key,{source:key,leads:0,contacted:0,replies:0,meetings:0,won:0});
+    const x=map.get(key); x.leads++;
+    if(sets.contacted.has(c.id)) x.contacted++;
+    if(sets.replied.has(c.id)) x.replies++;
+    if(sets.meetings.has(c.id)) x.meetings++;
+    if(sets.won.has(c.id)) x.won++;
+  }
+  const rows=[...map.values()].sort((a,b)=>b.won-a.won || (b.replies/Math.max(b.contacted,1))-(a.replies/Math.max(a.contacted,1)) || b.leads-a.leads);
+  const body=document.getElementById('source-body');
+  body.innerHTML=rows.length?rows.map(x=>`<tr>
+    <td><span class="source-pill">${SOURCE_LABELS[x.source]||x.source}</span></td>
+    <td>${x.leads}</td><td>${x.contacted}</td><td>${x.replies}</td><td>${x.meetings}</td><td class="good">${x.won}</td>
+    <td>${pct(x.replies,x.contacted)}</td><td>${pct(x.won,x.leads)}</td>
+  </tr>`).join(''):'<tr><td colspan="8" class="muted">No lead data yet.</td></tr>';
+}
+
+function sourceOptions(selected='unknown'){
+  return SOURCE_OPTIONS.map(([v,l])=>`<option value="${v}" ${v===selected?'selected':''}>${l}</option>`).join('');
+}
+
+function renderUnknown(){
+  const unknown=clients.filter(c=>!c.lead_source || c.lead_source==='unknown').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  document.getElementById('unknown-count').textContent=`${unknown.length} unknown`;
+  const body=document.getElementById('unknown-body');
+  body.innerHTML=unknown.length?unknown.slice(0,100).map(c=>`<tr>
+    <td><strong>${esc(c.business_name||'—')}</strong></td>
+    <td class="text-sm">${esc(c.owner_name||c.email||'—')}</td>
+    <td>${statusBadge(c.status)}</td>
+    <td><select class="form-control source-select" id="src-${c.id}">${sourceOptions(c.lead_source||'unknown')}</select></td>
+    <td><input class="form-control" id="detail-${c.id}" value="${esc(c.lead_source_detail||'')}" placeholder="e.g. Facebook group, referral name"></td>
+    <td><button class="btn btn-primary btn-sm" onclick="saveSource('${c.id}')">Save</button></td>
+  </tr>`).join(''):'<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">Every lead has a source assigned.</div></div></td></tr>';
+}
+
+async function saveSource(id){
+  const lead_source=document.getElementById(`src-${id}`).value;
+  const lead_source_detail=document.getElementById(`detail-${id}`).value.trim()||null;
+  const {error}=await sb.from('clients').update({lead_source,lead_source_detail}).eq('id',id);
+  if(error){toast(error.message,'error');return;}
+  const c=clients.find(x=>x.id===id); if(c){c.lead_source=lead_source;c.lead_source_detail=lead_source_detail;}
+  toast('Lead source saved'); renderAll();
+}
+</script>
+</body>
+</html>
