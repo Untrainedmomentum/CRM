@@ -69,7 +69,7 @@ function ensureOperationsNav(profile) {
     john ? sales.insertBefore(link, john) : sales.appendChild(link);
   }
 
-  if (profile.role === 'admin' && !document.querySelector('.sidebar a[href="inventory.html"]')) {
+  if (profile.role === 'admin') {
     let ops = sections.find(s => ['Admin','Finance','Operations'].includes(s.querySelector('.sidebar-label')?.textContent?.trim()));
     if (!ops) {
       ops = document.createElement('div');
@@ -77,11 +77,20 @@ function ensureOperationsNav(profile) {
       ops.innerHTML = '<div class="sidebar-label">Operations</div>';
       document.querySelector('.sidebar')?.appendChild(ops);
     }
-    const link = document.createElement('a');
-    link.className = 'nav-link sidebar-link admin-only';
-    link.href = 'inventory.html';
-    link.textContent = 'Inventory';
-    ops.appendChild(link);
+    if (!document.querySelector('.sidebar a[href="social.html"]')) {
+      const social = document.createElement('a');
+      social.className = 'nav-link sidebar-link admin-only';
+      social.href = 'social.html';
+      social.textContent = 'Social Media';
+      ops.appendChild(social);
+    }
+    if (!document.querySelector('.sidebar a[href="inventory.html"]')) {
+      const inventory = document.createElement('a');
+      inventory.className = 'nav-link sidebar-link admin-only';
+      inventory.href = 'inventory.html';
+      inventory.textContent = 'Inventory';
+      ops.appendChild(inventory);
+    }
   }
 }
 
