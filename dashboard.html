@@ -3,252 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard &mdash; Untrained Momentum</title>
+  <title>Dashboard — Untrained Momentum</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .conversion-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:16px}
     .conversion-step{background:var(--surface,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:16px;position:relative;min-height:102px}
     .conversion-step:not(:last-child)::after{content:'→';position:absolute;right:-11px;top:38px;z-index:2;font-weight:700;color:#888}
     .conversion-label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-mid,#666);font-weight:700}
-    .conversion-value{font-size:28px;font-weight:800;margin:6px 0 2px}
-    .conversion-rate{font-size:12px;color:var(--text-mid,#666)}
-    .conversion-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 0}
-    .conversion-mini{padding:14px 16px;border-radius:10px;background:rgba(0,0,0,.025)}
-    .conversion-mini strong{display:block;font-size:22px;margin-top:3px}
-    .conversion-mini span{font-size:12px;color:var(--text-mid,#666)}
-    @media(max-width:950px){.conversion-grid{grid-template-columns:1fr 1fr}.conversion-step:not(:last-child)::after{display:none}.conversion-summary{grid-template-columns:1fr 1fr}}
-    @media(max-width:600px){.conversion-grid,.conversion-summary{grid-template-columns:1fr}}
+    .conversion-value{font-size:28px;font-weight:800;margin:6px 0 2px}.conversion-rate{font-size:12px;color:var(--text-mid,#666)}
+    .conversion-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 0}.conversion-mini{padding:14px 16px;border-radius:10px;background:rgba(0,0,0,.025)}.conversion-mini strong{display:block;font-size:22px;margin-top:3px}.conversion-mini span{font-size:12px;color:var(--text-mid,#666)}
+    .workboard-card{margin-bottom:22px}.workboard-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.workboard-filters{display:flex;gap:8px;flex-wrap:wrap}.workboard-filters select{min-width:150px;padding:8px 10px;border:1px solid var(--border,#ddd);border-radius:8px;background:#fff;font:inherit;font-size:12px}
+    .kanban{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px;overflow-x:auto;margin-top:14px}.kanban-col{background:#f7f7f6;border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:10px;min-height:160px}.kanban-title{display:flex;justify-content:space-between;align-items:center;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:#666;margin-bottom:9px}.kanban-count{background:#e8e8e8;border-radius:999px;padding:2px 7px}.kanban-item{background:#fff;border:1px solid #e4e4e4;border-radius:9px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.03)}.kanban-item:hover{border-color:#bbb}.kanban-item strong{font-size:13px;display:block;margin-bottom:5px}.kanban-client{font-size:11px;color:#666}.kanban-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.kanban-tag{font-size:10px;padding:2px 6px;border-radius:999px;background:#f0f0f0;color:#555}.kanban-due{font-size:10px;color:#9b1c1c;margin-top:6px}.kanban-empty{font-size:11px;color:#999;text-align:center;padding:18px 6px}
+    @media(max-width:950px){.conversion-grid{grid-template-columns:1fr 1fr}.conversion-step:not(:last-child)::after{display:none}.conversion-summary{grid-template-columns:1fr 1fr}.kanban{grid-template-columns:repeat(4,260px)}}
+    @media(max-width:600px){.conversion-grid,.conversion-summary{grid-template-columns:1fr}.workboard-filters{width:100%}.workboard-filters select{flex:1;min-width:130px}}
   </style>
 </head>
 <body>
 <div class="app-shell">
-
-  <div class="topbar">
-    <div class="topbar-logo">Untrained <span>Momentum</span></div>
-    <div class="topbar-spacer"></div>
-    <div class="topbar-user">
-      <span class="nav-user-name" id="nav-name"></span>
-      <span class="nav-user-role" id="nav-role"></span>
-    </div>
-    <button class="btn-logout" onclick="logout()">Sign Out</button>
-  </div>
-
+  <div class="topbar"><div class="topbar-logo">Untrained <span>Momentum</span></div><div class="topbar-spacer"></div><div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div><button class="btn-logout" onclick="logout()">Sign Out</button></div>
   <div class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Main</div>
-      <a class="nav-link sidebar-link active" href="dashboard.html">Dashboard</a>
-      <a class="nav-link sidebar-link admin-only" href="clients.html">Clients</a>
-      <a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets <span class="sidebar-badge" id="badge-tickets">0</span></a>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">Sales</div>
-      <a class="nav-link sidebar-link" href="john.html">John's View</a>
-    </div>
-    <div class="sidebar-section admin-only">
-      <div class="sidebar-label">Finance</div>
-      <a class="nav-link sidebar-link" href="subscriptions.html">Subscriptions</a>
-    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Main</div><a class="nav-link sidebar-link active" href="dashboard.html">Dashboard</a><a class="nav-link sidebar-link admin-only" href="clients.html">Clients</a><a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets <span class="sidebar-badge" id="badge-tickets">0</span></a></div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html">John's View</a></div>
+    <div class="sidebar-section admin-only"><div class="sidebar-label">Finance</div><a class="nav-link sidebar-link" href="subscriptions.html">Subscriptions</a></div>
   </div>
-
   <div class="main-content">
-    <div class="page-header">
-      <div>
-        <div class="page-title">Dashboard</div>
-        <div class="page-subtitle" id="greeting"></div>
+    <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-subtitle" id="greeting"></div></div><a href="clients.html?new=1" class="btn btn-primary">+ New Client</a></div>
+
+    <div class="card workboard-card">
+      <div class="workboard-head"><div><div class="card-title">What I'm Working On</div><div class="text-sm text-mid">One board across internal work and client delivery. Filter by client, process or product.</div></div><div class="workboard-filters"><select id="kb-client" onchange="renderKanban()"><option value="">All Clients / Brands</option></select><select id="kb-process" onchange="renderKanban()"><option value="">All Processes</option></select><select id="kb-product" onchange="renderKanban()"><option value="">All Products</option></select><a href="work.html" class="btn btn-secondary btn-sm">Open Work</a></div></div>
+      <div class="kanban">
+        <div class="kanban-col"><div class="kanban-title">Backlog <span class="kanban-count" id="kb-count-backlog">0</span></div><div id="kb-backlog"></div></div>
+        <div class="kanban-col"><div class="kanban-title">Planned <span class="kanban-count" id="kb-count-planned">0</span></div><div id="kb-planned"></div></div>
+        <div class="kanban-col"><div class="kanban-title">Doing <span class="kanban-count" id="kb-count-doing">0</span></div><div id="kb-doing"></div></div>
+        <div class="kanban-col"><div class="kanban-title">Done <span class="kanban-count" id="kb-count-done">0</span></div><div id="kb-done"></div></div>
       </div>
-      <a href="clients.html?new=1" class="btn btn-primary">+ New Client</a>
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Active Builds</div>
-        <div class="stat-value" id="stat-active">&mdash;</div>
-        <div class="stat-sub">In progress or ongoing</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-label">Total Clients</div>
-        <div class="stat-value" id="stat-total">&mdash;</div>
-        <div class="stat-sub">All CRM records</div>
-      </div>
-      <div class="stat-card gold">
-        <div class="stat-label">Open Tickets</div>
-        <div class="stat-value" id="stat-tickets">&mdash;</div>
-        <div class="stat-sub">Awaiting response</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="stat-label">Pipeline Value</div>
-        <div class="stat-value" id="stat-pipeline">&mdash;</div>
-        <div class="stat-sub">Est. total deal value</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Active Builds</div><div class="stat-value" id="stat-active">—</div><div class="stat-sub">In progress or ongoing</div></div>
+      <div class="stat-card green"><div class="stat-label">Total Clients</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">All CRM records</div></div>
+      <div class="stat-card gold"><div class="stat-label">Open Tickets</div><div class="stat-value" id="stat-tickets">—</div><div class="stat-sub">Awaiting response</div></div>
+      <div class="stat-card blue"><div class="stat-label">Pipeline Value</div><div class="stat-value" id="stat-pipeline">—</div><div class="stat-sub">Est. total deal value</div></div>
     </div>
 
-    <div class="card mb-24">
-      <div class="card-title">Lead Conversion</div>
-      <div class="text-sm text-mid">Automatically calculated from CRM relationships and logged outreach activity.</div>
-      <div class="conversion-summary">
-        <div class="conversion-mini"><span>Overall Lead → Client</span><strong id="conv-overall">&mdash;</strong></div>
-        <div class="conversion-mini"><span>Contacted → Client</span><strong id="conv-contacted">&mdash;</strong></div>
-        <div class="conversion-mini"><span>Reply Rate</span><strong id="conv-reply">&mdash;</strong></div>
-        <div class="conversion-mini"><span>Clients Won</span><strong id="conv-won">&mdash;</strong></div>
-      </div>
-      <div class="conversion-grid">
-        <div class="conversion-step"><div class="conversion-label">CRM Leads</div><div class="conversion-value" id="funnel-leads">&mdash;</div><div class="conversion-rate">All prospect + client records</div></div>
-        <div class="conversion-step"><div class="conversion-label">Contacted</div><div class="conversion-value" id="funnel-contacted">&mdash;</div><div class="conversion-rate" id="rate-contacted">&mdash;</div></div>
-        <div class="conversion-step"><div class="conversion-label">Replied</div><div class="conversion-value" id="funnel-replied">&mdash;</div><div class="conversion-rate" id="rate-replied">&mdash;</div></div>
-        <div class="conversion-step"><div class="conversion-label">Meetings</div><div class="conversion-value" id="funnel-meetings">&mdash;</div><div class="conversion-rate" id="rate-meetings">&mdash;</div></div>
-        <div class="conversion-step"><div class="conversion-label">Won</div><div class="conversion-value" id="funnel-won">&mdash;</div><div class="conversion-rate" id="rate-won">&mdash;</div></div>
-      </div>
-    </div>
+    <div class="card mb-24"><div class="card-title">Lead Conversion</div><div class="text-sm text-mid">Automatically calculated from CRM relationships and logged outreach activity.</div><div class="conversion-summary"><div class="conversion-mini"><span>Overall Lead → Client</span><strong id="conv-overall">—</strong></div><div class="conversion-mini"><span>Contacted → Client</span><strong id="conv-contacted">—</strong></div><div class="conversion-mini"><span>Reply Rate</span><strong id="conv-reply">—</strong></div><div class="conversion-mini"><span>Clients Won</span><strong id="conv-won">—</strong></div></div><div class="conversion-grid"><div class="conversion-step"><div class="conversion-label">CRM Leads</div><div class="conversion-value" id="funnel-leads">—</div><div class="conversion-rate">All prospect + client records</div></div><div class="conversion-step"><div class="conversion-label">Contacted</div><div class="conversion-value" id="funnel-contacted">—</div><div class="conversion-rate" id="rate-contacted">—</div></div><div class="conversion-step"><div class="conversion-label">Replied</div><div class="conversion-value" id="funnel-replied">—</div><div class="conversion-rate" id="rate-replied">—</div></div><div class="conversion-step"><div class="conversion-label">Meetings</div><div class="conversion-value" id="funnel-meetings">—</div><div class="conversion-rate" id="rate-meetings">—</div></div><div class="conversion-step"><div class="conversion-label">Won</div><div class="conversion-value" id="funnel-won">—</div><div class="conversion-rate" id="rate-won">—</div></div></div></div>
 
-    <div class="card mb-24">
-      <div class="card-title">Pipeline</div>
-      <div class="pipeline-bar" id="pipeline-bar"></div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="table-wrap">
-        <div class="table-header">
-          <div class="table-title">Recent Clients</div>
-          <a href="clients.html" class="btn btn-secondary btn-sm">View All</a>
-        </div>
-        <table>
-          <thead><tr><th>Business</th><th>Status</th><th>Deal</th></tr></thead>
-          <tbody id="recent-clients"><tr><td colspan="3" class="loading">Loading&hellip;</td></tr></tbody>
-        </table>
-      </div>
-      <div class="table-wrap">
-        <div class="table-header">
-          <div class="table-title">Open Tickets</div>
-          <a href="tickets.html" class="btn btn-secondary btn-sm">View All</a>
-        </div>
-        <table>
-          <thead><tr><th>Client</th><th>Subject</th><th>Priority</th></tr></thead>
-          <tbody id="open-tickets"><tr><td colspan="3" class="loading">Loading&hellip;</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="table-wrap mb-16">
-      <div class="table-header">
-        <div class="table-title">Builds In Progress</div>
-      </div>
-      <table>
-        <thead><tr><th>Client</th><th>Website</th><th>GBP</th><th>Voice AI</th><th>Email</th><th>Blocker</th><th></th></tr></thead>
-        <tbody id="builds-table"><tr><td colspan="7" class="loading">Loading&hellip;</td></tr></tbody>
-      </table>
-    </div>
-
-    <div class="table-wrap">
-      <div class="table-header">
-        <div class="table-title">Expiring Trials &amp; Subscriptions &mdash; Next 30 Days</div>
-      </div>
-      <table>
-        <thead><tr><th>Client</th><th>Service</th><th>Expires</th><th>Our Cost</th><th>Client Rate</th><th>Status</th></tr></thead>
-        <tbody id="expiring-subs"><tr><td colspan="6" class="loading">Loading&hellip;</td></tr></tbody>
-      </table>
-    </div>
+    <div class="card mb-24"><div class="card-title">Pipeline</div><div class="pipeline-bar" id="pipeline-bar"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px"><div class="table-wrap"><div class="table-header"><div class="table-title">Recent Clients</div><a href="clients.html" class="btn btn-secondary btn-sm">View All</a></div><table><thead><tr><th>Business</th><th>Status</th><th>Deal</th></tr></thead><tbody id="recent-clients"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody></table></div><div class="table-wrap"><div class="table-header"><div class="table-title">Open Tickets</div><a href="tickets.html" class="btn btn-secondary btn-sm">View All</a></div><table><thead><tr><th>Client</th><th>Subject</th><th>Priority</th></tr></thead><tbody id="open-tickets"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody></table></div></div>
+    <div class="table-wrap mb-16"><div class="table-header"><div class="table-title">Builds In Progress</div></div><table><thead><tr><th>Client</th><th>Website</th><th>GBP</th><th>Voice AI</th><th>Email</th><th>Blocker</th><th></th></tr></thead><tbody id="builds-table"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody></table></div>
+    <div class="table-wrap"><div class="table-header"><div class="table-title">Expiring Trials & Subscriptions — Next 30 Days</div></div><table><thead><tr><th>Client</th><th>Service</th><th>Expires</th><th>Our Cost</th><th>Client Rate</th><th>Status</th></tr></thead><tbody id="expiring-subs"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table></div>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js"></script>
-<script src="shared.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="assets/js/config.js"></script><script src="shared.js"></script>
 <script>
+let dashboardWork=[];
 (async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.replace('index.html'); return; }
-
-  let profile = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' };
-  try { const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single(); if (data) profile = data; } catch(e) {}
+  const { data: { session } } = await sb.auth.getSession(); if (!session) { window.location.replace('index.html'); return; }
+  let profile = { id: session.user.id, email: session.user.email, role: 'admin', full_name: 'Jen' }; try { const { data } = await sb.from('profiles').select('*').eq('id', session.user.id).single(); if (data) profile = data; } catch(e) {}
   renderNav(profile);
-
-  const h = new Date().getHours();
-  document.getElementById('greeting').textContent =
-    (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') +
-    ', ' + (profile.full_name?.split(' ')[0] || 'Jen');
-
-  const [clientsRes, ticketsRes, subsRes, buildsRes, activitiesRes] = await Promise.all([
-    sb.from('clients').select('id,business_name,owner_name,relationship_type,status,deal_type,deal_amount,tier,created_at').order('created_at', { ascending: false }),
+  const h=new Date().getHours(); document.getElementById('greeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', '+(profile.full_name?.split(' ')[0]||'Jen');
+  const [clientsRes,ticketsRes,subsRes,buildsRes,activitiesRes,workRes]=await Promise.all([
+    sb.from('clients').select('id,business_name,owner_name,relationship_type,status,deal_type,deal_amount,tier,created_at').order('created_at',{ascending:false}),
     sb.from('tickets').select('id,subject,priority,status,client_id,clients(business_name)').eq('status','open').order('created_at',{ascending:false}),
-    sb.from('subscriptions').select('*,clients(business_name)').in('status',['trial','expiring_soon']).lte('trial_end', new Date(Date.now()+30*86400000).toISOString()).order('trial_end',{ascending:true}),
+    sb.from('subscriptions').select('*,clients(business_name)').in('status',['trial','expiring_soon']).lte('trial_end',new Date(Date.now()+30*86400000).toISOString()).order('trial_end',{ascending:true}),
     sb.from('build_tracker').select('*,clients(id,business_name)').or('website_status.eq.in_progress,gbp_status.eq.in_progress,voice_ai_status.eq.in_progress,email_status.eq.in_progress,booking_status.eq.in_progress'),
-    sb.from('client_activities').select('client_id,activity_type,direction,occurred_at')
+    sb.from('client_activities').select('client_id,activity_type,direction,occurred_at'),
+    sb.from('work_orders').select('id,title,status,priority,due_date,category,process_area,product_line,client_id,clients(id,business_name)').neq('status','cancelled').order('due_date',{ascending:true,nullsFirst:false}).order('created_at',{ascending:false})
   ]);
-
-  const clients = clientsRes.data || [];
-  const tickets = ticketsRes.data || [];
-  const subs    = subsRes.data || [];
-  const builds  = buildsRes.data || [];
-  const activities = activitiesRes.data || [];
-
-  const active = clients.filter(c => c.relationship_type === 'client' && c.status !== 'churned');
-  document.getElementById('stat-active').textContent = active.length;
-  document.getElementById('stat-total').textContent = clients.length;
-  document.getElementById('stat-tickets').textContent = tickets.length;
-  document.getElementById('stat-pipeline').textContent = fmt$(clients.reduce((s,c)=>s+(c.deal_amount||0),0));
-  document.getElementById('badge-tickets').textContent = tickets.length;
-
-  const pct = (n,d) => d ? `${(n/d*100).toFixed(1)}%` : '0.0%';
-  const contactedIds = new Set();
-  const repliedIds = new Set();
-  const meetingIds = new Set();
-  activities.forEach(a => {
-    if (a.direction === 'outbound' && ['email','call','text','visit','meeting'].includes(a.activity_type)) contactedIds.add(a.client_id);
-    if (a.direction === 'inbound' && ['email','call','text','meeting'].includes(a.activity_type)) repliedIds.add(a.client_id);
-    if (a.activity_type === 'meeting') meetingIds.add(a.client_id);
-  });
-  const wonIds = new Set(clients.filter(c => c.relationship_type === 'client').map(c => c.id));
-  const contactedWon = [...wonIds].filter(id => contactedIds.has(id)).length;
-
-  document.getElementById('conv-overall').textContent = pct(wonIds.size, clients.length);
-  document.getElementById('conv-contacted').textContent = pct(contactedWon, contactedIds.size);
-  document.getElementById('conv-reply').textContent = pct(repliedIds.size, contactedIds.size);
-  document.getElementById('conv-won').textContent = wonIds.size;
-
-  document.getElementById('funnel-leads').textContent = clients.length;
-  document.getElementById('funnel-contacted').textContent = contactedIds.size;
-  document.getElementById('funnel-replied').textContent = repliedIds.size;
-  document.getElementById('funnel-meetings').textContent = meetingIds.size;
-  document.getElementById('funnel-won').textContent = wonIds.size;
-  document.getElementById('rate-contacted').textContent = `${pct(contactedIds.size, clients.length)} of CRM leads`;
-  document.getElementById('rate-replied').textContent = `${pct(repliedIds.size, contactedIds.size)} of contacted leads`;
-  document.getElementById('rate-meetings').textContent = `${pct(meetingIds.size, contactedIds.size)} of contacted leads`;
-  document.getElementById('rate-won').textContent = `${pct(wonIds.size, clients.length)} overall conversion`;
-
-  const stages = ['prospect','pitched','presented','closed','deposited','building','delivered','ongoing','upsell'];
-  const labels = {prospect:'Prospect',pitched:'Pitched',presented:'Presented',closed:'Closed',deposited:'Deposited',building:'Building',delivered:'Delivered',ongoing:'Ongoing',upsell:'Upsell'};
-  document.getElementById('pipeline-bar').innerHTML = stages.map(s => {
-    const n = clients.filter(c=>c.status===s).length;
-    return `<div class="pipeline-stage" onclick="window.location='clients.html?status=${s}'"><span class="ps-count">${n}</span><span class="ps-label">${labels[s]}</span></div>`;
-  }).join('');
-
-  const rcb = document.getElementById('recent-clients');
-  rcb.innerHTML = clients.length === 0
-    ? '<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No clients yet &mdash; <a href="clients.html?new=1">add your first</a></div></div></td></tr>'
-    : clients.slice(0,8).map(c=>`<tr onclick="window.location='client.html?id=${c.id}'"><td><strong>${c.business_name}</strong><br><span class="text-sm text-mid">${c.owner_name||''}</span></td><td>${statusBadge(c.status)}</td><td>${dealBadge(c.deal_type)}</td></tr>`).join('');
-
-  const otb = document.getElementById('open-tickets');
-  otb.innerHTML = tickets.length === 0
-    ? '<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No open tickets</div></div></td></tr>'
-    : tickets.slice(0,8).map(t=>`<tr onclick="window.location='tickets.html'"><td class="text-sm">${t.clients?.business_name||'&mdash;'}</td><td>${t.subject}</td><td><span class="badge badge-${t.priority}">${t.priority}</span></td></tr>`).join('');
-
-  const bb = document.getElementById('builds-table');
-  bb.innerHTML = builds.length === 0
-    ? '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No active builds</div></div></td></tr>'
-    : builds.map(b=>`<tr onclick="window.location='client.html?id=${b.clients?.id}'">`+
-        `<td><strong>${b.clients?.business_name||'&mdash;'}</strong></td>`+
-        `<td class="flex-center text-sm">${buildDot(b.website_status)}${b.website_status||'&mdash;'}</td>`+
-        `<td class="flex-center text-sm">${buildDot(b.gbp_status)}${b.gbp_status||'&mdash;'}</td>`+
-        `<td class="flex-center text-sm">${buildDot(b.voice_ai_status)}${b.voice_ai_status||'&mdash;'}</td>`+
-        `<td class="flex-center text-sm">${buildDot(b.email_status)}${b.email_status||'&mdash;'}</td>`+
-        `<td class="text-sm text-mid">${b.waiting_on_client||b.overall_blocker||'&mdash;'}</td>`+
-        `<td><a href="client.html?id=${b.clients?.id}" class="btn btn-secondary btn-sm">View</a></td></tr>`).join('');
-
-  const esb = document.getElementById('expiring-subs');
-  esb.innerHTML = subs.length === 0
-    ? '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">No expiring trials</div></div></td></tr>'
-    : subs.map(s=>`<tr><td>${s.clients?.business_name||'&mdash;'}</td><td>${s.service_name}</td><td>${fmtDate(s.trial_end)}</td><td class="text-mono">${fmt$(s.our_cost)}/mo</td><td class="text-mono">${fmt$(s.client_rate)}/mo</td><td><span class="badge badge-${s.status==='trial'?'building':'upsell'}">${s.status}</span></td></tr>`).join('');
+  const clients=clientsRes.data||[],tickets=ticketsRes.data||[],subs=subsRes.data||[],builds=buildsRes.data||[],activities=activitiesRes.data||[]; dashboardWork=workRes.data||[];
+  setupKanbanFilters(); renderKanban();
+  const active=clients.filter(c=>c.relationship_type==='client'&&c.status!=='churned'); document.getElementById('stat-active').textContent=active.length; document.getElementById('stat-total').textContent=clients.length; document.getElementById('stat-tickets').textContent=tickets.length; document.getElementById('stat-pipeline').textContent=fmt$(clients.reduce((s,c)=>s+(c.deal_amount||0),0)); document.getElementById('badge-tickets').textContent=tickets.length;
+  const pct=(n,d)=>d?`${(n/d*100).toFixed(1)}%`:'0.0%'; const contactedIds=new Set(),repliedIds=new Set(),meetingIds=new Set(); activities.forEach(a=>{if(a.direction==='outbound'&&['email','call','text','visit','meeting'].includes(a.activity_type))contactedIds.add(a.client_id);if(a.direction==='inbound'&&['email','call','text','meeting'].includes(a.activity_type))repliedIds.add(a.client_id);if(a.activity_type==='meeting')meetingIds.add(a.client_id)}); const wonIds=new Set(clients.filter(c=>c.relationship_type==='client').map(c=>c.id)); const contactedWon=[...wonIds].filter(id=>contactedIds.has(id)).length;
+  document.getElementById('conv-overall').textContent=pct(wonIds.size,clients.length);document.getElementById('conv-contacted').textContent=pct(contactedWon,contactedIds.size);document.getElementById('conv-reply').textContent=pct(repliedIds.size,contactedIds.size);document.getElementById('conv-won').textContent=wonIds.size;document.getElementById('funnel-leads').textContent=clients.length;document.getElementById('funnel-contacted').textContent=contactedIds.size;document.getElementById('funnel-replied').textContent=repliedIds.size;document.getElementById('funnel-meetings').textContent=meetingIds.size;document.getElementById('funnel-won').textContent=wonIds.size;document.getElementById('rate-contacted').textContent=`${pct(contactedIds.size,clients.length)} of CRM leads`;document.getElementById('rate-replied').textContent=`${pct(repliedIds.size,contactedIds.size)} of contacted leads`;document.getElementById('rate-meetings').textContent=`${pct(meetingIds.size,contactedIds.size)} of contacted leads`;document.getElementById('rate-won').textContent=`${pct(wonIds.size,clients.length)} overall conversion`;
+  const stages=['prospect','pitched','presented','closed','deposited','building','delivered','ongoing','upsell'],labels={prospect:'Prospect',pitched:'Pitched',presented:'Presented',closed:'Closed',deposited:'Deposited',building:'Building',delivered:'Delivered',ongoing:'Ongoing',upsell:'Upsell'};document.getElementById('pipeline-bar').innerHTML=stages.map(s=>`<div class="pipeline-stage" onclick="window.location='clients.html?status=${s}'"><span class="ps-count">${clients.filter(c=>c.status===s).length}</span><span class="ps-label">${labels[s]}</span></div>`).join('');
+  document.getElementById('recent-clients').innerHTML=clients.length===0?'<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No clients yet</div></div></td></tr>':clients.slice(0,8).map(c=>`<tr onclick="window.location='client.html?id=${c.id}'"><td><strong>${esc(c.business_name)}</strong><br><span class="text-sm text-mid">${esc(c.owner_name||'')}</span></td><td>${statusBadge(c.status)}</td><td>${dealBadge(c.deal_type)}</td></tr>`).join('');
+  document.getElementById('open-tickets').innerHTML=tickets.length===0?'<tr><td colspan="3"><div class="empty-state"><div class="empty-state-text">No open tickets</div></div></td></tr>':tickets.slice(0,8).map(t=>`<tr onclick="window.location='tickets.html'"><td class="text-sm">${esc(t.clients?.business_name||'—')}</td><td>${esc(t.subject)}</td><td><span class="badge badge-${esc(t.priority)}">${esc(t.priority)}</span></td></tr>`).join('');
+  document.getElementById('builds-table').innerHTML=builds.length===0?'<tr><td colspan="7"><div class="empty-state"><div class="empty-state-text">No active builds</div></div></td></tr>':builds.map(b=>`<tr onclick="window.location='client.html?id=${b.clients?.id}'"><td><strong>${esc(b.clients?.business_name||'—')}</strong></td><td class="flex-center text-sm">${buildDot(b.website_status)}${esc(b.website_status||'—')}</td><td class="flex-center text-sm">${buildDot(b.gbp_status)}${esc(b.gbp_status||'—')}</td><td class="flex-center text-sm">${buildDot(b.voice_ai_status)}${esc(b.voice_ai_status||'—')}</td><td class="flex-center text-sm">${buildDot(b.email_status)}${esc(b.email_status||'—')}</td><td class="text-sm text-mid">${esc(b.waiting_on_client||b.overall_blocker||'—')}</td><td><a href="client.html?id=${b.clients?.id}" class="btn btn-secondary btn-sm">View</a></td></tr>`).join('');
+  document.getElementById('expiring-subs').innerHTML=subs.length===0?'<tr><td colspan="6"><div class="empty-state"><div class="empty-state-text">No expiring trials</div></div></td></tr>':subs.map(s=>`<tr><td>${esc(s.clients?.business_name||'—')}</td><td>${esc(s.service_name)}</td><td>${fmtDate(s.trial_end)}</td><td class="text-mono">${fmt$(s.our_cost)}/mo</td><td class="text-mono">${fmt$(s.client_rate)}/mo</td><td><span class="badge badge-${s.status==='trial'?'building':'upsell'}">${esc(s.status)}</span></td></tr>`).join('');
 })();
+function setupKanbanFilters(){const unique=(field)=>[...new Set(dashboardWork.map(w=>w[field]).filter(Boolean))].sort();const clientSel=document.getElementById('kb-client');const clientMap=new Map(dashboardWork.filter(w=>w.clients?.id).map(w=>[w.clients.id,w.clients.business_name]));clientSel.innerHTML='<option value="">All Clients / Brands</option>'+[...clientMap.entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([id,n])=>`<option value="${id}">${esc(n)}</option>`).join('');document.getElementById('kb-process').innerHTML='<option value="">All Processes</option>'+unique('process_area').map(x=>`<option>${esc(x)}</option>`).join('');document.getElementById('kb-product').innerHTML='<option value="">All Products</option>'+unique('product_line').map(x=>`<option>${esc(x)}</option>`).join('')}
+function renderKanban(){const cid=document.getElementById('kb-client').value,proc=document.getElementById('kb-process').value,prod=document.getElementById('kb-product').value;const rows=dashboardWork.filter(w=>(!cid||w.client_id===cid)&&(!proc||w.process_area===proc)&&(!prod||w.product_line===prod));const groups={backlog:rows.filter(w=>w.status==='requested'),planned:rows.filter(w=>w.status==='scheduled'),doing:rows.filter(w=>w.status==='in_progress'),done:rows.filter(w=>['complete','invoiced','paid'].includes(w.status))};Object.entries(groups).forEach(([key,list])=>{document.getElementById('kb-count-'+key).textContent=list.length;document.getElementById('kb-'+key).innerHTML=list.length?list.map(w=>`<div class="kanban-item" onclick="window.location='work.html'"><strong>${esc(w.title)}</strong><div class="kanban-client">${esc(w.clients?.business_name||'Internal')}</div><div class="kanban-tags">${w.category?`<span class="kanban-tag">${esc(w.category.replaceAll('_',' '))}</span>`:''}${w.process_area?`<span class="kanban-tag">${esc(w.process_area)}</span>`:''}${w.product_line?`<span class="kanban-tag">${esc(w.product_line)}</span>`:''}</div>${w.due_date?`<div class="kanban-due">Due ${fmtDate(w.due_date)}</div>`:''}</div>`).join(''):'<div class="kanban-empty">Nothing here</div>'})}
 </script>
 </body>
 </html>
