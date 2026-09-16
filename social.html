@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media — Untrained Momentum</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .social-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+    .social-toolbar select,.social-toolbar input{min-width:190px}
+    .social-grid{display:grid;grid-template-columns:1.1fr 1.9fr;gap:18px}
+    .profile-card,.post-card{background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:16px;margin-bottom:12px}
+    .profile-head,.post-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .platform-pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f1f1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+    .status-pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#f3f4f6}
+    .status-approved,.status-published{background:#e8f6ec;color:#166534}.status-declined,.status-error{background:#fdecec;color:#991b1b}.status-review{background:#fff7dd;color:#8a5a00}.status-scheduled{background:#eaf2ff;color:#1d4ed8}
+    .post-caption{white-space:pre-wrap;font-size:13px;line-height:1.55;margin:12px 0;color:#2f2f2f}
+    .post-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#777}
+    .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .feedback-box{margin-top:10px;display:none}.feedback-box.show{display:block}
+    .empty-panel{padding:28px;text-align:center;color:#777;border:1px dashed var(--border,#ddd);border-radius:10px;background:#fafafa}
+    .tabs{display:flex;gap:8px;margin-bottom:14px}.tab-btn{border:1px solid var(--border,#ddd);background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600}.tab-btn.active{background:#111;color:#fff;border-color:#111}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+    .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    textarea.form-control{min-height:110px}
+    @media(max-width:1000px){.social-grid{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-logo">Untrained <span>Momentum</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-user"><span class="nav-user-name" id="nav-name"></span><span class="nav-user-role" id="nav-role"></span></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-section"><div class="sidebar-label">Main</div>
+      <a class="nav-link sidebar-link" href="dashboard.html">Dashboard</a>
+      <a class="nav-link sidebar-link admin-only" href="clients.html">Clients</a>
+      <a class="nav-link sidebar-link admin-only" href="tickets.html">Tickets</a>
+    </div>
+    <div class="sidebar-section"><div class="sidebar-label">Sales</div><a class="nav-link sidebar-link" href="john.html">John's View</a></div>
+  </div>
+  <div class="main-content">
+    <div class="page-header">
+      <div><div class="page-title">Social Media</div><div class="page-subtitle">Create, review, approve and manage content by client brand.</div></div>
+      <button class="btn btn-primary" onclick="openPostModal()">+ New Post</button>
+    </div>
+
+    <div class="social-toolbar card">
+      <select class="form-control" id="client-filter" onchange="loadAll()"></select>
+      <select class="form-control" id="platform-filter" onchange="renderPosts()"><option value="">All Platforms</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option><option value="google_business">Google Business Profile</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option></select>
+      <select class="form-control" id="status-filter" onchange="renderPosts()"><option value="">All Statuses</option><option value="draft">Draft</option><option value="review">Needs Review</option><option value="approved">Approved</option><option value="declined">Declined</option><option value="scheduled">Scheduled</option><option value="published">Published</option><option value="error">Error</option></select>
+      <button class="btn btn-secondary" onclick="openProfileModal()">Attach Social Page</button>
+    </div>
+
+    <div class="social-grid">
+      <div>
+        <div class="tabs"><button class="tab-btn active" data-tab="profiles" onclick="switchTab('profiles',this)">Pages</button><button class="tab-btn" data-tab="intake" onclick="switchTab('intake',this)">Intake</button></div>
+        <div id="tab-profiles" class="tab-panel active"><div id="profiles-list"></div></div>
+        <div id="tab-intake" class="tab-panel">
+          <div class="card">
+            <div class="card-title">Social Media Intake</div>
+            <div class="text-sm text-mid mb-16">This becomes the brand brief used when content is generated.</div>
+            <div class="form-group"><label class="form-label">Audience</label><textarea class="form-control" id="i-audience"></textarea></div>
+            <div class="form-group"><label class="form-label">Voice</label><textarea class="form-control" id="i-voice"></textarea></div>
+            <div class="form-group"><label class="form-label">Services / Products</label><textarea class="form-control" id="i-services"></textarea></div>
+            <div class="form-group"><label class="form-label">Service Area</label><input class="form-control" id="i-area"></div>
+            <div class="form-group"><label class="form-label">Offers / Priorities</label><textarea class="form-control" id="i-offers"></textarea></div>
+            <div class="form-group"><label class="form-label">Do Not Post / Sensitive Topics</label><textarea class="form-control" id="i-prohibited"></textarea></div>
+            <div class="form-group"><label class="form-label">Image Preferences</label><textarea class="form-control" id="i-images"></textarea></div>
+            <div class="form-group"><label class="form-label">Competitors / Inspiration</label><textarea class="form-control" id="i-competitors"></textarea></div>
+            <div class="form-group"><label class="form-label">Goals</label><textarea class="form-control" id="i-goals"></textarea></div>
+            <button class="btn btn-primary" onclick="saveIntake()">Save Intake</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card-title" style="margin-bottom:12px">Content Queue</div>
+        <div id="posts-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="profile-modal" style="display:none"><div class="modal" style="max-width:560px">
+  <div class="modal-header"><div class="modal-title">Attach Social Page</div><button class="modal-close" onclick="closeModal('profile-modal')">×</button></div>
+  <div class="modal-body">
+    <div class="form-group"><label class="form-label">Platform</label><select class="form-control" id="p-platform"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option><option value="google_business">Google Business Profile</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option><option value="other">Other</option></select></div>
+    <div class="form-group"><label class="form-label">Account / Page Name</label><input class="form-control" id="p-name"></div>
+    <div class="form-group"><label class="form-label">Page URL</label><input class="form-control" id="p-url" type="url"></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="p-notes"></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('profile-modal')">Cancel</button><button class="btn btn-primary" onclick="saveProfile()">Attach Page</button></div>
+</div></div>
+
+<div class="modal-overlay" id="post-modal" style="display:none"><div class="modal" style="max-width:700px">
+  <div class="modal-header"><div class="modal-title">New Social Post</div><button class="modal-close" onclick="closeModal('post-modal')">×</button></div>
+  <div class="modal-body">
+    <div class="mini-grid">
+      <div class="form-group"><label class="form-label">Platform</label><select class="form-control" id="n-platform"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option><option value="google_business">Google Business Profile</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="n-status"><option value="draft">Draft</option><option value="review">Needs Review</option><option value="approved">Approved</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Post Title</label><input class="form-control" id="n-title"></div>
+    <div class="form-group"><label class="form-label">Caption</label><textarea class="form-control" id="n-caption"></textarea></div>
+    <div class="mini-grid">
+      <div class="form-group"><label class="form-label">Content Pillar</label><input class="form-control" id="n-pillar"></div>
+      <div class="form-group"><label class="form-label">Goal</label><input class="form-control" id="n-goal"></div>
+    </div>
+    <div class="form-group"><label class="form-label">CTA</label><input class="form-control" id="n-cta"></div>
+    <div class="form-group"><label class="form-label">Image / Asset URL</label><input class="form-control" id="n-image" type="url"></div>
+    <div class="form-group"><label class="form-label">Schedule For</label><input class="form-control" id="n-schedule" type="datetime-local"></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('post-modal')">Cancel</button><button class="btn btn-primary" onclick="savePost()">Save Post</button></div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="shared.js"></script>
+<script>
+let profile, clients=[], socialProfiles=[], posts=[], intake=null;
+const platformLabel={facebook:'Facebook',instagram:'Instagram',linkedin:'LinkedIn',google_business:'Google Business Profile',tiktok:'TikTok',youtube:'YouTube',other:'Other'};
+
+(async()=>{
+  profile=await requireAuth('admin'); if(!profile) return; renderNav(profile);
+  const {data,error}=await sb.from('clients').select('id,business_name,relationship_type,status').eq('relationship_type','client').order('business_name');
+  if(error){toast(error.message,'error');return} clients=data||[];
+  const sel=document.getElementById('client-filter');
+  sel.innerHTML=clients.map(c=>`<option value="${c.id}">${esc(c.business_name)}</option>`).join('');
+  const um=clients.find(c=>c.business_name==='Untrained Momentum'); if(um) sel.value=um.id;
+  await loadAll();
+})();
+
+function selectedClient(){return document.getElementById('client-filter').value}
+async function loadAll(){
+  const id=selectedClient(); if(!id) return;
+  const [pr,po,ii]=await Promise.all([
+    sb.from('social_profiles').select('*').eq('client_id',id).order('platform'),
+    sb.from('social_posts').select('*').eq('client_id',id).order('scheduled_for',{ascending:true,nullsFirst:false}).order('created_at',{ascending:false}),
+    sb.from('social_intake').select('*').eq('client_id',id).maybeSingle()
+  ]);
+  if(pr.error) toast(pr.error.message,'error'); if(po.error) toast(po.error.message,'error');
+  socialProfiles=pr.data||[]; posts=po.data||[]; intake=ii.data||null;
+  renderProfiles(); renderPosts(); fillIntake();
+}
+function renderProfiles(){
+  const el=document.getElementById('profiles-list');
+  if(!socialProfiles.length){el.innerHTML='<div class="empty-panel">No pages attached yet. Add the social pages you manage for this brand.</div>';return}
+  el.innerHTML=socialProfiles.map(p=>`<div class="profile-card"><div class="profile-head"><div><span class="platform-pill">${esc(platformLabel[p.platform]||p.platform)}</span><div style="font-weight:700;margin-top:8px">${esc(p.account_name||'Unnamed page')}</div>${p.page_url?`<a href="${esc(p.page_url)}" target="_blank" rel="noopener" class="text-sm">Open page</a>`:''}</div><span class="status-pill">${esc(p.connection_status)}</span></div>${p.notes?`<div class="text-sm text-mid" style="margin-top:10px">${esc(p.notes)}</div>`:''}</div>`).join('');
+}
+function renderPosts(){
+  const pf=document.getElementById('platform-filter').value, sf=document.getElementById('status-filter').value;
+  const list=posts.filter(p=>(!pf||p.platform===pf)&&(!sf||p.status===sf));
+  const el=document.getElementById('posts-list');
+  if(!list.length){el.innerHTML='<div class="empty-panel">No posts in this view yet.</div>';return}
+  el.innerHTML=list.map(p=>`<div class="post-card" id="post-${p.id}"><div class="post-head"><div><span class="platform-pill">${esc(platformLabel[p.platform]||p.platform)}</span><div style="font-weight:800;font-size:16px;margin-top:7px">${esc(p.title)}</div></div><span class="status-pill status-${p.status}">${esc(p.status)}</span></div>${p.image_url?`<img src="${esc(p.image_url)}" alt="" style="width:100%;max-height:340px;object-fit:cover;border-radius:10px;margin-top:12px">`:''}<div class="post-caption">${esc(p.caption)}</div><div class="post-meta"><span>${p.scheduled_for?`Schedule: ${fmtDate(p.scheduled_for)}`:'Not scheduled'}</span>${p.content_pillar?`<span>Pillar: ${esc(p.content_pillar)}</span>`:''}${p.goal?`<span>Goal: ${esc(p.goal)}</span>`:''}</div>${p.feedback?`<div class="alert" style="margin-top:10px">Feedback: ${esc(p.feedback)}</div>`:''}<div class="action-row"><button class="btn btn-primary btn-sm" onclick="approvePost('${p.id}')">Approve</button><button class="btn btn-secondary btn-sm" onclick="showFeedback('${p.id}')">Decline / Revise</button>${p.status==='approved'?`<button class="btn btn-secondary btn-sm" onclick="markScheduled('${p.id}')">Mark Scheduled</button>`:''}${p.published_url?`<a class="btn btn-secondary btn-sm" href="${esc(p.published_url)}" target="_blank">View Published</a>`:''}</div><div class="feedback-box" id="fb-${p.id}"><textarea class="form-control" id="fbtext-${p.id}" placeholder="What should change?"></textarea><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="declinePost('${p.id}')">Send Feedback</button></div></div>`).join('');
+}
+function switchTab(name,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('tab-'+name).classList.add('active')}
+function fillIntake(){const g=(id,val)=>document.getElementById(id).value=val||'';g('i-audience',intake?.audience);g('i-voice',intake?.voice);g('i-services',intake?.services);g('i-area',intake?.service_area);g('i-offers',intake?.offers);g('i-prohibited',intake?.prohibited_topics);g('i-images',intake?.image_preferences);g('i-competitors',intake?.competitors);g('i-goals',intake?.goals)}
+async function saveIntake(){const row={client_id:selectedClient(),audience:val('i-audience'),voice:val('i-voice'),services:val('i-services'),service_area:val('i-area'),offers:val('i-offers'),prohibited_topics:val('i-prohibited'),image_preferences:val('i-images'),competitors:val('i-competitors'),goals:val('i-goals'),updated_at:new Date().toISOString()};const {error}=await sb.from('social_intake').upsert(row,{onConflict:'client_id'});if(error)return toast(error.message,'error');toast('Social intake saved');await loadAll()}
+function openProfileModal(){document.getElementById('profile-modal').style.display='flex'} function openPostModal(){document.getElementById('post-modal').style.display='flex'} function closeModal(id){document.getElementById(id).style.display='none'}
+const val=id=>document.getElementById(id)?.value?.trim()||null;
+async function saveProfile(){const row={client_id:selectedClient(),platform:document.getElementById('p-platform').value,account_name:val('p-name'),page_url:val('p-url'),notes:val('p-notes'),connection_status:'manual',connection_method:'manual',updated_at:new Date().toISOString()};const {error}=await sb.from('social_profiles').insert(row);if(error)return toast(error.message,'error');closeModal('profile-modal');toast('Social page attached');await loadAll()}
+async function savePost(){const sched=val('n-schedule');const row={client_id:selectedClient(),platform:document.getElementById('n-platform').value,title:val('n-title')||'Social Post',caption:val('n-caption')||'',content_pillar:val('n-pillar'),goal:val('n-goal'),cta:val('n-cta'),image_url:val('n-image'),scheduled_for:sched?new Date(sched).toISOString():null,status:document.getElementById('n-status').value,created_by:profile.id};const {error}=await sb.from('social_posts').insert(row);if(error)return toast(error.message,'error');closeModal('post-modal');toast('Post saved');await loadAll()}
+async function approvePost(id){const {error}=await sb.from('social_posts').update({status:'approved',feedback:null,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',id);if(error)return toast(error.message,'error');toast('Approved');await loadAll()}
+function showFeedback(id){document.getElementById('fb-'+id).classList.toggle('show')}
+async function declinePost(id){const feedback=val('fbtext-'+id);if(!feedback)return toast('Add revision feedback first','error');const {error}=await sb.from('social_posts').update({status:'declined',feedback,updated_at:new Date().toISOString()}).eq('id',id);if(error)return toast(error.message,'error');toast('Sent back for revision');await loadAll()}
+async function markScheduled(id){const {error}=await sb.from('social_posts').update({status:'scheduled',updated_at:new Date().toISOString()}).eq('id',id);if(error)return toast(error.message,'error');toast('Marked scheduled');await loadAll()}
+</script>
+</body>
+</html>
