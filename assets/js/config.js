@@ -19,4 +19,11 @@ window.addEventListener('DOMContentLoaded', () => {
     social.defer = true;
     document.body.appendChild(social);
   }
+
+  if (window.location.pathname.endsWith('bookings.html')) {
+    const booking = document.createElement('script');
+    booking.src = 'assets/js/booking-google.js?v=20260916-1';
+    booking.defer = true;
+    document.body.appendChild(booking);
+  }
 });
