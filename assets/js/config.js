@@ -6,3 +6,12 @@ const CONFIG = {
   FROM_EMAIL: 'info@untrainedmomentum.com',
   JOHN_EMAIL: 'johnnygoblue.79@gmail.com'
 };
+
+if (window.location.pathname.endsWith('social.html')) {
+  window.addEventListener('DOMContentLoaded', () => {
+    const script = document.createElement('script');
+    script.src = 'assets/js/social-oauth.js?v=20260916-1';
+    script.defer = true;
+    document.body.appendChild(script);
+  });
+}
