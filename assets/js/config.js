@@ -7,11 +7,16 @@ const CONFIG = {
   JOHN_EMAIL: 'johnnygoblue.79@gmail.com'
 };
 
-if (window.location.pathname.endsWith('social.html')) {
-  window.addEventListener('DOMContentLoaded', () => {
-    const script = document.createElement('script');
-    script.src = 'assets/js/social-oauth.js?v=20260916-1';
-    script.defer = true;
-    document.body.appendChild(script);
-  });
-}
+window.addEventListener('DOMContentLoaded', () => {
+  const ext = document.createElement('script');
+  ext.src = 'assets/js/crm-extensions.js?v=20260916-1';
+  ext.defer = true;
+  document.body.appendChild(ext);
+
+  if (window.location.pathname.endsWith('social.html')) {
+    const social = document.createElement('script');
+    social.src = 'assets/js/social-oauth.js?v=20260916-1';
+    social.defer = true;
+    document.body.appendChild(social);
+  }
+});
