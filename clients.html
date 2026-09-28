@@ -187,8 +187,8 @@ function render(clients) {
     return;
   }
   b.innerHTML = clients.map(c => { const a = latestContact.get(c.id); return `
-    <tr onclick="window.location='client.html?id=${c.id}'">
-      <td><strong>${esc(c.business_name)}</strong></td>
+    <tr onclick="window.location='client.html?id=${c.id}'" style="${c.do_not_contact?'background:#fee2e2;box-shadow:inset 6px 0 0 #b91c1c;':''}">
+      <td><strong>${esc(c.business_name)}</strong>${c.do_not_contact?'<br><span class="badge" style="margin-top:5px;background:#b91c1c;color:#fff;border-color:#7f1d1d;font-weight:900">DO NOT CONTACT</span>':''}</td>
       <td><span class="badge">${c.relationship_type==='client'?'Client':'Prospect'}</span></td>
       <td class="text-sm">${esc(c.owner_name)||'&mdash;'}</td>
       <td class="text-sm">${c.email ? `<a href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a>` : '<span class="text-mid">No email</span>'}</td>
