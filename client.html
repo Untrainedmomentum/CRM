@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="style.css">
   <style>
     .detail-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
+    .dnc-banner { display:none; background:#b91c1c; color:#fff; border:3px solid #7f1d1d; border-radius:10px; padding:16px 18px; margin:0 0 16px; box-shadow:0 4px 14px rgba(127,29,29,.3); }
+    .dnc-banner.show { display:block; }
+    .dnc-banner-title { font-size:22px; font-weight:900; letter-spacing:.5px; text-transform:uppercase; }
+    .dnc-banner-reason { margin-top:5px; font-size:14px; font-weight:650; line-height:1.4; }
+    .dnc-badge { background:#b91c1c !important; color:#fff !important; border-color:#7f1d1d !important; font-weight:900 !important; }
     @media (max-width: 860px) { .detail-layout { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -46,6 +51,11 @@
           <button class="btn btn-secondary" onclick="openIntake()">Intake Form</button>
           <button class="btn btn-primary" onclick="saveClient()">Save Changes</button>
         </div>
+      </div>
+
+      <div id="dnc-banner" class="dnc-banner" role="alert" aria-live="polite">
+        <div class="dnc-banner-title">DO NOT CONTACT</div>
+        <div id="dnc-banner-reason" class="dnc-banner-reason"></div>
       </div>
 
       <div class="tabs">
@@ -711,8 +721,20 @@ function renderHeader() {
   const name = clientData.business_name || 'Client';
   document.getElementById('h-name').textContent = name;
   document.getElementById('h-title').textContent = name;
+  const dncBadge = clientData.do_not_contact ? '<span class="badge dnc-badge">DO NOT CONTACT</span> ' : '';
   document.getElementById('h-badges').innerHTML =
-    `<span class="badge">${clientData.relationship_type==='client'?'Client':'Prospect'}</span> ` + statusBadge(clientData.status) + ' ' + tierBadge(clientData.tier) + ' ' + dealBadge(clientData.deal_type);
+    dncBadge + `<span class="badge">${clientData.relationship_type==='client'?'Client':'Prospect'}</span> ` + statusBadge(clientData.status) + ' ' + tierBadge(clientData.tier) + ' ' + dealBadge(clientData.deal_type);
+
+  const banner = document.getElementById('dnc-banner');
+  const reason = document.getElementById('dnc-banner-reason');
+  if (clientData.do_not_contact) {
+    const when = clientData.do_not_contact_at ? ' · Marked ' + fmtDate(clientData.do_not_contact_at) : '';
+    reason.textContent = (clientData.do_not_contact_reason || 'This person has opted out of future outreach.') + when;
+    banner.classList.add('show');
+  } else {
+    reason.textContent = '';
+    banner.classList.remove('show');
+  }
 }
 
 function setVal(id, val) {
