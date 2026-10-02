@@ -372,6 +372,10 @@
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px" id="cc-links"></div>
             </div>
+            <div class="call-section">
+              <div class="call-section-title">Sales Dossier</div>
+              <div id="cc-sales-dossier" class="review-box"></div>
+            </div>
           </div>
           <div class="call-actions">
             <button class="btn btn-danger" onclick="notInterested()">Not Interested</button>
@@ -721,7 +725,10 @@ async function loadClients() {
   allClients = result.data || [];
 
   var prospects = allClients.filter(function(c) {
-    return ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1;
+    var disposition = c.sales_disposition || 'active';
+    return ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1 &&
+      !c.do_not_contact &&
+      ['not_interested','do_not_contact','bad_contact','client'].indexOf(disposition) === -1;
   });
   var closed = allClients.filter(function(c) {
     return ['deposited','building','delivered','ongoing','upsell'].indexOf(c.status) !== -1;
@@ -818,51 +825,55 @@ var listSort = {col: 'tier', dir: 1};
 var sortedListCache = [];
 var ACTIVE_STATUSES = ['prospect','pitched','presented','objection'];
 
+function clientCategories(c) {
+  var cats = Array.isArray(c.category_tags) && c.category_tags.length ? c.category_tags.slice() : [c.category || 'Uncategorized'];
+  if (c.category && cats.indexOf(c.category) === -1) cats.unshift(c.category);
+  return cats.filter(function(x,i,a){ return x && a.indexOf(x) === i; });
+}
+
+function isCallableProspect(c) {
+  var disposition = c.sales_disposition || 'active';
+  return ACTIVE_STATUSES.indexOf(c.status) !== -1 &&
+    !c.do_not_contact &&
+    ['not_interested','do_not_contact','bad_contact','client'].indexOf(disposition) === -1 &&
+    !!c.phone;
+}
+
 function renderCategoryCards() {
-  var prospects = allClients.filter(function(c) { return ACTIVE_STATUSES.indexOf(c.status) !== -1; });
+  var prospects = allClients.filter(isCallableProspect);
   var catMap = {};
   prospects.forEach(function(c) {
-    var cat = c.category || 'Uncategorized';
-    if (!catMap[cat]) catMap[cat] = {total:0, hot:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0};
-    catMap[cat].total++;
-    if (c.tier == 1) catMap[cat].hot++;
-    // Tally dispo chips
-    var ld = c._lastDispo;
-    if (!ld) {
-      catMap[cat].fresh++;
-    } else if (ld.outcome === 'left_voicemail') {
-      catMap[cat].voicemail++;
-    } else if (ld.outcome === 'callback') {
-      catMap[cat].callback++;
-    } else if (ld.outcome === 'not_interested') {
-      catMap[cat].not_interested++;
-    } else if (ld.outcome === 'other' && ld.notes && ld.notes.indexOf('Wrong') !== -1) {
-      catMap[cat].wrong++;
-    } else {
-      catMap[cat].fresh++; // anything else counts as untouched for this purpose
-    }
+    clientCategories(c).forEach(function(cat) {
+      if (!catMap[cat]) catMap[cat] = {total:0, hot:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0};
+      catMap[cat].total++;
+      if (c.tier == 1) catMap[cat].hot++;
+      var ld = c._lastDispo;
+      if (!ld) catMap[cat].fresh++;
+      else if (ld.outcome === 'left_voicemail') catMap[cat].voicemail++;
+      else if (ld.outcome === 'callback') catMap[cat].callback++;
+      else if (ld.outcome === 'not_interested') catMap[cat].not_interested++;
+      else if (ld.outcome === 'other' && ld.notes && ld.notes.indexOf('Wrong') !== -1) catMap[cat].wrong++;
+      else catMap[cat].fresh++;
+    });
   });
   var cats = Object.keys(catMap).sort();
   var container = document.getElementById('cat-cards');
   if (!cats.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No active prospects</div></div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No callable prospects</div></div>';
     return;
   }
   container.innerHTML = cats.map(function(cat) {
-    var d = catMap[cat];
-    var chips = [];
-    if (d.fresh)         chips.push('<span style="background:#f0f0f0;color:#555;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#128337; ' + d.fresh + ' Fresh</span>');
-    if (d.voicemail)     chips.push('<span style="background:var(--gold-l);color:#a07000;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#128222; ' + d.voicemail + ' VM</span>');
-    if (d.callback)      chips.push('<span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#8635; ' + d.callback + ' CB</span>');
-    if (d.not_interested)chips.push('<span style="background:var(--red-l);color:var(--red);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#10005; ' + d.not_interested + ' NI</span>');
-    if (d.wrong)         chips.push('<span style="background:#f0f0f0;color:#888;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#8709; ' + d.wrong + ' Wrong</span>');
+    var d = catMap[cat], chips = [];
+    if (d.fresh) chips.push('<span style="background:#f0f0f0;color:#555;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#128337; ' + d.fresh + ' Fresh</span>');
+    if (d.voicemail) chips.push('<span style="background:var(--gold-l);color:#a07000;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#128222; ' + d.voicemail + ' VM</span>');
+    if (d.callback) chips.push('<span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#8635; ' + d.callback + ' CB</span>');
+    if (d.not_interested) chips.push('<span style="background:var(--red-l);color:var(--red);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#10005; ' + d.not_interested + ' NI</span>');
+    if (d.wrong) chips.push('<span style="background:#f0f0f0;color:#888;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">&#8709; ' + d.wrong + ' Wrong</span>');
     return '<div class="launch-card" onclick="showCatList(\'' + cat.replace(/'/g,"\\'") + '\')" style="text-align:left;padding:16px 18px">' +
-      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + cat + '</div>' +
-      '<div style="font-size:12px;color:var(--mid);margin-bottom:10px">' + d.total + ' prospect' + (d.total !== 1 ? 's' : '') +
-        (d.hot ? ' &mdash; <span style="color:var(--red);font-weight:600">' + d.hot + ' hot</span>' : '') +
-      '</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:4px">' + chips.join('') + '</div>' +
-    '</div>';
+      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + esc(cat) + '</div>' +
+      '<div style="font-size:12px;color:var(--mid);margin-bottom:10px">' + d.total + ' callable prospect' + (d.total !== 1 ? 's' : '') +
+        (d.hot ? ' &mdash; <span style="color:var(--red);font-weight:600">' + d.hot + ' hot</span>' : '') + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:4px">' + chips.join('') + '</div></div>';
   }).join('');
 }
 
@@ -870,9 +881,9 @@ function renderCategorySummary(prospects, closed) {
   // Build per-category stats across ALL clients (prospects + closed)
   var catData = {};
 
-  // Tally active prospects by category
-  prospects.forEach(function(c) {
-    var cat = c.category || 'Uncategorized';
+  // Tally active prospects by category/tag
+  prospects.filter(isCallableProspect).forEach(function(c) {
+    clientCategories(c).forEach(function(cat) {
     if (!catData[cat]) catData[cat] = {prospects:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0, closedCount:0, closedValue:0, commission:0};
     catData[cat].prospects++;
     var ld = c._lastDispo;
@@ -889,16 +900,18 @@ function renderCategorySummary(prospects, closed) {
     } else {
       catData[cat].fresh++;
     }
+    });
   });
 
   // Tally closed deals by category
   closed.forEach(function(c) {
-    var cat = c.category || 'Uncategorized';
+    clientCategories(c).forEach(function(cat) {
     if (!catData[cat]) catData[cat] = {prospects:0, fresh:0, voicemail:0, callback:0, not_interested:0, wrong:0, closedCount:0, closedValue:0, commission:0};
     catData[cat].closedCount++;
     var dep = c.deposit_collected || 0;
     catData[cat].closedValue += dep;
     catData[cat].commission += dep * 0.2;
+    });
   });
 
   var cats = Object.keys(catData).sort();
@@ -989,8 +1002,8 @@ function renderList() {
   var tier = document.getElementById('tier-filter').value;
   var q = (document.getElementById('list-search').value || '').toLowerCase();
   var list = allClients.filter(function(c) {
-    if (ACTIVE_STATUSES.indexOf(c.status) === -1) return false;
-    if (activeCategory && (c.category || 'Uncategorized') !== activeCategory) return false;
+    if (!isCallableProspect(c)) return false;
+    if (activeCategory && clientCategories(c).indexOf(activeCategory) === -1) return false;
     if (tier && String(c.tier) !== tier) return false;
     if (q) {
       var fields = [c.business_name, c.owner_name, c.phone, c.location];
@@ -1146,17 +1159,22 @@ function loadCard(c) {
 
   document.getElementById('cc-biz').textContent = c.business_name;
   document.getElementById('cc-meta').textContent = [c.category, c.location, c.county ? c.county + ' County' : ''].filter(Boolean).join(' \u2014 ');
-  document.getElementById('cc-badges').innerHTML = statusBadge(c.status) + ' ' + tierBadge(c.tier) + (c.score ? ' <span class="badge badge-prospect">Score: ' + c.score + '/10</span>' : '');
+  var engagement = Number(c.email_open_count||0) > 0 ? '<span class="badge" style="background:#dcfce7;color:#166534">Email opened</span>' :
+    (Number(c.email_tracked_count||0) > 0 ? '<span class="badge" style="background:#e0f2fe;color:#075985">Email tracked</span>' : '');
+  var probability = c.close_probability != null ? ' <span class="badge badge-prospect">' + c.close_probability + '% est. close</span>' : '';
+  document.getElementById('cc-badges').innerHTML = statusBadge(c.status) + ' ' + tierBadge(c.tier) + (c.score ? ' <span class="badge badge-prospect">Score: ' + c.score + '/10</span>' : '') + probability + ' ' + engagement;
   document.getElementById('cc-skips').textContent = c._skips || 0;
 
   // Brief (stored in pitch_angle column)
   document.getElementById('cc-brief').value = c.pitch_angle || '';
   document.getElementById('cc-brief-status').textContent = '';
 
-  document.getElementById('cc-owner').textContent = c.owner_name || '\u2014';
+  document.getElementById('cc-owner').textContent = [c.owner_name, c.decision_maker_title].filter(Boolean).join(' — ') || '\u2014';
   document.getElementById('cc-hours').textContent = c.business_hours || '\u2014';
   document.getElementById('cc-website').textContent = c.has_website || '\u2014';
-  document.getElementById('cc-gbp').textContent = c.gbp_status || '\u2014';
+  document.getElementById('cc-gbp').innerHTML = c.google_reviews_url
+    ? '<a href="' + esc(c.google_reviews_url) + '" target="_blank">' + esc(c.gbp_status || 'Open Google profile') + '</a>'
+    : esc(c.gbp_status || '\u2014');
   document.getElementById('cc-revenue').textContent = c.est_annual_revenue ? fmt$(c.est_annual_revenue) + '/yr' : '\u2014';
   document.getElementById('cc-value').textContent = c.est_sale ? fmt$(c.est_sale) : '\u2014';
   document.getElementById('cc-phone').innerHTML = c.phone ? '<a href="tel:' + c.phone + '">' + c.phone + '</a>' : '\u2014';
@@ -1183,9 +1201,35 @@ function loadCard(c) {
   var links = [];
   if (c.phone) links.push('<a href="tel:' + c.phone + '" class="btn btn-primary btn-sm">Call Now</a>');
   if (c.email && c.email !== 'Not found') links.push('<a href="mailto:' + c.email + '" class="btn btn-secondary btn-sm">Email</a>');
-  if (c.website_url) links.push('<a href="' + c.website_url + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
-  if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
+  if (c.website_url) links.push('<a href="' + esc(c.website_url) + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
+  if (c.google_reviews_url) links.push('<a href="' + esc(c.google_reviews_url) + '" target="_blank" class="btn btn-secondary btn-sm">Google / GBP</a>');
+  else if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
+  if (c.yelp_reviews_url) links.push('<a href="' + esc(c.yelp_reviews_url) + '" target="_blank" class="btn btn-secondary btn-sm">Yelp</a>');
+  if (c.online_presence_url && c.online_presence_url !== c.google_reviews_url && c.online_presence_url !== c.yelp_reviews_url) links.push('<a href="' + esc(c.online_presence_url) + '" target="_blank" class="btn btn-secondary btn-sm">Other Presence</a>');
   document.getElementById('cc-links').innerHTML = links.join('');
+  var tagHtml = clientCategories(c).map(function(t){ return '<span class="badge badge-prospect" style="margin:2px">' + esc(t) + '</span>'; }).join('');
+  var emailState = Number(c.email_tracked_count||0) > 0
+    ? ('Tracked' + (Number(c.email_open_count||0) > 0 ? ' · Opened ' + c.email_open_count + 'x' : ' · No recorded open yet') +
+       (c.last_email_opened_at ? ' · Last open ' + fmtDate(c.last_email_opened_at) : '') +
+       (Number(c.email_link_click_count||0) ? ' · ' + c.email_link_click_count + ' click(s)' : ''))
+    : 'Not tracked';
+  var dossier = [
+    ['Categories', tagHtml || '&mdash;', true],
+    ['Decision maker', esc([c.owner_name,c.decision_maker_title].filter(Boolean).join(' — ') || 'Needs research')],
+    ['Email engagement', esc(emailState)],
+    ['Email history', esc((c.emails_sent_count||0) + ' sent' + (c.last_emailed_at ? ' · last ' + fmtDate(c.last_emailed_at) : ''))],
+    ['Best pitch', esc(c.pitch_angle || c.first_call_hook || 'Needs research')],
+    ['Likely objection', esc(c.objection_prediction || 'Needs research')],
+    ['Rebuttal', esc(c.objection_rebuttals || 'Needs research')],
+    ['Cold-caller note', esc(c.michael_call_guide || c.cold_caller_notes || 'Needs research')],
+    ['Buying style', esc(c.personality_profile || 'Needs research')],
+    ['AI / tech aversion', esc([c.ai_aversion ? 'AI: '+c.ai_aversion : '', c.tech_aversion ? 'Tech: '+c.tech_aversion : ''].filter(Boolean).join(' · ') || 'Unknown')],
+    ['Business age', esc(c.year_established || 'Unknown')],
+    ['Research status', esc(c.research_status || 'needs_research')]
+  ];
+  document.getElementById('cc-sales-dossier').innerHTML = dossier.map(function(row){
+    return '<div style="display:grid;grid-template-columns:140px 1fr;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><strong style="font-size:11px;color:var(--mid);text-transform:uppercase">' + row[0] + '</strong><div>' + (row[2] ? row[1] : row[1]) + '</div></div>';
+  }).join('');
   document.getElementById('session-progress').textContent = (queueIndex + 1) + ' of ' + callQueue.length;
 
   var ldSection = document.getElementById('cc-last-dispo-section');
@@ -1746,7 +1790,7 @@ async function leftVoicemail() {
   if (!currentProspect) return;
   await claimProspect(currentProspect.id);
   await sb.from('followups').insert({client_id: currentProspect.id, user_id: profile.id, type: 'call', outcome: 'left_voicemail', notes: 'Left voicemail', completed: true, completed_date: new Date().toISOString()});
-  await sb.from('clients').update({status: 'pitched', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  await sb.from('clients').update({status: 'pitched', sales_disposition:'voicemail', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Voicemail logged');
   nextProspect('left_voicemail', 'Left voicemail');
 }
@@ -1754,7 +1798,7 @@ async function leftVoicemail() {
 async function wrongNumber() {
   if (!currentProspect) return;
   await claimProspect(currentProspect.id);
-  await sb.from('clients').update({johns_notes: (currentProspect.johns_notes || '') + '\nWRONG/DISCONNECTED NUMBER', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  await sb.from('clients').update({sales_disposition:'bad_contact', cold_caller_notes: ((currentProspect.cold_caller_notes || '') + '\nWRONG/DISCONNECTED NUMBER').trim(), updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Flagged');
   nextProspect('other', 'Wrong / Disconnected number');
 }
@@ -1762,14 +1806,14 @@ async function wrongNumber() {
 async function notInterested() {
   if (!currentProspect) return;
   await claimProspect(currentProspect.id);
-  await sb.from('clients').update({status: 'objection', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  await sb.from('clients').update({status: 'closed', sales_disposition:'not_interested', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Marked not interested');
   nextProspect('not_interested', null);
 }
 
 async function doNotCall() {
   if (!currentProspect) return;
-  await sb.from('clients').update({status: 'churned', johns_notes: (currentProspect.johns_notes || '') + '\nDO NOT CALL', updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
+  await sb.from('clients').update({status: 'churned', sales_disposition:'do_not_contact', do_not_contact:true, do_not_contact_reason:'Requested no further contact', do_not_contact_at:new Date().toISOString(), cold_caller_notes: ((currentProspect.cold_caller_notes || '') + '\nDO NOT CALL').trim(), updated_by: profile.id, updated_by_name: profile.full_name || profile.email}).eq('id', currentProspect.id);
   toast('Do Not Call');
   nextProspect('other', 'Do Not Call');
 }
