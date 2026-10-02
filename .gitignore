@@ -1,4 +1,28 @@
-
+# OS/editor noise
 .DS_Store
-*.log
 Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*service-account*.json
+credentials*.json
+secrets*.json
+config.local.js
+
+# Private business exports / deployment bundles
+*prospect*.csv
+*lead*.csv
+*customer*.csv
+*client*.csv
+*.zip
+*.tar
+*.gz
