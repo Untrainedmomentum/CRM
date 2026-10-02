@@ -1200,7 +1200,7 @@ function loadCard(c) {
 
   var links = [];
   if (c.phone) links.push('<a href="tel:' + c.phone + '" class="btn btn-primary btn-sm">Call Now</a>');
-  if (c.email && c.email !== 'Not found') links.push('<a href="mailto:' + c.email + '" class="btn btn-secondary btn-sm">Email</a>');
+  if (c.email && c.email !== 'Not found') { links.push('<a href="mailto:' + c.email + '" class="btn btn-secondary btn-sm">Email</a>'); links.push('<button type="button" class="btn btn-secondary btn-sm" onclick="createTrackedDraft()">Tracked Gmail Draft</button>'); }
   if (c.website_url) links.push('<a href="' + esc(c.website_url) + '" target="_blank" class="btn btn-secondary btn-sm">Visit Site</a>');
   if (c.google_reviews_url) links.push('<a href="' + esc(c.google_reviews_url) + '" target="_blank" class="btn btn-secondary btn-sm">Google / GBP</a>');
   else if (c.location) links.push('<a href="https://www.google.com/maps/search/' + encodeURIComponent((c.business_name || '') + ' ' + (c.location || '')) + '" target="_blank" class="btn btn-secondary btn-sm">Maps</a>');
@@ -1243,6 +1243,30 @@ function loadCard(c) {
   } else { ldSection.style.display = 'none'; }
 
   updateBars();
+}
+
+async function createTrackedDraft(){
+  if(!currentProspect || !currentProspect.id) return toast('Choose a prospect first','error');
+  if(currentProspect.do_not_contact || ['not_interested','do_not_contact','bad_contact'].includes(currentProspect.sales_disposition||'')) return toast('This prospect is suppressed from outreach','error');
+  if(!currentProspect.email || currentProspect.email==='Not found') return toast('This prospect has no email','error');
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session) return toast('Your CRM session expired. Sign in again.','error');
+  const btn=event?.target; if(btn){btn.disabled=true;btn.textContent='Creating…'}
+  try{
+    const r=await fetch(CONFIG.SUPABASE_URL + '/functions/v1/create-outreach-draft',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json','apikey':CONFIG.SUPABASE_ANON_KEY},
+      body:JSON.stringify({client_id:currentProspect.id})
+    });
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'Could not create tracked draft');
+    currentProspect.email_tracked_count=Number(currentProspect.email_tracked_count||0)+1;
+    currentProspect.research_status='draft_pending';
+    toast('Tracked Gmail draft created — not sent');
+    renderCallCard();
+  }catch(e){
+    toast(e.message||String(e),'error');
+  }finally{if(btn){btn.disabled=false;btn.textContent='Tracked Gmail Draft'}}
 }
 
 // ── BRIEF SAVE (card) ─────────────────────────────────────────
