@@ -726,7 +726,7 @@ async function loadClients() {
 
   var prospects = allClients.filter(function(c) {
     var disposition = c.sales_disposition || 'active';
-    return ['prospect','pitched','presented','objection'].indexOf(c.status) !== -1 &&
+    return ['prospect','instantly','pitched','presented','objection'].indexOf(c.status) !== -1 &&
       !c.do_not_contact &&
       ['not_interested','do_not_contact','bad_contact','client'].indexOf(disposition) === -1;
   });
@@ -823,7 +823,7 @@ function switchView(name) {
 var activeCategory = null;
 var listSort = {col: 'tier', dir: 1};
 var sortedListCache = [];
-var ACTIVE_STATUSES = ['prospect','pitched','presented','objection'];
+var ACTIVE_STATUSES = ['prospect','instantly','pitched','presented','objection'];
 
 function clientCategories(c) {
   var cats = Array.isArray(c.category_tags) && c.category_tags.length ? c.category_tags.slice() : [c.category || 'Uncategorized'];
