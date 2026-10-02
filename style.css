@@ -240,6 +240,7 @@ tbody tr[onclick] { cursor: pointer; }
   white-space: nowrap;
 }
 .badge-prospect   { background: #f0f0f0; color: #555; }
+.badge-instantly  { background: var(--blue-l); color: var(--blue); }
 .badge-pitched    { background: var(--blue-l); color: var(--blue); }
 .badge-presented  { background: var(--gold-l); color: var(--gold); }
 .badge-objection  { background: var(--orange-l); color: var(--orange); }
