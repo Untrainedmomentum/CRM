@@ -134,7 +134,7 @@ const fmtDate = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short
 const fmtPct = n => n ? n + '%' : '—';
 
 const STATUS_LABELS = {
-  prospect:'Prospect', pitched:'Pitched', presented:'Presented', objection:'Objection',
+  prospect:'Prospect', instantly:'Instantly', pitched:'Pitched', presented:'Presented', objection:'Objection',
   closed:'Closed', deposited:'Deposited', building:'Building', delivered:'Delivered',
   ongoing:'Ongoing', upsell:'Upsell', churned:'Churned'
 };
